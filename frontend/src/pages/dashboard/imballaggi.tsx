@@ -7,7 +7,11 @@ import { useState } from 'react';
 import AddImballaggioDialog from '../../components/addImballaggioDialog.tsx';
 import type { Imballaggio } from '../../components/addImballaggioDialog.tsx';
 import useImballaggiSync from '../../sync/useImballaggiSync.ts';
-import { saveImballaggio, deleteImballaggio as deleteLocalImballaggio } from '../../storage/imballaggiDB.ts';
+import useOnlineStatus from '../../hooks/useOnlineStatus.ts';
+import {
+  saveImballaggio,
+  deleteImballaggio as deleteLocalImballaggio
+} from '../../storage/imballaggiDB.ts';
 
 export default function Imballaggi() {
   const [data, setData] = useState<Imballaggio[]>([
@@ -17,6 +21,9 @@ export default function Imballaggi() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Imballaggio | null>(null);
+  const online = useOnlineStatus();
+
+  useImballaggiSync();
 
   const handleEdit = (row: Imballaggio) => {
     setEditing(row);
@@ -24,7 +31,7 @@ export default function Imballaggi() {
   };
 
   const handleDelete = async (id: number) => {
-    if (navigator.onLine) {
+    if (online) {
       setData((prev) => prev.filter((i) => i.id !== id));
       // TODO: eliminazione da backend
     } else {
@@ -55,8 +62,6 @@ export default function Imballaggi() {
       )
     }
   ];
-
-  useImballaggiSync();
 
   return (
     <Box>
@@ -101,7 +106,7 @@ export default function Imballaggi() {
             setData((prev) => [...prev, newImb]);
           }
 
-          if (navigator.onLine) {
+          if (online) {
             console.log('🟢 Online: imballaggio salvato');
             // TODO: invio a backend quando disponibile
           } else {

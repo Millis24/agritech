@@ -1,18 +1,8 @@
-import { openDB } from 'idb';
-import type { Cliente } from '../components/addClienteDialog.tsx';
+// src/storage/clientiDB.ts
+import { getDB } from './indexedDb';
+import type { Cliente } from '../components/addClienteDialog';
 
-const DB_NAME = 'crm-offline';
 const STORE_NAME = 'clienti';
-
-export async function getDB() {
-  return openDB(DB_NAME, 1, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    }
-  });
-}
 
 export async function getAllClienti(): Promise<Cliente[]> {
   const db = await getDB();
