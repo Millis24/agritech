@@ -1,27 +1,32 @@
+import { useEffect, useState } from 'react';
 import { Box, Button, Typography, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState } from 'react';
-import AddImballaggioDialog from '../../components/addImballaggioDialog.tsx';
-import type { Imballaggio } from '../../components/addImballaggioDialog.tsx';
-import useImballaggiSync from '../../sync/useImballaggiSync.ts';
-import useOnlineStatus from '../../hooks/useOnlineStatus.ts';
+
+import AddImballaggioDialog from '../../components/addImballaggioDialog';
+import type { Imballaggio } from '../../components/addImballaggioDialog';
+
 import {
   saveImballaggio,
-  deleteImballaggio as deleteLocalImballaggio
-} from '../../storage/imballaggiDB.ts';
+  deleteImballaggio as deleteLocalImballaggio,
+  getAllImballaggi
+} from '../../storage/imballaggiDB';
+import useImballaggiSync from '../../sync/useImballaggiSync';
 
 export default function Imballaggi() {
-  const [data, setData] = useState<Imballaggio[]>([
-    { id: 1, tipo: 'Cassa', dimensioni: '40x60', capacitàKg: 10, note: 'Plastica rigida' },
-    { id: 2, tipo: 'Cartone', dimensioni: '50x70', capacitàKg: 12, note: 'Per uso export' }
-  ]);
-
+  const [data, setData] = useState<Imballaggio[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Imballaggio | null>(null);
-  const online = useOnlineStatus();
+
+  useEffect(() => {
+    const caricaImballaggi = async () => {
+      const locali = await getAllImballaggi();
+      setData(locali);
+    };
+    caricaImballaggi();
+  }, []);
 
   useImballaggiSync();
 
@@ -31,9 +36,9 @@ export default function Imballaggi() {
   };
 
   const handleDelete = async (id: number) => {
-    if (online) {
+    if (navigator.onLine) {
       setData((prev) => prev.filter((i) => i.id !== id));
-      // TODO: eliminazione da backend
+      // TODO: elimina anche da backend
     } else {
       await deleteLocalImballaggio(id);
       alert('⚠️ Sei offline. L’imballaggio verrà rimosso dal cloud alla riconnessione.');
@@ -44,7 +49,7 @@ export default function Imballaggi() {
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'tipo', headerName: 'Tipo', width: 150 },
     { field: 'dimensioni', headerName: 'Dimensioni', width: 150 },
-    { field: 'capacitàKg', headerName: 'Capacità (Kg)', width: 130 },
+    { field: 'capacitaKg', headerName: 'Capacità (Kg)', width: 130 },
     { field: 'note', headerName: 'Note', flex: 1 },
     {
       field: 'actions',
@@ -59,8 +64,8 @@ export default function Imballaggi() {
             <DeleteIcon />
           </IconButton>
         </>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -84,8 +89,8 @@ export default function Imballaggi() {
           columns={columns}
           initialState={{
             pagination: {
-              paginationModel: { pageSize: 5, page: 0 }
-            }
+              paginationModel: { pageSize: 5, page: 0 },
+            },
           }}
           pageSizeOptions={[5, 10]}
         />
@@ -98,20 +103,35 @@ export default function Imballaggi() {
           setEditing(null);
         }}
         onSave={async (newImb) => {
+          const imballaggioConSync = {
+            ...newImb,
+            synced: navigator.onLine ? true : false,
+            id: editing ? newImb.id : Date.now()
+          };
+
           if (editing) {
             setData((prev) =>
-              prev.map((i) => (i.id === newImb.id ? newImb : i))
+              prev.map((i) => (i.id === newImb.id ? imballaggioConSync : i))
             );
           } else {
-            setData((prev) => [...prev, newImb]);
+            setData((prev) => [...prev, imballaggioConSync]);
           }
 
-          if (online) {
-            console.log('🟢 Online: imballaggio salvato');
-            // TODO: invio a backend quando disponibile
+          if (navigator.onLine) {
+            try {
+              await fetch('http://localhost:4000/api/imballaggi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(imballaggioConSync)
+              });
+              console.log('🟢 Online: imballaggio inviato al backend');
+            } catch (err) {
+              console.error('❌ Errore di rete, salvataggio locale');
+              await saveImballaggio(imballaggioConSync);
+            }
           } else {
-            await saveImballaggio(newImb);
-            alert('⚠️ Sei offline. L’imballaggio è stato salvato localmente e sarà sincronizzato.');
+            await saveImballaggio(imballaggioConSync);
+            alert('⚠️ Sei offline. L’imballaggio è stato salvato localmente e verrà sincronizzato.');
           }
 
           setEditing(null);

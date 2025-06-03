@@ -1,5 +1,6 @@
 import { Outlet, useParams, Link } from 'react-router-dom';
 import { AppBar, Box, Toolbar, Typography, Button, Stack } from '@mui/material';
+import InstallPWAButton from '../components/installPWAButton.tsx';
 
 export default function DashboardLayout() {
   const { companyId } = useParams();
@@ -22,6 +23,10 @@ export default function DashboardLayout() {
             <Button color="inherit" component={Link} to={`/dashboard/${companyId}/bolle`}>Bolle</Button>
             <Button color="inherit" component={Link} to={`/dashboard/${companyId}/report`}>Report</Button>
             <Button color="inherit" component={Link} to={`/dashboard/${companyId}/impostazioni`}>Impostazioni</Button>
+            <InstallPWAButton />
+            <Button variant="outlined" onClick={() => alert('Qui ci sarà il prompt di installazione')} sx={{color: '#fff'}}>
+              Installa App (debug)
+            </Button>
           </Stack>
         </Toolbar>
       </AppBar>

@@ -16,6 +16,7 @@ export type Cliente = {
   partitaIva: string;
   telefono: string;
   email: string;
+  synced?: boolean; // per sapere se il dato viene sincronizzato
 };
 
 type Props = {

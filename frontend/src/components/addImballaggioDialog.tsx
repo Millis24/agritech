@@ -15,6 +15,7 @@ export type Imballaggio = {
   dimensioni: string;
   capacitàKg: number;
   note?: string;
+  synced?: boolean;
 };
 
 type Props = {

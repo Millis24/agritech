@@ -1,37 +1,30 @@
+import { useEffect, useState } from 'react';
 import { Box, Button, Typography, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState } from 'react';
-import AddClienteDialog from '../../components/addClienteDialog.tsx';
-import type { Cliente } from '../../components/addClienteDialog.tsx';
-import useClientiSync from '../../sync/useClientiSync.ts';
-import { saveCliente, deleteCliente as deleteLocalCliente } from '../../storage/clientiDB.ts';
 
+import AddClienteDialog from '../../components/addClienteDialog';
+import type { Cliente } from '../../components/addClienteDialog';
+
+import { saveCliente, deleteCliente as deleteLocalCliente, getAllClienti } from '../../storage/clientiDB';
+import useClientiSync from '../../sync/useClientiSync';
 
 export default function Clienti() {
-  const [clienti, setClienti] = useState<Cliente[]>([
-    {
-      id: 1,
-      nomeCliente: 'Fruttagri',
-      ragioneSociale: 'Fruttagri SRL',
-      partitaIva: 'IT01234567890',
-      telefono: '3401234567',
-      email: 'info@fruttagri.it',
-    },
-    {
-      id: 2,
-      nomeCliente: 'Orto Sud',
-      ragioneSociale: 'Orto Sud SRL',
-      partitaIva: 'IT09876543210',
-      telefono: '3897654321',
-      email: 'contatti@ortosud.it',
-    },
-  ]);
-
+  const [clienti, setClienti] = useState<Cliente[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+
+  useEffect(() => {
+    const caricaClienti = async () => {
+      const locali = await getAllClienti();
+      setClienti(locali);
+    };
+    caricaClienti();
+  }, []);
+
+  useClientiSync();
 
   const handleEdit = (cliente: Cliente) => {
     setEditingCliente(cliente);
@@ -41,7 +34,7 @@ export default function Clienti() {
   const handleDelete = async (id: number) => {
     if (navigator.onLine) {
       setClienti((prev) => prev.filter((c) => c.id !== id));
-      // TODO: elimina da backend in futuro
+      // TODO: elimina anche da backend
     } else {
       await deleteLocalCliente(id);
       alert('⚠️ Sei offline. Il cliente verrà eliminato dal cloud alla riconnessione.');
@@ -50,6 +43,7 @@ export default function Clienti() {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
+    { field: 'nomeCliente', headerName: 'Nome', width: 150 },
     { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
     { field: 'partitaIva', headerName: 'Partita IVA', width: 150 },
     { field: 'telefono', headerName: 'Telefono', width: 150 },
@@ -71,8 +65,6 @@ export default function Clienti() {
     },
   ];
 
-  useClientiSync(); // sincronizza i clienti locali quando torna online
-
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -93,9 +85,7 @@ export default function Clienti() {
           rows={clienti}
           columns={columns}
           initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5, page: 0 },
-            },
+            pagination: { paginationModel: { pageSize: 5, page: 0 } },
           }}
           pageSizeOptions={[5, 10]}
         />
@@ -117,8 +107,8 @@ export default function Clienti() {
           }
 
           if (navigator.onLine) {
-            // TODO: invio a backend (quando lo avrai)
-            console.log('🟢 Online: cliente salvato normalmente');
+            // TODO: salva su backend
+            console.log('🟢 Cliente salvato online (simulato)');
           } else {
             await saveCliente(newCliente);
             alert('⚠️ Sei offline. Il cliente è stato salvato localmente e verrà sincronizzato.');

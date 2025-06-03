@@ -11,7 +11,8 @@ export async function getAllClienti(): Promise<Cliente[]> {
 
 export async function saveCliente(cliente: Cliente) {
   const db = await getDB();
-  return db.put(STORE_NAME, cliente);
+  await db.put('clienti', { ...cliente, synced: false });
+  //return db.put(STORE_NAME, cliente);
 }
 
 export async function deleteCliente(id: number) {

@@ -1,26 +1,53 @@
 import { useEffect } from 'react';
-import type { Cliente } from '../components/addClienteDialog.tsx';
-import { getAllClienti, clearClienti } from '../storage/clientiDB';
-import useOnlineStatus from '../hooks/useOnlineStatus';
-
-// Simula l'invio al backend
-async function inviaAlBackend(clienti: Cliente[]) {
-  console.log('📡 Sync verso il cloud: ', clienti);
-  // Simula una chiamata API...
-  await new Promise((res) => setTimeout(res, 1000));
-}
+import { getAllClienti, deleteCliente } from '../storage/clientiDB';
+import { saveCliente } from '../storage/clientiDB';
 
 export default function useClientiSync() {
-  const online = useOnlineStatus();
-
   useEffect(() => {
-    if (online) {
-      getAllClienti().then(async (clienti) => {
-        if (clienti.length > 0) {
-          await inviaAlBackend(clienti);
-          await clearClienti();
+    const sync = async () => {
+      if (!navigator.onLine) return;
+
+      const locali = await getAllClienti();
+      const daSincronizzare = locali.filter(c => !c.synced);
+
+      for (const cliente of daSincronizzare) {
+        try {
+          const { id, synced, ...data } = cliente;
+          const res = await fetch('http://localhost:4000/api/clienti', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (res.ok) {
+            await deleteCliente(id);
+            console.log(`✅ Cliente ${cliente.nomeCliente} sincronizzato`);
+          }
+        } catch (err) {
+          console.error('❌ Sync fallita', err);
         }
-      });
-    }
-  }, [online]);
+      }
+    };
+
+    const fetchBackendClienti = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/clienti');
+        if (!res.ok) return;
+        const backendClienti = await res.json();
+
+        for (const cliente of backendClienti) {
+          await saveCliente({ ...cliente, synced: true });
+        }
+        console.log('✅ Clienti recuperati dal backend');
+      } catch (err) {
+        console.error('❌ Errore nel recupero clienti dal backend', err);
+      }
+    };
+
+    window.addEventListener('online', sync);
+    fetchBackendClienti();
+    sync();
+
+    return () => window.removeEventListener('online', sync);
+  }, []);
 }

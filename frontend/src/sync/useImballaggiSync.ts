@@ -1,24 +1,57 @@
 import { useEffect } from 'react';
-import type { Imballaggio } from '../components/addImballaggioDialog.tsx';
-import { getAllImballaggi, clearImballaggi } from '../storage/imballaggiDB';
-import useOnlineStatus from '../hooks/useOnlineStatus';
-
-async function inviaAlBackend(imballaggi: Imballaggio[]) {
-  console.log('📡 Sync imballaggi verso il cloud: ', imballaggi);
-  await new Promise((res) => setTimeout(res, 1000));
-}
+import {
+  getAllImballaggi,
+  deleteImballaggio,
+  saveImballaggio
+} from '../storage/imballaggiDB';
 
 export default function useImballaggiSync() {
-  const online = useOnlineStatus();
-
   useEffect(() => {
-    if (online) {
-      getAllImballaggi().then(async (imballaggi) => {
-        if (imballaggi.length > 0) {
-          await inviaAlBackend(imballaggi);
-          await clearImballaggi();
+    const sync = async () => {
+      if (!navigator.onLine) return;
+
+      const locali = await getAllImballaggi();
+      const daSincronizzare = locali.filter(i => !i.synced);
+
+      for (const imballaggio of daSincronizzare) {
+        try {
+          const { id, synced, ...data } = imballaggio;
+          const res = await fetch('http://localhost:4000/api/imballaggi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (res.ok) {
+            await deleteImballaggio(id);
+            console.log(`✅ Imballaggio ${imballaggio.tipo} sincronizzato`);
+          }
+        } catch (err) {
+          console.error('❌ Sync fallita', err);
         }
-      });
-    }
-  }, [online]);
+      }
+    };
+
+    const fetchBackendImballaggi = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/imballaggi');
+        if (!res.ok) return;
+        const backendImballaggi = await res.json();
+
+        for (const i of backendImballaggi) {
+          await saveImballaggio({ ...i, synced: true });
+        }
+
+        console.log('✅ Imballaggi recuperati dal backend');
+      } catch (err) {
+        console.error('❌ Errore nel recupero imballaggi dal backend', err);
+      }
+    };
+
+    window.addEventListener('online', sync);
+    fetchBackendImballaggi();
+    sync();
+
+    return () => window.removeEventListener('online', sync);
+  }, []);
 }
