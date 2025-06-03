@@ -1,6 +1,7 @@
 import { Outlet, useParams, Link } from 'react-router-dom';
 import { AppBar, Box, Toolbar, Typography, Button, Stack } from '@mui/material';
 import InstallPWAButton from '../components/installPWAButton.tsx';
+import AgricultureIcon from '@mui/icons-material/Agriculture';
 
 export default function DashboardLayout() {
   const { companyId } = useParams();
@@ -13,9 +14,9 @@ export default function DashboardLayout() {
             variant="h6"
             component={Link}
             to={`/dashboard/${companyId}`}
-            sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
+            sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}
           >
-            Dashboard - {companyId}
+            <AgricultureIcon sx={{ fontSize: 40 }}/>
           </Typography>
           <Stack direction="row" spacing={2}>
             <Button color="inherit" component={Link} to={`/dashboard/${companyId}/clienti`}>Clienti</Button>
