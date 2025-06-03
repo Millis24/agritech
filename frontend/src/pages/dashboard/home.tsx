@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+//import { useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
 
 export default function Home() {

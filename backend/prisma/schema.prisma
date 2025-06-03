@@ -9,6 +9,12 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model Utente {
+  id          Int    @id @default(autoincrement())
+  nomeUtente  String @unique
+  password    String
+}
+
 model Cliente {
   id             Int     @id @default(autoincrement())
   nomeCliente    String

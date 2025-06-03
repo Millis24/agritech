@@ -7,11 +7,11 @@ import Imballaggi from '../pages/dashboard/imballaggi.tsx';
 
 export const routes: RouteObject[] = [
   {
-    path: '/login/:companyId',
+    path: '/login',
     element: <Login />
   },
   {
-    path: '/dashboard/:companyId',
+    path: '/dashboard',
     element: <DashboardLayout />,
     children: [
       { path: '', element: <Home /> },
@@ -21,5 +21,9 @@ export const routes: RouteObject[] = [
       { path: 'impostazioni', element: <div>Impostazioni</div> },
       { path: 'clienti', element: <Clienti /> },
     ]
+  },
+  {
+    path: '*',
+    element: <Login />
   }
 ];

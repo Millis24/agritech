@@ -21,12 +21,6 @@ export default function Imballaggi() {
   const [editing, setEditing] = useState<Imballaggio | null>(null);
   const [query, setQuery] = useState('');
 
-  const imballaggiFiltrati = imballaggi.filter(i =>
-    i.tipo.toLowerCase().includes(query.toLowerCase()) ||
-    i.dimensioni.toLowerCase().includes(query.toLowerCase()) ||
-    String(i.capacitaKg).includes(query)
-  );
-
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
@@ -59,37 +53,37 @@ export default function Imballaggi() {
   const handleDelete = async (id: number) => {
     try {
       const response = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
-        method: 'DELETE',
+        method: 'DELETE'
       });
       if (response.ok) {
         await deleteLocalImballaggio(id);
         await ricaricaDati();
       } else {
-        console.error('Errore nella cancellazione dell\'imballaggio');
+        alert('❌ Errore nella cancellazione');
       }
     } catch (error) {
-      console.error('Errore:', error);
+      alert('❌ Errore di rete');
     }
   };
 
-  const handleSave = async (nuovo: Imballaggio) => {
-    const { id, createdAt, synced, ...dataToSend } = nuovo;
-    dataToSend.capacitaKg = Number(dataToSend.capacitaKg);
+  const handleSave = async (imballaggio: Partial<Imballaggio>) => {
+    const isModifica = !!editing;
+    const { id, createdAt, synced, ...dataToSend } = imballaggio;
 
-    if (editing) {
+    if (isModifica && id !== undefined) {
       try {
         const res = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataToSend),
+          body: JSON.stringify(dataToSend)
         });
         if (res.ok) {
           await ricaricaDati();
         } else {
-          alert('❌ Errore nell\'aggiornamento');
+          alert('❌ Errore aggiornamento');
         }
       } catch (e) {
-        alert('❌ Errore di rete');
+        alert('❌ Errore rete');
       }
     } else {
       if (navigator.onLine) {
@@ -102,14 +96,18 @@ export default function Imballaggi() {
           if (res.ok) {
             await ricaricaDati();
           } else {
-            alert('❌ Errore nel salvataggio online');
+            alert('❌ Errore salvataggio online');
           }
         } catch (e) {
-          alert('❌ Errore di rete');
+          alert('❌ Errore rete');
         }
       } else {
-        const offlineImb = { ...nuovo, id: Date.now(), synced: false };
-        await saveImballaggio(offlineImb);
+        const offline = {
+          ...dataToSend,
+          id: Date.now(),
+          synced: false
+        } as Imballaggio;
+        await saveImballaggio(offline);
         alert('⚠️ Salvato offline');
         await ricaricaDati();
       }
@@ -119,8 +117,13 @@ export default function Imballaggi() {
     setOpen(false);
   };
 
+  const imballaggiFiltrati = imballaggi.filter(i =>
+    i.tipo.toLowerCase().includes(query.toLowerCase()) ||
+    i.dimensioni.toLowerCase().includes(query.toLowerCase()) ||
+    String(i.capacitaKg).includes(query)
+  );
+
   const columns: GridColDef[] = [
-    //{ field: 'id', headerName: 'ID', width: 90 },
     { field: 'tipo', headerName: 'Tipo', width: 150 },
     { field: 'dimensioni', headerName: 'Dimensioni', width: 150 },
     { field: 'capacitaKg', headerName: 'Capacità (Kg)', width: 130 },

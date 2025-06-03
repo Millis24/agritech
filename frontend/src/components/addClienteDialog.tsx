@@ -16,52 +16,50 @@ export type Cliente = {
   partitaIva: string;
   telefono: string;
   email: string;
-  synced?: boolean; // per sapere se il dato viene sincronizzato
+  synced?: boolean;
   createdAt?: string;
 };
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSave: (cliente: Cliente) => void;
+  onSave: (cliente: Partial<Cliente>) => void;
   cliente?: Cliente | null;
 };
 
 export default function AddClienteDialog({ open, onClose, onSave, cliente }: Props) {
-  const [clienteData, setClienteData] = useState<Omit<Cliente, 'id'>>({
+  const clienteVuoto = {
     nomeCliente: '',
     ragioneSociale: '',
     partitaIva: '',
     telefono: '',
     email: ''
-  });
+  };
+
+  const [clienteData, setClienteData] = useState(clienteVuoto);
 
   useEffect(() => {
     if (cliente) {
-      const { id, ...rest } = cliente;
+      // Solo i campi che devono essere modificati
+      const { id, createdAt, synced, ...rest } = cliente;
       setClienteData(rest);
     } else {
-      setClienteData({
-        nomeCliente: '',
-        ragioneSociale: '',
-        partitaIva: '',
-        telefono: '',
-        email: ''
-      });
+      setClienteData(clienteVuoto);
     }
-  }, [cliente]);
+  }, [cliente, open]);
 
   const handleChange = (field: keyof typeof clienteData, value: string) => {
-    setClienteData({ ...clienteData, [field]: value });
+    setClienteData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    const clienteFinale: Cliente = {
-      ...clienteData,
-      id: cliente?.id ?? Date.now()
-    };
-
-    onSave(clienteFinale);
+    if (cliente) {
+      // MODIFICA
+      onSave({ ...cliente, ...clienteData });
+    } else {
+      // CREAZIONE
+      onSave(clienteData);
+    }
     onClose();
   };
 

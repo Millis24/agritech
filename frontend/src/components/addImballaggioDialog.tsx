@@ -14,7 +14,7 @@ export interface Imballaggio {
   tipo: string;
   dimensioni: string;
   capacitaKg: number;
-  note?: string;
+  note: string;
   synced?: boolean;
   createdAt?: string;
 }
@@ -22,33 +22,41 @@ export interface Imballaggio {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSave: (imballaggio: Imballaggio) => void;
+  onSave: (imballaggio: Partial<Imballaggio>) => void;
   imballaggio?: Imballaggio | null;
 };
 
 export default function AddImballaggioDialog({ open, onClose, onSave, imballaggio }: Props) {
-  const [data, setData] = useState<Omit<Imballaggio, 'id'>>({
+  const imballaggioVuoto = {
     tipo: '',
     dimensioni: '',
     capacitaKg: 0,
     note: ''
-  });
+  };
+
+  const [data, setData] = useState(imballaggioVuoto);
 
   useEffect(() => {
     if (imballaggio) {
-      const { id, ...rest } = imballaggio;
+      const { id, createdAt, synced, ...rest } = imballaggio;
       setData(rest);
     } else {
-      setData({ tipo: '', dimensioni: '', capacitaKg: 0, note: '' });
+      setData(imballaggioVuoto);
     }
-  }, [imballaggio]);
+  }, [imballaggio, open]);
 
   const handleChange = (field: keyof typeof data, value: string | number) => {
-    setData({ ...data, [field]: value });
+    setData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    onSave({ ...data, id: imballaggio?.id ?? Date.now() });
+    if (imballaggio) {
+      // MODIFICA
+      onSave({ ...imballaggio, ...data });
+    } else {
+      // CREAZIONE
+      onSave(data);
+    }
     onClose();
   };
 

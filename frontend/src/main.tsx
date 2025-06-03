@@ -3,9 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { registerSW } from 'virtual:pwa-register';
-<meta name="theme-color" content="#048091" />
 
-registerSW(); // questa riga attiva l'autoregistrazione
+registerSW();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

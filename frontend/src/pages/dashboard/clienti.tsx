@@ -66,43 +66,43 @@ export default function Clienti() {
     }
   };
 
-  const handleSave = async (cliente: Cliente) => {
+  const handleSave = async (cliente: Partial<Cliente>) => {
+    const isEdit = !!editing;
+
     const { id, createdAt, synced, ...dataToSend } = cliente;
 
-    if (editing) {
+    if (isEdit && id) {
       try {
         const res = await fetch(`http://localhost:4000/api/clienti/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dataToSend)
         });
-        if (res.ok) {
-          await ricaricaDati();
-        } else {
-          alert('❌ Errore aggiornamento');
-        }
-      } catch (e) {
-        alert('❌ Errore rete');
+        if (!res.ok) throw new Error();
+        await ricaricaDati();
+      } catch {
+        alert('❌ Errore aggiornamento');
       }
     } else {
       if (navigator.onLine) {
         try {
-          const res = await fetch(`http://localhost:4000/api/clienti`, {
+          const res = await fetch('http://localhost:4000/api/clienti', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
           });
-          if (res.ok) {
-            await ricaricaDati();
-          } else {
-            alert('❌ Errore salvataggio online');
-          }
-        } catch (e) {
-          alert('❌ Errore rete');
+          if (!res.ok) throw new Error();
+          await ricaricaDati();
+        } catch {
+          alert('❌ Errore salvataggio online');
         }
       } else {
-        const offline = { ...cliente, id: Date.now(), synced: false };
-        await saveCliente(offline);
+        const offlineCliente: Cliente = {
+          ...(dataToSend as Cliente),
+          id: Date.now(),
+          synced: false
+        };
+        await saveCliente(offlineCliente);
         alert('⚠️ Salvato offline');
         await ricaricaDati();
       }
@@ -145,10 +145,13 @@ export default function Clienti() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Gestione Clienti</Typography>
-        <Button variant="contained" onClick={() => {
-          setEditing(null);
-          setOpen(true);
-        }}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+        >
           Aggiungi Cliente
         </Button>
       </Box>
@@ -166,9 +169,7 @@ export default function Clienti() {
         <DataGrid
           rows={clientiFiltrati}
           columns={columns}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5, page: 0 } }
-          }}
+          initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
           pageSizeOptions={[5, 10]}
         />
       </div>
