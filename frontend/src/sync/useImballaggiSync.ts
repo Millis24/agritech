@@ -13,9 +13,9 @@ export default function useImballaggiSync() {
       const locali = await getAllImballaggi();
       const daSincronizzare = locali.filter(i => !i.synced);
 
-      for (const imballaggio of daSincronizzare) {
+      for (const i of daSincronizzare) {
         try {
-          const { id, synced, ...data } = imballaggio;
+          const { id, synced, ...data } = i;
           const res = await fetch('http://localhost:4000/api/imballaggi', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -24,7 +24,7 @@ export default function useImballaggiSync() {
 
           if (res.ok) {
             await deleteImballaggio(id);
-            console.log(`✅ Imballaggio ${imballaggio.tipo} sincronizzato`);
+            console.log(`✅ Imballaggio ${i.tipo} sincronizzato`);
           }
         } catch (err) {
           console.error('❌ Sync fallita', err);
@@ -32,16 +32,14 @@ export default function useImballaggiSync() {
       }
     };
 
-    const fetchBackendImballaggi = async () => {
+    const fetchFromBackend = async () => {
       try {
         const res = await fetch('http://localhost:4000/api/imballaggi');
         if (!res.ok) return;
-        const backendImballaggi = await res.json();
-
-        for (const i of backendImballaggi) {
+        const backendData = await res.json();
+        for (const i of backendData) {
           await saveImballaggio({ ...i, synced: true });
         }
-
         console.log('✅ Imballaggi recuperati dal backend');
       } catch (err) {
         console.error('❌ Errore nel recupero imballaggi dal backend', err);
@@ -49,8 +47,8 @@ export default function useImballaggiSync() {
     };
 
     window.addEventListener('online', sync);
-    fetchBackendImballaggi();
     sync();
+    fetchFromBackend();
 
     return () => window.removeEventListener('online', sync);
   }, []);

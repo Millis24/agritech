@@ -9,14 +9,15 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-export type Imballaggio = {
+export interface Imballaggio {
   id: number;
   tipo: string;
   dimensioni: string;
-  capacitàKg: number;
+  capacitaKg: number;
   note?: string;
   synced?: boolean;
-};
+  createdAt?: string;
+}
 
 type Props = {
   open: boolean;
@@ -29,7 +30,7 @@ export default function AddImballaggioDialog({ open, onClose, onSave, imballaggi
   const [data, setData] = useState<Omit<Imballaggio, 'id'>>({
     tipo: '',
     dimensioni: '',
-    capacitàKg: 0,
+    capacitaKg: 0,
     note: ''
   });
 
@@ -38,7 +39,7 @@ export default function AddImballaggioDialog({ open, onClose, onSave, imballaggi
       const { id, ...rest } = imballaggio;
       setData(rest);
     } else {
-      setData({ tipo: '', dimensioni: '', capacitàKg: 0, note: '' });
+      setData({ tipo: '', dimensioni: '', capacitaKg: 0, note: '' });
     }
   }, [imballaggio]);
 
@@ -71,8 +72,8 @@ export default function AddImballaggioDialog({ open, onClose, onSave, imballaggi
           <TextField
             label="Capacità (Kg)"
             type="number"
-            value={data.capacitàKg}
-            onChange={(e) => handleChange('capacitàKg', parseFloat(e.target.value))}
+            value={data.capacitaKg}
+            onChange={(e) => handleChange('capacitaKg', parseFloat(e.target.value))}
             fullWidth
           />
           <TextField

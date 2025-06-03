@@ -17,6 +17,7 @@ export type Cliente = {
   telefono: string;
   email: string;
   synced?: boolean; // per sapere se il dato viene sincronizzato
+  createdAt?: string;
 };
 
 type Props = {
