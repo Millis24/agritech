@@ -4,6 +4,7 @@ import DashboardLayout from '../layouts/dashboardLayout.tsx';
 import Home from '../pages/dashboard/home.tsx';
 import Clienti from '../pages/dashboard/clienti.tsx';
 import Imballaggi from '../pages/dashboard/imballaggi.tsx';
+import Prodotti from '../pages/dashboard/prodotti.tsx';
 
 export const routes: RouteObject[] = [
   {
@@ -15,11 +16,13 @@ export const routes: RouteObject[] = [
     element: <DashboardLayout />,
     children: [
       { path: '', element: <Home /> },
+      { path: 'clienti', element: <Clienti /> },
+      { path: 'prodotti', element: <Prodotti /> },
       { path: 'imballaggi', element: <Imballaggi /> },
       { path: 'bolle', element: <div>Bolle</div> },
       { path: 'report', element: <div>Report</div> },
       { path: 'impostazioni', element: <div>Impostazioni</div> },
-      { path: 'clienti', element: <Clienti /> },
+
     ]
   },
   {

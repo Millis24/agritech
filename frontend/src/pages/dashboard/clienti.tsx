@@ -9,11 +9,7 @@ import AddClienteDialog from '../../components/addClienteDialog';
 import type { Cliente } from '../../components/addClienteDialog';
 
 import useClientiSync from '../../sync/useClientiSync';
-import {
-  saveCliente,
-  deleteCliente as deleteLocalCliente,
-  getAllClienti
-} from '../../storage/clientiDB';
+import { saveCliente, deleteCliente as deleteLocalCliente, getAllClienti, markClienteAsDeleted } from '../../storage/clientiDB';
 
 export default function Clienti() {
   const [query, setQuery] = useState('');
@@ -25,11 +21,11 @@ export default function Clienti() {
     if (navigator.onLine) {
       try {
         const res = await fetch('http://localhost:4000/api/clienti');
-        if (!res.ok) throw new Error('Errore fetch clienti online');
-        const data = await res.json();
-        setClienti(data);
+        if (!res.ok) throw new Error('❌  Errore fetch clienti online');
+        const datiOnline = await res.json();
+        setClienti(datiOnline);
       } catch (e) {
-        console.error('Errore nel caricamento online. Uso cache locale.');
+        console.error('❌ Errore nel caricamento online, provo offline');
         const locali = await getAllClienti();
         setClienti(locali);
       }
@@ -51,73 +47,88 @@ export default function Clienti() {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      const res = await fetch(`http://localhost:4000/api/clienti/${id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        await deleteLocalCliente(id);
-        await ricaricaDati();
-      } else {
-        alert('❌ Errore nella cancellazione');
+  if (navigator.onLine) {
+      try {
+        const response = await fetch(`http://localhost:4000/api/clienti/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          await deleteLocalCliente(id);
+          alert('✅ Cliente eliminato online');
+        } else {
+          alert('❌ Errore nella cancellazione online');
+        }
+      } catch (error) {
+        alert('❌ Errore di rete');
       }
-    } catch (e) {
-      alert('❌ Errore di rete');
+    } else {
+      await markClienteAsDeleted(id);
+      alert('⚠️ Eliminato offline, sarà sincronizzato');
     }
+    
+    const locali = await getAllClienti();
+    setClienti(locali);
   };
 
   const handleSave = async (cliente: Partial<Cliente>) => {
-    const isEdit = !!editing;
-
+    const isModifica = !!editing;
     const { id, createdAt, synced, ...dataToSend } = cliente;
 
-    if (isEdit && id) {
+    if (navigator.onLine) {
       try {
-        const res = await fetch(`http://localhost:4000/api/clienti/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataToSend)
-        });
-        if (!res.ok) throw new Error();
-        await ricaricaDati();
-      } catch {
-        alert('❌ Errore aggiornamento');
-      }
-    } else {
-      if (navigator.onLine) {
-        try {
-          const res = await fetch('http://localhost:4000/api/clienti', {
+        if (isModifica && id !== undefined) {
+          const res = await fetch(`http://localhost:4000/api/clienti/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataToSend)
+          });
+          if (res.ok) {
+            const aggiornato = await res.json();
+            await saveCliente({ ...aggiornato, synced: true });
+          } else {
+            alert('❌ Errore aggiornamento');
+          }
+        } else {
+          const res = await fetch(`http://localhost:4000/api/clienti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
           });
-          if (!res.ok) throw new Error();
-          await ricaricaDati();
-        } catch {
-          alert('❌ Errore salvataggio online');
+          if (res.ok) {
+            const nuovo = await res.json();
+            await saveCliente({ ...nuovo, synced: true });
+          } else {
+            alert('❌ Errore salvataggio online');
+          }
         }
-      } else {
-        const offlineCliente: Cliente = {
-          ...(dataToSend as Cliente),
-          id: Date.now(),
-          synced: false
-        };
-        await saveCliente(offlineCliente);
-        alert('⚠️ Salvato offline');
-        await ricaricaDati();
+      } catch {
+        alert('❌ Errore rete');
       }
+    } else {
+      const offline = {
+        ...dataToSend,
+        id: isModifica && id !== undefined ? id : Date.now(),
+        synced: false
+      } as Cliente;
+
+      await saveCliente(offline);
+      alert(isModifica ? '⚠️ Modifica salvata offline' : '⚠️ Salvato offline');
     }
 
+    const locali = await getAllClienti();
+    setClienti(locali);
     setEditing(null);
     setOpen(false);
   };
 
+  // filtri
   const clientiFiltrati = clienti.filter(c =>
     c.nomeCliente.toLowerCase().includes(query.toLowerCase()) ||
     c.ragioneSociale.toLowerCase().includes(query.toLowerCase()) ||
     c.partitaIva.includes(query)
   );
 
+  // colonne tabella
   const columns: GridColDef[] = [
     { field: 'nomeCliente', headerName: 'Nome', width: 150 },
     { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
@@ -145,13 +156,10 @@ export default function Clienti() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Gestione Clienti</Typography>
-        <Button
-          variant="contained"
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-        >
+        <Button variant="contained" onClick={() => {
+          setEditing(null);
+          setOpen(true);
+        }}>
           Aggiungi Cliente
         </Button>
       </Box>
@@ -169,7 +177,9 @@ export default function Clienti() {
         <DataGrid
           rows={clientiFiltrati}
           columns={columns}
-          initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+          }}
           pageSizeOptions={[5, 10]}
         />
       </div>

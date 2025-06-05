@@ -29,6 +29,7 @@ export default function DashboardLayout() {
           </Typography>
           <Stack direction="row" spacing={2}>
             <Button color="inherit" component={Link} to={`/dashboard/clienti`}>Clienti</Button>
+            <Button color="inherit" component={Link} to={`/dashboard/prodotti`}>Prodotti</Button>
             <Button color="inherit" component={Link} to={`/dashboard/imballaggi`}>Imballaggi</Button>
             <Button color="inherit" component={Link} to={`/dashboard/bolle`}>Bolle</Button>
             <Button color="inherit" component={Link} to={`/dashboard/report`}>Report</Button>

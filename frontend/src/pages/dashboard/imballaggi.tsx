@@ -9,33 +9,29 @@ import AddImballaggioDialog from '../../components/addImballaggioDialog';
 import type { Imballaggio } from '../../components/addImballaggioDialog';
 
 import useImballaggiSync from '../../sync/useImballaggiSync';
-import {
-  saveImballaggio,
-  deleteImballaggio as deleteLocalImballaggio,
-  getAllImballaggi
-} from '../../storage/imballaggiDB';
+import { saveImballaggio, deleteImballaggio as deleteLocalImballaggio, getAllImballaggi, markImballaggiAsDeleted } from '../../storage/imballaggiDB';
 
 export default function Imballaggi() {
+  const [query, setQuery] = useState('');
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Imballaggio | null>(null);
-  const [query, setQuery] = useState('');
 
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
         const res = await fetch('http://localhost:4000/api/imballaggi');
-        if (!res.ok) throw new Error('Fetch fallita');
+        if (!res.ok) throw new Error('❌ Errore fetch imballaggi online');
         const datiOnline = await res.json();
         setImballaggi(datiOnline);
       } catch (e) {
         console.error('❌ Errore nel caricamento online, provo offline');
-        const offline = await getAllImballaggi();
-        setImballaggi(offline);
+        const locali = await getAllImballaggi();
+        setImballaggi(locali);
       }
     } else {
-      const offline = await getAllImballaggi();
-      setImballaggi(offline);
+      const locali = await getAllImballaggi();
+      setImballaggi(locali);
     }
   };
 
@@ -51,78 +47,88 @@ export default function Imballaggi() {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        await deleteLocalImballaggio(id);
-        await ricaricaDati();
-      } else {
-        alert('❌ Errore nella cancellazione');
+    if (navigator.onLine) {
+      try {
+        const response = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          await deleteLocalImballaggio(id);
+          alert('✅ Prodotto eliminato online');
+        } else {
+          alert('❌ Errore nella cancellazione');
+        }
+      } catch (error) {
+        alert('❌ Errore di rete');
       }
-    } catch (error) {
-      alert('❌ Errore di rete');
+    } else {
+        await markImballaggiAsDeleted(id);
+        alert('⚠️ Eliminato offline, sarà sincronizzato');
     }
+
+    const locali = await getAllImballaggi();
+    setImballaggi(locali);
   };
 
   const handleSave = async (imballaggio: Partial<Imballaggio>) => {
     const isModifica = !!editing;
     const { id, createdAt, synced, ...dataToSend } = imballaggio;
 
-    if (isModifica && id !== undefined) {
+    if (navigator.onLine) {
       try {
-        const res = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataToSend)
-        });
-        if (res.ok) {
-          await ricaricaDati();
+        if (isModifica && id !== undefined) {
+          const res = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataToSend)
+          });
+          if (res.ok) {
+            const aggiornato = await res.json();
+            await saveImballaggio({ ...aggiornato, synced: true });
+          } else {
+            alert('❌ Errore aggiornamento');
+          }
         } else {
-          alert('❌ Errore aggiornamento');
-        }
-      } catch (e) {
-        alert('❌ Errore rete');
-      }
-    } else {
-      if (navigator.onLine) {
-        try {
           const res = await fetch(`http://localhost:4000/api/imballaggi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
           });
           if (res.ok) {
-            await ricaricaDati();
+            const nuovo = await res.json();
+            await saveImballaggio({ ...nuovo, synced: true });
           } else {
             alert('❌ Errore salvataggio online');
           }
-        } catch (e) {
-          alert('❌ Errore rete');
         }
-      } else {
-        const offline = {
-          ...dataToSend,
-          id: Date.now(),
-          synced: false
-        } as Imballaggio;
-        await saveImballaggio(offline);
-        alert('⚠️ Salvato offline');
-        await ricaricaDati();
+      } catch {
+        alert('❌ Errore rete');
       }
+    } else {
+      const offline = {
+        ...dataToSend,
+        id: isModifica && id !== undefined ? id : Date.now(),
+        synced: false
+      } as Imballaggio;
+
+      await saveImballaggio(offline);
+      alert(isModifica ? '⚠️ Modifica salvata offline' : '⚠️ Salvato offline');
     }
 
+    const locali = await getAllImballaggi();
+    setImballaggi(locali);
     setEditing(null);
     setOpen(false);
   };
 
+  // filtri
   const imballaggiFiltrati = imballaggi.filter(i =>
     i.tipo.toLowerCase().includes(query.toLowerCase()) ||
     i.dimensioni.toLowerCase().includes(query.toLowerCase()) ||
     String(i.capacitaKg).includes(query)
   );
 
+  // colonne tabella
   const columns: GridColDef[] = [
     { field: 'tipo', headerName: 'Tipo', width: 150 },
     { field: 'dimensioni', headerName: 'Dimensioni', width: 150 },
