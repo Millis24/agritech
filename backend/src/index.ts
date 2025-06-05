@@ -241,26 +241,59 @@ app.delete('/api/prodotti/:id', async (req, res) => {
 });
 
 // -------------------- BOLLE --------------------
+app.get('/api/bolle', async (req, res) => {
+  try {
+    const bolle = await prisma.bolla.findMany();
+    res.json(bolle);
+  } catch (error) {
+    res.status(500).json({ error: 'Errore nel recupero bolle' });
+  }
+});
 
 app.post('/api/bolle', async (req, res) => {
+  console.log('📦 POST /bolle body:', req.body);
+  const { id, synced, ...data } = req.body;
   try {
-    const { numero, data, causale, clienteId, articoli, imballaggiResi } = req.body;
+    // verifica duplicati
+    const esiste = await prisma.bolla.findUnique({
+      where: {
+        ...data,
+        numeroBolla: data.numeroBolla
+      }
+    }); 
+    if(esiste){
+      return res.status(409).json({ error: 'Imballaggio già esistente' });
+    }
 
-    const nuovaBolla = await prisma.bolla.create({
-      data: {
-        numero,
-        data: new Date(data),
-        causale,
-        clienteId,
-        articoli: { create: articoli },
-        imballaggiResi: { create: imballaggiResi }
-      },
-      include: { articoli: true, imballaggiResi: true }
-    });
-
-    res.status(201).json(nuovaBolla);
+    const nuova = await prisma.bolla.create({ data });
+    res.status(201).json(nuova);
   } catch (error) {
+    console.error('❌ Errore POST bolle:', error);
     res.status(500).json({ error: 'Errore nel salvataggio della bolla' });
+  }
+});
+
+app.put('/api/bolle/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const bollaAggiornata = await prisma.bolla.update({
+      where: { id },
+      data: req.body
+    });
+    res.json(bollaAggiornata);
+  } catch (error) {
+    res.status(500).json({ error: 'Errore nell\'aggiornamento della bolla' });
+  }
+});
+
+app.delete('/api/bolle/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.bolla.delete({ where: { id } });
+    res.status(204).end();
+  } catch (error) {
+    console.error('Errore eliminazione bolla:', error);
+    res.status(500).json({ error: 'Errore eliminazione bolla' });
   }
 });
 

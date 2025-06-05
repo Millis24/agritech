@@ -9,10 +9,11 @@ export type CRMDatabase = {
   prodottiEliminati: any;
   clientiEliminati: any;
   imballaggiEliminati: any;
+  bolleEliminate: any;
 
 };
 
-const VERSIONE_DB = 7;
+const VERSIONE_DB = 8;
 
 let dbPromise: Promise<IDBPDatabase<CRMDatabase>>;
 
@@ -40,6 +41,9 @@ export function getDB(): Promise<IDBPDatabase<CRMDatabase>> {
         }
         if (!db.objectStoreNames.contains('imballaggiEliminati')) {
           db.createObjectStore('imballaggiEliminati', { keyPath: 'id' });
+        }
+         if (!db.objectStoreNames.contains('bolleEliminate')) {
+          db.createObjectStore('bolleEliminate', { keyPath: 'id' });
         }
       },
     });

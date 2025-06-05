@@ -5,6 +5,7 @@ import Home from '../pages/dashboard/home.tsx';
 import Clienti from '../pages/dashboard/clienti.tsx';
 import Imballaggi from '../pages/dashboard/imballaggi.tsx';
 import Prodotti from '../pages/dashboard/prodotti.tsx';
+import Bolle from '../pages/dashboard/bolle.tsx';
 
 export const routes: RouteObject[] = [
   {
@@ -19,7 +20,7 @@ export const routes: RouteObject[] = [
       { path: 'clienti', element: <Clienti /> },
       { path: 'prodotti', element: <Prodotti /> },
       { path: 'imballaggi', element: <Imballaggi /> },
-      { path: 'bolle', element: <div>Bolle</div> },
+      { path: 'bolle', element: <Bolle /> },
       { path: 'report', element: <div>Report</div> },
       { path: 'impostazioni', element: <div>Impostazioni</div> },
 
