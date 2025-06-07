@@ -30,8 +30,8 @@ export async function deleteBolla(id: number) {
 // Eliminazioni offline
 export async function markClienteAsDeleted(id: number) {
   const db = await getDB();
-  await db.put(DELETED_STORE_NAME, { id });
-  await db.delete(STORE_NAME, id);
+  await db.put('bolleEliminate', { id });
+  await db.delete('bolle', id)
 }
 
 export async function getBolleEliminate(): Promise<{ id: number }[]> {

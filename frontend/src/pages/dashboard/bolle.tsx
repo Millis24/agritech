@@ -180,28 +180,51 @@ export default function Bolle() {
         onSave={async (bolla) => {
           if (navigator.onLine) {
             try {
-              const res = await fetch('http://localhost:4000/api/bolle', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bolla),
-              });
+              let res;
+
+              if (bolla.id) {
+                // 🔁 MODIFICA (PUT)
+                res = await fetch(`http://localhost:4000/api/bolle/${bolla.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(bolla),
+                });
+              } else {
+                // 🆕 NUOVA (POST)
+                res = await fetch('http://localhost:4000/api/bolle', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(bolla),
+                });
+              }
 
               if (res.ok) {
                 const nuovaBolla = await res.json();
-                await saveBolla({ ...nuovaBolla, synced: true });
-                console.log('✅ Bolla salvata online e localmente');
+                await saveBolla({ ...nuovaBolla, synced: true, modifiedOffline: false });
+                console.log(bolla.id ? '✏️ Bolla aggiornata online' : '✅ Bolla salvata online');
               } else {
                 console.error('❌ Errore salvataggio online:', await res.text());
-                // fallback: salva offline
-                await saveBolla({ ...bolla, synced: false });
+                await saveBolla({
+                  ...bolla,
+                  synced: false,
+                  modifiedOffline: Boolean(bolla.id),
+                });
               }
             } catch (err) {
-              console.error('❌ Errore rete durante POST:', err);
-              await saveBolla({ ...bolla, synced: false });
+              console.error('❌ Errore rete:', err);
+              await saveBolla({
+                ...bolla,
+                synced: false,
+                modifiedOffline: Boolean(bolla.id),
+              });
             }
           } else {
-            // Offline: salva in IndexedDB
-            await saveBolla({ ...bolla, synced: false });
+            // 📴 OFFLINE
+            await saveBolla({
+              ...bolla,
+              synced: false,
+              modifiedOffline: Boolean(bolla.id),
+            });
             console.log('📴 Bolla salvata offline');
           }
 
