@@ -178,15 +178,33 @@ export default function Bolle() {
         }}
         bolla={editing || null}
         onSave={async (bolla) => {
-          console.log('🔥 Salvataggio bolla ricevuta:', bolla);
-          // Se la bolla esiste già (modifica), sostituisci quella esistente
-          const index = bolle.findIndex(b => b.id === bolla.id);
-          if (index !== -1) {
-            await saveBolla({ ...bolla, synced: navigator.onLine, modifiedOffline: !navigator.onLine });
-            console.log('📦 Salvata bolla nel DB:', bolla);
+          if (navigator.onLine) {
+            try {
+              const res = await fetch('http://localhost:4000/api/bolle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bolla),
+              });
+
+              if (res.ok) {
+                const nuovaBolla = await res.json();
+                await saveBolla({ ...nuovaBolla, synced: true });
+                console.log('✅ Bolla salvata online e localmente');
+              } else {
+                console.error('❌ Errore salvataggio online:', await res.text());
+                // fallback: salva offline
+                await saveBolla({ ...bolla, synced: false });
+              }
+            } catch (err) {
+              console.error('❌ Errore rete durante POST:', err);
+              await saveBolla({ ...bolla, synced: false });
+            }
           } else {
-            await saveBolla({ ...bolla, synced: navigator.onLine });
+            // Offline: salva in IndexedDB
+            await saveBolla({ ...bolla, synced: false });
+            console.log('📴 Bolla salvata offline');
           }
+
           await ricaricaDati();
           setOpen(false);
         }}
