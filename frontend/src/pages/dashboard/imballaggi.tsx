@@ -6,10 +6,20 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import AddImballaggioDialog from '../../components/addImballaggioDialog';
-import type { Imballaggio } from '../../components/addImballaggioDialog';
 
 import useImballaggiSync from '../../sync/useImballaggiSync';
 import { saveImballaggio, deleteImballaggio as deleteLocalImballaggio, getAllImballaggi, markImballaggiAsDeleted } from '../../storage/imballaggiDB';
+
+interface Imballaggio {
+  id: number;
+  tipo: string;
+  prezzo: number;
+  dimensioni: string;
+  capacitaKg: number;
+  note?: string;
+  synced?: boolean;
+  createdAt?: string;
+}
 
 export default function Imballaggi() {
   const [query, setQuery] = useState('');
@@ -80,7 +90,7 @@ export default function Imballaggi() {
           const res = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataToSend)
+            body: JSON.stringify({ ...dataToSend, prezzo: parseFloat(String(dataToSend.prezzo)) })
           });
           if (res.ok) {
             const aggiornato = await res.json();
@@ -92,7 +102,7 @@ export default function Imballaggi() {
           const res = await fetch(`http://localhost:4000/api/imballaggi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataToSend)
+            body: JSON.stringify({ ...dataToSend, prezzo: parseFloat(String(dataToSend.prezzo)) })
           });
           if (res.ok) {
             const nuovo = await res.json();
@@ -106,10 +116,15 @@ export default function Imballaggi() {
       }
     } else {
       const offline = {
-        ...dataToSend,
+        tipo: dataToSend.tipo ?? '',
+        prezzo: dataToSend.prezzo ?? 0,
+        dimensioni: dataToSend.dimensioni ?? '',
+        capacitaKg: dataToSend.capacitaKg ?? 0,
+        note: dataToSend.note ?? '',
         id: isModifica && id !== undefined ? id : Date.now(),
-        synced: false
-      } as Imballaggio;
+        synced: false,
+        createdAt: new Date().toISOString()
+      };
 
       await saveImballaggio(offline);
       alert(isModifica ? '⚠️ Modifica salvata offline' : '⚠️ Salvato offline');
@@ -131,6 +146,7 @@ export default function Imballaggi() {
   // colonne tabella
   const columns: GridColDef[] = [
     { field: 'tipo', headerName: 'Tipo', width: 150 },
+    { field: 'prezzo', headerName: 'Prezzo', width: 150 },
     { field: 'dimensioni', headerName: 'Dimensioni', width: 150 },
     { field: 'capacitaKg', headerName: 'Capacità (Kg)', width: 130 },
     { field: 'note', headerName: 'Note', flex: 1 },

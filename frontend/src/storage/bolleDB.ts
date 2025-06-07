@@ -61,5 +61,6 @@ export interface Bolla {
 
   synced?: boolean;
   createdAt?: string;
+  modifiedOffline?: boolean;
 }
 

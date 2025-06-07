@@ -25,6 +25,7 @@ model Cliente {
 
 model Imballaggio {
   id         Int      @id @default(autoincrement())
+  prezzo     Float    @default(0)
   tipo       String
   dimensioni String
   capacitaKg Int
@@ -42,23 +43,27 @@ model Prodotto {
 }
 
 model Bolla {
-  id                      Int      @id @default(autoincrement())
-  numeroBolla             Int      @unique
-  dataOra                 DateTime
-  destinatarioNome        String
-  destinatarioIndirizzo   String
-  destinatarioEmail       String
-  destinatarioTelefono    String
-  destinatarioPartitaIva  String
-  destinatarioCodiceSDI   String
-  indirizzoDestinazione   String
-  causale                 String
-  prodotti                String
-  daTrasportare           String
-  daRendere               String
-  consegnaACarico         String
-  vettore                 String
-  createdAt               DateTime @default(now())
+  id                     Int      @id @default(autoincrement())
+  numeroBolla            Int      @unique
+  dataOra                DateTime
+  destinatarioNome       String
+  destinatarioIndirizzo  String
+  destinatarioEmail      String
+  destinatarioTelefono   String
+  destinatarioPartitaIva String
+  destinatarioCodiceSDI  String
+  indirizzoDestinazione  String
+  causale                String
+  prodotti               String
+  daTrasportare          String
+  daRendere              String
+  consegnaACarico        String
+  vettore                String
+  createdAt              DateTime @default(now())
+
+  // Relazioni
+  articoli       Articolo[]
+  imballaggiResi ImballaggioReso[]
 }
 
 model Articolo {

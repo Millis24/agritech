@@ -1,8 +1,17 @@
 import { getDB } from './indexedDb';
-import type { Cliente } from '../components/addClienteDialog';
 
 const STORE_NAME = 'clienti';
 const DELETED_STORE_NAME = 'clientiEliminati';
+
+export type Cliente = {
+  id: number;
+  nomeCliente: string;
+  ragioneSociale: string;
+  partitaIva: string;
+  telefono: string;
+  email: string;
+  createdAt: string;
+};
 
 export async function getAllClienti(): Promise<Cliente[]> {
   const db = await getDB();

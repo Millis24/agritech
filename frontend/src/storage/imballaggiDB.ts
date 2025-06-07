@@ -1,5 +1,16 @@
 import { getDB } from './indexedDb';
-import type { Imballaggio } from '../components/addImballaggioDialog';
+//import type { Imballaggio } from '../types';
+
+export type Imballaggio = {
+  synced: any;
+  id: number;
+  tipo: string;
+  prezzo: number;
+  dimensioni: string;
+  capacitaKg: number;
+  note?: string;
+  createdAt: string;
+};
 
 const STORE_NAME = 'imballaggi';
 const DELETED_STORE_NAME = 'imballaggiEliminati';

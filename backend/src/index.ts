@@ -135,6 +135,7 @@ app.post('/api/imballaggi', async (req, res) => {
     // verifica duplicati
     const esiste = await prisma.imballaggio.findFirst({
       where: {
+        prezzo: parseFloat(data.prezzo),
         tipo: data.tipo,
         dimensioni: data.dimensioni,
         capacitaKg: parseFloat(data.capacitaKg)
@@ -147,6 +148,7 @@ app.post('/api/imballaggi', async (req, res) => {
     const nuovo = await prisma.imballaggio.create({
       data: {
         ...data,
+        prezzo: parseFloat(data.prezzo),
         capacitaKg: parseFloat(data.capacitaKg)
       }
     });
@@ -160,12 +162,19 @@ app.post('/api/imballaggi', async (req, res) => {
 app.put('/api/imballaggi/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    const { prezzo, ...resto } = req.body;
+
     const imballaggioAggiornato = await prisma.imballaggio.update({
       where: { id },
-      data: req.body
+      data: {
+        ...resto,
+        prezzo: parseFloat(prezzo)
+      }
     });
+
     res.json(imballaggioAggiornato);
   } catch (error) {
+    console.error('❌ Errore PUT imballaggio:', error);
     res.status(500).json({ error: 'Errore nell\'aggiornamento dell\'imballaggio' });
   }
 });
@@ -243,26 +252,45 @@ app.delete('/api/prodotti/:id', async (req, res) => {
 // -------------------- BOLLE --------------------
 app.get('/api/bolle', async (req, res) => {
   try {
-    const bolle = await prisma.bolla.findMany();
+    const bolle = await prisma.bolla.findMany({
+      include: {
+        articoli: true,
+        imballaggiResi: true
+      }
+    });
     res.json(bolle);
   } catch (error) {
+    console.error('Errore nel recupero bolle:', error);
     res.status(500).json({ error: 'Errore nel recupero bolle' });
   }
 });
 
 app.post('/api/bolle', async (req, res) => {
   console.log('📦 POST /bolle body:', req.body);
-  const { id, synced, ...data } = req.body;
+
   try {
-    // verifica duplicati
+    const {
+      id,
+      synced,
+      modifiedOffline,
+      dataOra,
+      createdAt,
+      ...rest
+    } = req.body;
+
+    // converte i campi Date
+    const data = {
+      ...rest,
+      dataOra: new Date(dataOra),
+      createdAt: new Date(createdAt)
+    };
+
+    // verifica duplicati usando solo numeroBolla (che è unique)
     const esiste = await prisma.bolla.findUnique({
-      where: {
-        ...data,
-        numeroBolla: data.numeroBolla
-      }
-    }); 
-    if(esiste){
-      return res.status(409).json({ error: 'Imballaggio già esistente' });
+      where: { numeroBolla: data.numeroBolla }
+    });
+    if (esiste) {
+      return res.status(409).json({ error: 'Bolla già esistente' });
     }
 
     const nuova = await prisma.bolla.create({ data });
@@ -276,24 +304,73 @@ app.post('/api/bolle', async (req, res) => {
 app.put('/api/bolle/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const bollaAggiornata = await prisma.bolla.update({
+    // Logging per debug
+    console.log('➡️ Update richiesta per ID:', id, '\nBody:', req.body);
+    const {
+      dataOra,
+      destinatarioNome,
+      destinatarioIndirizzo,
+      destinatarioEmail,
+      destinatarioTelefono,
+      destinatarioPartitaIva,
+      destinatarioCodiceSDI,
+      indirizzoDestinazione,
+      causale,
+      prodotti,
+      daTrasportare,
+      daRendere,
+      consegnaACarico,
+      vettore
+    } = req.body;
+
+    const updated = await prisma.bolla.update({
       where: { id },
-      data: req.body
+      data: {
+        dataOra: new Date(dataOra),
+        destinatarioNome,
+        destinatarioIndirizzo,
+        destinatarioEmail,
+        destinatarioTelefono,
+        destinatarioPartitaIva,
+        destinatarioCodiceSDI,
+        indirizzoDestinazione,
+        causale,
+        prodotti,
+        daTrasportare,
+        daRendere,
+        consegnaACarico,
+        vettore
+      }
     });
-    res.json(bollaAggiornata);
+
+    res.json(updated);
   } catch (error) {
-    res.status(500).json({ error: 'Errore nell\'aggiornamento della bolla' });
+    console.error('Errore aggiornamento bolla:', error);
+    res.status(500).json({ error: 'Errore aggiornamento bolla' });
   }
 });
 
 app.delete('/api/bolle/:id', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'ID non valido' });
+
   try {
-    const id = parseInt(req.params.id);
+    // Elimina entità collegate
+    await prisma.articolo.deleteMany({ where: { bollaId: id } });
+    await prisma.imballaggioReso.deleteMany({ where: { bollaId: id } });
+
+    // Poi elimina la bolla
     await prisma.bolla.delete({ where: { id } });
-    res.status(204).end();
-  } catch (error) {
-    console.error('Errore eliminazione bolla:', error);
-    res.status(500).json({ error: 'Errore eliminazione bolla' });
+
+    res.status(200).json({ message: 'Bolla eliminata con successo' });
+  } catch (err: any) {
+    if (err.code === 'P2025') {
+      console.warn(`⚠️ Tentata eliminazione bolla ID ${id}, ma non esiste più`);
+      return res.status(404).json({ error: 'La bolla non esiste già più' });
+    }
+
+    console.error('❌ Errore DELETE bolla:', err);
+    res.status(500).json({ error: 'Errore durante l\'eliminazione' });
   }
 });
 

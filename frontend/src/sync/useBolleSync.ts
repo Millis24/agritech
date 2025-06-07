@@ -1,35 +1,57 @@
 import { useEffect } from 'react';
-import { getAllBolle, deleteBolla, saveBolla, getBolleEliminate, clearBolleEliminate } from '../storage/bolleDB';
+import {
+  getAllBolle,
+  saveBolla,
+  getBolleEliminate,
+  clearBolleEliminate
+} from '../storage/bolleDB';
 
 export default function useBolleSync() {
   useEffect(() => {
     const sync = async () => {
       if (!navigator.onLine) return;
 
-      // sincronizza bolle non ancora sincronizzate
       const locali = await getAllBolle();
-      const daSincronizzare = locali.filter(b => !b.synced);
+      const daSincronizzare = locali.filter(b => !b.synced || b.modifiedOffline);
 
       for (const bolla of daSincronizzare) {
         try {
-          const { id, synced, ...data } = bolla;
+          const { id, synced, modifiedOffline, ...data } = bolla;
 
-          const res = await fetch('http://localhost:4000/api/bolle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
+          const res = await fetch(
+            modifiedOffline
+              ? `http://localhost:4000/api/bolle/${id}`
+              : 'http://localhost:4000/api/bolle',
+            {
+              method: modifiedOffline ? 'PUT' : 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            }
+          );
 
           if (res.ok) {
-            await deleteBolla(id);
-            console.log(`✅ Bolla ${bolla.numeroBolla} sincronizzata`);
+            const nuovaBolla = await res.json();
+
+            await saveBolla({
+              ...nuovaBolla,
+              synced: true,
+              modifiedOffline: false
+            });
+
+            console.log(
+              modifiedOffline
+                ? `✏️ Bolla ${bolla.numeroBolla} modificata`
+                : `✅ Bolla ${bolla.numeroBolla} sincronizzata`
+            );
+          } else {
+            console.error(`❌ Errore sync bolla ${bolla.numeroBolla}:`, await res.text());
           }
         } catch (err) {
-          console.error('❌ Sync bolla fallita:', err);
+          console.error('❌ Sync fallita:', err);
         }
       }
 
-      // sincronizza eliminazioni offline
+      // Eliminazioni offline
       const eliminati = await getBolleEliminate();
       for (const { id } of eliminati) {
         try {
@@ -38,14 +60,15 @@ export default function useBolleSync() {
           });
           if (res.ok) {
             console.log(`🗑️ Bolla ID ${id} eliminata dal backend`);
+          } else {
+            console.error(`❌ Errore DELETE bolla ID ${id}:`, await res.text());
           }
         } catch (err) {
           console.error('❌ Errore eliminazione remota bolla:', err);
         }
       }
-      await clearBolleEliminate();
 
-      // recupera dal backend le bolle aggiornate
+      await clearBolleEliminate();
       await fetchBackendBolle();
     };
 

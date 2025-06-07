@@ -1,33 +1,57 @@
-// FILE: bolla.tsx (corretto e funzionante al 100%)
-
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography, IconButton } from '@mui/material';
-import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
+import { Box, Button, Typography, IconButton, CircularProgress } from '@mui/material';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import PrintIcon from '@mui/icons-material/Print';
 
 import AddBollaDialog from '../../components/addBollaDialog';
-import type { Bolla } from '../../storage/bolleDB';
-
 import useBolleSync from '../../sync/useBolleSync';
+
+import jsPDF from 'jspdf';
+
 import {
   getAllBolle,
-  deleteBolla as deleteLocalBolla
+  saveBolla,
+  deleteBolla as deleteLocalBolla,
+  type Bolla
 } from '../../storage/bolleDB';
 import { markBollaAsDeleted } from '../../storage/bolleEliminateDB';
+
+import { getAllClienti, type Cliente } from '../../storage/clientiDB';
+import { getAllProdotti, type Prodotto } from '../../storage/prodottiDB';
+import { getAllImballaggi, type Imballaggio } from '../../storage/imballaggiDB';
 
 export default function Bolle() {
   const [bolle, setBolle] = useState<Bolla[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Bolla | null>(null);
+  const [clienti, setClienti] = useState<Cliente[]>([]);
+  const [prodotti, setProdotti] = useState<Prodotto[]>([]);
+  const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const ricaricaDati = async () => {
-    const dati = await getAllBolle();
-    setBolle(dati);
+    const [bolleData, clientiData, prodottiData, imballaggiData] = await Promise.all([
+      getAllBolle(),
+      getAllClienti(),
+      getAllProdotti(),
+      getAllImballaggi()
+    ]);
+
+    setBolle(bolleData);
+    setClienti(clientiData);
+    setProdotti(prodottiData);
+    setImballaggi(imballaggiData);
   };
 
   useEffect(() => {
-    ricaricaDati();
+    const fetchData = async () => {
+      await ricaricaDati();
+      setLoading(false);
+    };
+
+    fetchData();
   }, []);
 
   useBolleSync();
@@ -51,48 +75,86 @@ export default function Bolle() {
       await markBollaAsDeleted(id);
       alert('⚠️ Eliminato offline, sarà sincronizzato');
     }
-
-    await ricaricaDati();
+    await ricaricaDati(); // aggiorna la tabella
   };
 
-  const columns: GridColDef<Bolla>[] = [
+  const handlePrint = (bolla: Bolla) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Bolla n. ${bolla.numeroBolla}`, 10, 20);
+    doc.setFontSize(12);
+    doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, 10, 30);
+    doc.text(`Destinatario: ${bolla.destinatarioNome}`, 10, 40);
+    doc.text(`Indirizzo: ${bolla.destinatarioIndirizzo}`, 10, 50);
+    doc.text(`Causale: ${bolla.causale}`, 10, 60);
+    doc.text(`Prodotti:`, 10, 70);
+
+    let y = 80;
+    try {
+      const prodotti = JSON.parse(bolla.prodotti);
+      prodotti.forEach((p: any) => {
+        doc.text(`• ${p.nomeProdotto}, Colli: ${p.numeroColli}, Kg: ${p.totKgSpediti}`, 12, y);
+        y += 10;
+      });
+    } catch (e) {
+      doc.text('Errore lettura prodotti.', 10, y);
+    }
+
+    doc.save(`bolla-${bolla.numeroBolla}.pdf`);
+  };
+
+  const columns: GridColDef[] = [
     { field: 'numeroBolla', headerName: 'Numero', width: 100 },
     { field: 'dataOra', headerName: 'Data', width: 150 },
     {
-      field: 'destinatario',
+      field: 'destinatarioNome',
       headerName: 'Destinatario',
-      width: 200,
-      valueGetter: (params: GridRenderCellParams<Bolla>) => params.row.destinatarioNome
+      width: 200
     },
     { field: 'indirizzoDestinazione', headerName: 'Indirizzo di Destinazione', width: 250 },
     { field: 'causale', headerName: 'Causale', width: 150 },
     {
       field: 'actions',
-        headerName: 'Azioni',
-        width: 150,
-        renderCell: (params: GridRenderCellParams<Bolla>) => (
-          <>
-            <IconButton onClick={() => {
-              setEditing(params.row);
-              setOpen(true);
-            }}>
-              <EditIcon />
-            </IconButton>
-            <IconButton onClick={() => handleDelete(params.row.id)}>
-              <DeleteIcon />
-            </IconButton>
-          </>
+      headerName: 'Azioni',
+      width: 150,
+      renderCell: (params) => (
+        <>
+          <IconButton onClick={() => {
+            setEditing(params.row);
+            setOpen(true);
+          }}>
+            <EditIcon />
+          </IconButton>
+          <IconButton onClick={() => handleDelete(params.row.id)}>
+            <DeleteIcon />
+          </IconButton>
+          <IconButton onClick={() => handlePrint(params.row)}>
+            <PrintIcon/>
+          </IconButton>
+        </>
       )
     }
   ];
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="300px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Gestione Bolle</Typography>
         <Button variant="contained" onClick={() => {
-          setEditing(null);
-          setOpen(true);
+          if (clienti.length && prodotti.length && imballaggi.length) {
+            setEditing(null);
+            setOpen(true);
+          } else {
+            alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
+          }
         }}>
           Aggiungi Bolla
         </Button>
@@ -115,12 +177,16 @@ export default function Bolle() {
           setEditing(null);
         }}
         bolla={editing}
-        numeroBolla={Math.max(0, ...bolle.map(b => b.numeroBolla)) + 1}
-        aggiornaLista={ricaricaDati}
-        clienti={[]}
-        prodotti={[]}
-        imballaggi={[]}
-        onSave={() => {}}
+        onSave={async (bolla) => {
+          //const modificata = editing ? { ...bolla, modifiedOffline: true } : bolla;
+          await saveBolla(bolla);
+          await ricaricaDati();
+          setOpen(false);
+        }}
+        clienti={clienti}
+        prodotti={prodotti}
+        imballaggi={imballaggi}
+        numeroBolla={bolle.length > 0 ? Math.max(...bolle.map(b => b.numeroBolla)) + 1 : 1}
       />
     </Box>
   );

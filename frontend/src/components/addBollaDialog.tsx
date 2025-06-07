@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, MenuItem, Typography
+  TextField, Button, MenuItem, Typography, Grid
 } from '@mui/material';
-import { Grid } from '@mui/material';
 import type { Cliente } from './addClienteDialog';
 import type { Prodotto } from './addProdottoDialog';
 import type { Imballaggio } from './addImballaggioDialog';
 import type { Bolla } from '../storage/bolleDB';
 
 interface BollaDialogProps {
- open: boolean;
+  open: boolean;
   onClose: () => void;
   onSave: (bolla: Bolla) => void;
   bolla: Bolla | null;
@@ -18,10 +17,11 @@ interface BollaDialogProps {
   prodotti: Prodotto[];
   imballaggi: Imballaggio[];
   numeroBolla: number;
-  aggiornaLista: () => Promise<void>;
 }
 
-export default function AddBollaDialog({ open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla }: BollaDialogProps) {
+export default function AddBollaDialog({
+  open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla
+}: BollaDialogProps) {
   const [destinatario, setDestinatario] = useState({
     nome: '', indirizzo: '', email: '', telefono: '', partitaIva: '', codiceSDI: ''
   });
@@ -49,9 +49,42 @@ export default function AddBollaDialog({ open, onClose, onSave, clienti, prodott
     }
   }, [selectedClienteId]);
 
+  useEffect(() => {
+    if (bolla) {
+      setDestinatario({
+        nome: bolla.destinatarioNome,
+        indirizzo: bolla.destinatarioIndirizzo,
+        email: bolla.destinatarioEmail,
+        telefono: bolla.destinatarioTelefono,
+        partitaIva: bolla.destinatarioPartitaIva,
+        codiceSDI: bolla.destinatarioCodiceSDI
+      });
+      setDataOra(bolla.dataOra.slice(0, 16));
+      setIndirizzoDestinazione(bolla.indirizzoDestinazione);
+      setCausale(bolla.causale);
+      setConsegnaACarico(bolla.consegnaACarico);
+      setVettore(bolla.vettore);
+      setSelectedClienteId('');
+      try {
+        setProdottiBolla(JSON.parse(bolla.prodotti));
+      } catch {
+        setProdottiBolla([]);
+      }
+    } else {
+      setDestinatario({ nome: '', indirizzo: '', email: '', telefono: '', partitaIva: '', codiceSDI: '' });
+      setSelectedClienteId('');
+      setIndirizzoDestinazione('');
+      setCausale('');
+      setDataOra(new Date().toISOString().slice(0, 16));
+      setProdottiBolla([]);
+      setConsegnaACarico('');
+      setVettore('');
+    }
+  }, [bolla]);
+
   const handleAddProdotto = () => {
     setProdottiBolla([...prodottiBolla, {
-      nomeProdotto: '', qualita: '', prezzo: 0, nomeImballaggio: '',
+      nomeProdotto: '', qualita: '', prezzo: 0, nomeImballaggio: '', prezzoImballaggio: '',
       numeroColli: 0, pesoLordo: 0, pesoNetto: 0, totKgSpediti: 0
     }]);
   };
@@ -59,44 +92,47 @@ export default function AddBollaDialog({ open, onClose, onSave, clienti, prodott
   const handleProdottoChange = (index: number, field: string, value: any) => {
     const nuovi = [...prodottiBolla];
     nuovi[index][field] = value;
+
+    // Aggiorna automaticamente il prezzo dell'imballaggio selezionato
+    if (field === 'nomeImballaggio') {
+      const imballaggio = imballaggi.find(i => i.tipo === value);
+      if (imballaggio) {
+        nuovi[index].prezzoImballaggio = imballaggio.prezzo;
+      }
+    }
+
     setProdottiBolla(nuovi);
   };
 
   const handleSubmit = () => {
-    const nuovaBolla = {
-      id: Date.now(),
-      numeroBolla,
+    const nuovaBolla: Bolla = {
+      id: bolla?.id ?? Date.now(),
+      numeroBolla: bolla?.numeroBolla ?? numeroBolla,
       dataOra: new Date(dataOra).toISOString(),
-
       destinatarioNome: destinatario.nome,
       destinatarioIndirizzo: destinatario.indirizzo,
       destinatarioEmail: destinatario.email,
       destinatarioTelefono: destinatario.telefono,
       destinatarioPartitaIva: destinatario.partitaIva,
       destinatarioCodiceSDI: destinatario.codiceSDI,
-
       indirizzoDestinazione,
       causale,
       prodotti: JSON.stringify(prodottiBolla),
-      daTrasportare: JSON.stringify(prodottiBolla.map(p => ({
-        nomeImballaggio: p.nomeImballaggio,
-        numeroColli: p.numeroColli
-      }))),
-      daRendere: JSON.stringify(prodottiBolla.map(p => ({
-        nomeImballaggio: p.nomeImballaggio,
-        numeroColli: 0
-      }))),
+      daTrasportare: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: p.numeroColli }))),
+      daRendere: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: 0 }))),
       consegnaACarico,
       vettore,
       createdAt: new Date().toISOString(),
       synced: false
     };
+
     onSave(nuovaBolla);
+    onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Nuova Bolla</DialogTitle>
+      <DialogTitle>{bolla ? 'Modifica Bolla' : 'Nuova Bolla'}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2}>
           <Grid size={12}>
@@ -117,10 +153,7 @@ export default function AddBollaDialog({ open, onClose, onSave, clienti, prodott
           ))}
 
           <Grid size={6}>
-            <TextField
-              fullWidth label="Data e ora" type="datetime-local"
-              value={dataOra} onChange={(e) => setDataOra(e.target.value)}
-            />
+            <TextField fullWidth label="Data e ora" type="datetime-local" value={dataOra} onChange={(e) => setDataOra(e.target.value)} />
           </Grid>
 
           <Grid size={6}>
@@ -175,6 +208,14 @@ export default function AddBollaDialog({ open, onClose, onSave, clienti, prodott
                     ))}
                   </TextField>
                 </Grid>
+                <Grid size={2}>
+                  <TextField
+                    fullWidth
+                    label="Prezzo Imballaggio"
+                    value={r.prezzoImballaggio ?? ''}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
                 <Grid size={2}><TextField fullWidth type="number" label="Colli" value={r.numeroColli} onChange={(e) => handleProdottoChange(i, 'numeroColli', +e.target.value)} /></Grid>
                 <Grid size={2}><TextField fullWidth type="number" label="Peso lordo" value={r.pesoLordo} onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)} /></Grid>
                 <Grid size={2}><TextField fullWidth type="number" label="Peso netto" value={r.pesoNetto} onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)} /></Grid>
@@ -184,7 +225,6 @@ export default function AddBollaDialog({ open, onClose, onSave, clienti, prodott
           </Grid>
         </Grid>
       </DialogContent>
-
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
         <Button variant="contained" onClick={handleSubmit}>Salva</Button>

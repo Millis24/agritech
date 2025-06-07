@@ -1,5 +1,13 @@
 import { getDB } from './indexedDb';
-import type { Prodotto } from '../components/addProdottoDialog';
+
+export type Prodotto = {
+  id: number;
+  nome: string;
+  varieta: string;
+  calibro: string;
+  colore: string;
+  createdAt: string;
+};
 
 const STORE_NAME = 'prodotti';
 const DELETED_STORE_NAME = 'prodottiEliminati';
