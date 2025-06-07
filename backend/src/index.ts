@@ -267,25 +267,15 @@ app.get('/api/bolle', async (req, res) => {
 
 app.post('/api/bolle', async (req, res) => {
   console.log('📦 POST /bolle body:', req.body);
-
   try {
     const {
       id,
       synced,
       modifiedOffline,
-      dataOra,
-      createdAt,
-      ...rest
+      ...data
     } = req.body;
 
-    // converte i campi Date
-    const data = {
-      ...rest,
-      dataOra: new Date(dataOra),
-      createdAt: new Date(createdAt)
-    };
-
-    // verifica duplicati usando solo numeroBolla (che è unique)
+    // Controllo duplicati (numeroBolla è unique)
     const esiste = await prisma.bolla.findUnique({
       where: { numeroBolla: data.numeroBolla }
     });
@@ -293,7 +283,15 @@ app.post('/api/bolle', async (req, res) => {
       return res.status(409).json({ error: 'Bolla già esistente' });
     }
 
-    const nuova = await prisma.bolla.create({ data });
+    // Conversioni campi Date
+    const nuova = await prisma.bolla.create({
+      data: {
+        ...data,
+        dataOra: new Date(data.dataOra),
+        createdAt: new Date(data.createdAt)
+      }
+    });
+
     res.status(201).json(nuova);
   } catch (error) {
     console.error('❌ Errore POST bolle:', error);
@@ -320,7 +318,9 @@ app.put('/api/bolle/:id', async (req, res) => {
       daTrasportare,
       daRendere,
       consegnaACarico,
-      vettore
+      vettore,
+      synced,
+      createdAt
     } = req.body;
 
     const updated = await prisma.bolla.update({
@@ -339,10 +339,11 @@ app.put('/api/bolle/:id', async (req, res) => {
         daTrasportare,
         daRendere,
         consegnaACarico,
-        vettore
+        vettore,
+        synced: synced ?? true,
+        createdAt: createdAt ? new Date(createdAt) : new Date()
       }
     });
-
     res.json(updated);
   } catch (error) {
     console.error('Errore aggiornamento bolla:', error);

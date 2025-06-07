@@ -176,10 +176,17 @@ export default function Bolle() {
           setOpen(false);
           setEditing(null);
         }}
-        bolla={editing}
+        bolla={editing || null}
         onSave={async (bolla) => {
-          //const modificata = editing ? { ...bolla, modifiedOffline: true } : bolla;
-          await saveBolla(bolla);
+          console.log('🔥 Salvataggio bolla ricevuta:', bolla);
+          // Se la bolla esiste già (modifica), sostituisci quella esistente
+          const index = bolle.findIndex(b => b.id === bolla.id);
+          if (index !== -1) {
+            await saveBolla({ ...bolla, synced: navigator.onLine, modifiedOffline: !navigator.onLine });
+            console.log('📦 Salvata bolla nel DB:', bolla);
+          } else {
+            await saveBolla({ ...bolla, synced: navigator.onLine });
+          }
           await ricaricaDati();
           setOpen(false);
         }}

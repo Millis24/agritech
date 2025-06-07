@@ -8,48 +8,57 @@ import {
 
 export default function useBolleSync() {
   useEffect(() => {
+    console.log('🛰️ useBolleSync attivo');
     const sync = async () => {
       if (!navigator.onLine) return;
 
       const locali = await getAllBolle();
+      console.log('📦 Bolle in IndexedDB:', locali);
       const daSincronizzare = locali.filter(b => !b.synced || b.modifiedOffline);
 
       for (const bolla of daSincronizzare) {
-        try {
-          const { id, synced, modifiedOffline, ...data } = bolla;
+    const { id, synced, modifiedOffline, ...data } = bolla;
 
-          const res = await fetch(
-            modifiedOffline
-              ? `http://localhost:4000/api/bolle/${id}`
-              : 'http://localhost:4000/api/bolle',
-            {
-              method: modifiedOffline ? 'PUT' : 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
-            }
-          );
-
-          if (res.ok) {
-            const nuovaBolla = await res.json();
-
-            await saveBolla({
-              ...nuovaBolla,
-              synced: true,
-              modifiedOffline: false
-            });
-
-            console.log(
-              modifiedOffline
-                ? `✏️ Bolla ${bolla.numeroBolla} modificata`
-                : `✅ Bolla ${bolla.numeroBolla} sincronizzata`
-            );
-          } else {
-            console.error(`❌ Errore sync bolla ${bolla.numeroBolla}:`, await res.text());
-          }
-        } catch (err) {
-          console.error('❌ Sync fallita:', err);
-        }
+    try {
+      // Verifica condizioni
+      if (modifiedOffline && !id) {
+        console.error(`❌ Bolla modificata offline ma senza ID:`, bolla);
+        continue;
       }
+
+      // Se è una modifica, deve avere un ID valido
+      const url = modifiedOffline
+        ? `http://localhost:4000/api/bolle/${id}`
+        : 'http://localhost:4000/api/bolle';
+      const method = modifiedOffline ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...data }) // <-- attenzione: passiamo `id` anche nella POST
+      });
+
+      if (res.ok) {
+        const nuovaBolla = await res.json();
+        await saveBolla({
+          ...nuovaBolla,
+          synced: true,
+          modifiedOffline: false
+        });
+
+        console.log(
+          modifiedOffline
+            ? `✏️ Bolla ${bolla.numeroBolla} modificata`
+            : `✅ Bolla ${bolla.numeroBolla} sincronizzata`
+        );
+      } else {
+        const errText = await res.text();
+        console.error(`❌ Sync fallita bolla ${bolla.numeroBolla}:`, errText);
+      }
+    } catch (err) {
+      console.error(`❌ Errore sync bolla ${bolla.numeroBolla}:`, err);
+    }
+  }
 
       // Eliminazioni offline
       const eliminati = await getBolleEliminate();

@@ -6,10 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { isLoggedIn, logout } from '../hooks/useAuth.ts';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import useBolleSync from '../sync/useBolleSync.ts';
 
 export default function DashboardLayout() {
   //const { companyId } = useParams();
   const navigate = useNavigate();
+
+  useBolleSync();
 
   useEffect(() => {
     if (!isLoggedIn()) navigate('/login');

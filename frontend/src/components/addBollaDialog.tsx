@@ -105,8 +105,7 @@ export default function AddBollaDialog({
   };
 
   const handleSubmit = () => {
-    const nuovaBolla: Bolla = {
-      id: bolla?.id ?? Date.now(),
+    const baseBolla = {
       numeroBolla: bolla?.numeroBolla ?? numeroBolla,
       dataOra: new Date(dataOra).toISOString(),
       destinatarioNome: destinatario.nome,
@@ -125,6 +124,12 @@ export default function AddBollaDialog({
       createdAt: new Date().toISOString(),
       synced: false
     };
+
+    // solo se c’è un ID valido
+    const nuovaBolla = (bolla && bolla.id !== undefined)
+      ? { ...baseBolla, id: bolla.id }
+      : baseBolla;
+    console.log('🚀 submit bolla', nuovaBolla);
 
     onSave(nuovaBolla);
     onClose();

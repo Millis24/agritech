@@ -59,6 +59,7 @@ model Bolla {
   daRendere              String
   consegnaACarico        String
   vettore                String
+  synced                     Boolean @default(false)
   createdAt              DateTime @default(now())
 
   // Relazioni

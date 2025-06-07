@@ -4,18 +4,27 @@ const STORE_NAME = 'bolle';
 const DELETED_STORE_NAME = 'clientiEliminati';
 
 export async function saveBolla(bolla: Bolla) {
-    const db = await getDB();
-    return db.put(STORE_NAME, bolla);
+  const db = await getDB();
+  const { id, ...data } = bolla;
+  if (id) {
+    return db.put('bolle', { id, ...data });
+  }
+  const tutte = await db.getAll('bolle');
+  const nuovoId = tutte.length > 0
+    ? Math.max(...tutte.map(b => b.id || 0)) + 1
+    : 1;
+
+  return db.put('bolle', { id: nuovoId, ...data });
 }
 
 export async function getAllBolle(): Promise<Bolla[]> {
-    const db = await getDB();
-    return db.getAll(STORE_NAME);
+  const db = await getDB();
+  return db.getAll(STORE_NAME);
 }
 
 export async function deleteBolla(id: number) {
-    const db = await getDB();
-    return db.delete(STORE_NAME, id);
+  const db = await getDB();
+  return db.delete(STORE_NAME, id);
 }
 
 // Eliminazioni offline
@@ -36,7 +45,7 @@ export async function clearBolleEliminate() {
 }
 
 export interface Bolla {
-  id: number;
+  id?: number;
   numeroBolla: number;
   dataOra: string;
 
