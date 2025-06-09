@@ -93,7 +93,7 @@ export default function AddBollaDialog({
     const nuovi = [...prodottiBolla];
     nuovi[index][field] = value;
 
-    // Aggiorna automaticamente il prezzo dell'imballaggio selezionato
+    // aggiorna automaticamente il prezzo dell'imballaggio selezionato
     if (field === 'nomeImballaggio') {
       const imballaggio = imballaggi.find(i => i.tipo === value);
       if (imballaggio) {

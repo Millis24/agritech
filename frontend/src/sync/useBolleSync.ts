@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import {
   getAllBolle,
   saveBolla,
+} from '../storage/bolleDB';
+import {
   getBolleEliminate,
   clearBolleEliminate
-} from '../storage/bolleDB';
+} from '../storage/bolleEliminateDB';
 
 import { getDB } from '../storage/indexedDb';
 
@@ -75,14 +77,32 @@ export default function useBolleSync() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data),
             });
-          } else {
-            // ➕ NUOVA
-            res = await fetch('http://localhost:4000/api/bolle', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data),
-            });
-          }
+            } else {
+              // ➕ NUOVA
+              const tempId = id!; // l’id assegnato offline
+              const res = await fetch('http://localhost:4000/api/bolle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+              });
+
+              if (res.ok) {
+                const nuovaBolla = await res.json();
+                // 1) cancella il record offline con tempId
+                await deleteLocalBolla(tempId);
+                // 2) salva la bolla vera con id del server
+                await saveBolla({
+                  ...nuovaBolla,
+                  synced: true,
+                  modifiedOffline: false,
+                });
+                console.log('✅ Bolla creata e ID temporaneo sostituito');
+              } else {
+                console.error(`❌ Errore sync nuova bolla:`, await res.text());
+              }
+              // passiamo al prossimo elemento senza rieseguire il blocco generico
+              continue;
+            }
 
           if (res.ok) {
             const nuovaBolla = await res.json();
