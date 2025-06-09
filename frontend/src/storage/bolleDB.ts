@@ -6,9 +6,11 @@ const DELETED_STORE_NAME = 'clientiEliminati';
 export async function saveBolla(bolla: Bolla) {
   const db = await getDB();
   const { id, ...data } = bolla;
-  if (id) {
+  if (id !== undefined) {
+    // se c'è già un ID → update o insert con ID esistente
     return db.put('bolle', { id, ...data });
   }
+  // genera nuovo ID incrementale locale
   const tutte = await db.getAll('bolle');
   const nuovoId = tutte.length > 0
     ? Math.max(...tutte.map(b => b.id || 0)) + 1
