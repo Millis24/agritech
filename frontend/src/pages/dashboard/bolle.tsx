@@ -6,6 +6,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import PrintIcon from '@mui/icons-material/Print';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+declare module '*.png';
+import logoDataUrl from '../../assets/logo_bolle.png';
 
 import AddBollaDialog from '../../components/addBollaDialog';
 import useBolleSync from '../../sync/useBolleSync';
@@ -100,7 +102,8 @@ export default function Bolle() {
     doc.setDrawColor(200);
     doc.rect(M, cursorY, 40, 20);
     doc.setFontSize(10);
-    doc.text('Logo', M + 12, cursorY + 12);
+    doc.addImage(logoDataUrl, 'PNG', 10, 10, 40, 20);
+    doc.setFontSize(16);
 
     // MITTENTE
     const mittX = M;
