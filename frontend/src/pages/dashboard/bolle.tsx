@@ -14,7 +14,8 @@ import {
   getAllBolle,
   saveBolla,
   deleteBolla as deleteLocalBolla,
-  type Bolla
+  type Bolla,
+  getBolleEliminate
 } from '../../storage/bolleDB';
 import { markBollaAsDeleted } from '../../storage/bolleEliminateDB';
 
@@ -31,19 +32,26 @@ export default function Bolle() {
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const ricaricaDati = async () => {
-    const [bolleData, clientiData, prodottiData, imballaggiData] = await Promise.all([
-      getAllBolle(),
-      getAllClienti(),
-      getAllProdotti(),
-      getAllImballaggi()
-    ]);
+const ricaricaDati = async () => {
+  const [bolleData, clientiData, prodottiData, imballaggiData] = await Promise.all([
+    getAllBolle(),
+    getAllClienti(),
+    getAllProdotti(),
+    getAllImballaggi()
+  ]);
 
-    setBolle(bolleData);
-    setClienti(clientiData);
-    setProdotti(prodottiData);
-    setImballaggi(imballaggiData);
-  };
+  const eliminatiIds = (await getBolleEliminate()).map(b => b.id);
+
+  // Filtra le bolle visibili escludendo quelle eliminate
+  const bolleVisibili = bolleData
+    .filter(b => b.id !== undefined)
+    .filter(b => !eliminatiIds.includes(b.id!)); // ora `b.id!` è sicuro
+
+  setBolle(bolleVisibili);
+  setClienti(clientiData);
+  setProdotti(prodottiData);
+  setImballaggi(imballaggiData);
+};
 
   useEffect(() => {
     const fetchData = async () => {

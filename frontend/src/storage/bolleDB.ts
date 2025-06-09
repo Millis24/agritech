@@ -19,7 +19,10 @@ export async function saveBolla(bolla: Bolla) {
 
 export async function getAllBolle(): Promise<Bolla[]> {
   const db = await getDB();
-  return db.getAll(STORE_NAME);
+  const tutte = await db.getAll('bolle');
+  const eliminate = await db.getAll('bolleEliminate');
+  const eliminateIds = eliminate.map(e => e.id);
+  return tutte.filter(b => !eliminateIds.includes(b.id));
 }
 
 export async function deleteBolla(id: number) {
@@ -28,10 +31,10 @@ export async function deleteBolla(id: number) {
 }
 
 // Eliminazioni offline
-export async function markClienteAsDeleted(id: number) {
+export async function markBollaAsDeleted(id: number) {
   const db = await getDB();
-  await db.put('bolleEliminate', { id });
-  await db.delete('bolle', id)
+  await db.put('bolleEliminate', { id }); // poi registra l’eliminazione
+  await db.delete('bolle', id); // elimina SUBITO la bolla
 }
 
 export async function getBolleEliminate(): Promise<{ id: number }[]> {

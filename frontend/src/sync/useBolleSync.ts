@@ -6,33 +6,75 @@ import {
   clearBolleEliminate
 } from '../storage/bolleDB';
 
+import { getDB } from '../storage/indexedDb';
+
+const STORE_NAME = 'bolle';
+
+// ✅ Elimina localmente una bolla da IndexedDB
+export async function deleteLocalBolla(id: number) {
+  const db = await getDB();
+  await db.delete(STORE_NAME, id);
+}
+
+// ✅ Effettua la sincronizzazione automatica
 export default function useBolleSync() {
   useEffect(() => {
     console.log('🛰️ useBolleSync attivo');
+
     const sync = async () => {
       if (!navigator.onLine) return;
 
+      // 1. 🔄 Carica bolle locali da IndexedDB
       const locali = await getAllBolle();
       console.log('📦 Bolle in IndexedDB:', locali);
-      const daSincronizzare = locali.filter(b => !b.synced || b.modifiedOffline);
 
+      // 2. 🔍 Carica ID delle bolle eliminate offline
+      const eliminati = await getBolleEliminate();
+      const eliminatiIds = eliminati.map(b => b.id).filter((id): id is number => typeof id === 'number');
+
+      // 3. 🎯 Filtra bolle da sincronizzare (esclude quelle eliminate)
+      const daSincronizzare = locali
+        .filter(b => b.id !== undefined && !eliminatiIds.includes(b.id))
+        .filter(b => !b.synced || b.modifiedOffline);
+
+      // 4. 🗑️ Elimina dal backend le bolle eliminate offline
+      for (const { id } of eliminati) {
+        if (id !== undefined) {
+          try {
+            const res = await fetch(`http://localhost:4000/api/bolle/${id}`, {
+              method: 'DELETE'
+            });
+            if (res.ok) {
+              console.log(`🗑️ Bolla ID ${id} eliminata dal backend`);
+              await deleteLocalBolla(id); // rimuove anche da IndexedDB
+            } else {
+              console.error(`❌ Errore DELETE bolla ID ${id}:`, await res.text());
+            }
+          } catch (err) {
+            console.error('❌ Errore eliminazione remota bolla:', err);
+          }
+        }
+      }
+
+      // 5. 🔄 Salva o aggiorna bolle
       for (const bolla of daSincronizzare) {
         try {
           const { id, synced, modifiedOffline, ...data } = bolla;
           let res;
-          if (modifiedOffline && (id === undefined || id === null)) {
-            // MODIFICA esistente
+
+          if (id !== undefined && modifiedOffline) {
+            // ✏️ MODIFICA
             res = await fetch(`http://localhost:4000/api/bolle/${id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ...data }),
+              body: JSON.stringify(data),
             });
           } else {
-            // NUOVA bolla
+            // ➕ NUOVA
             res = await fetch('http://localhost:4000/api/bolle', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ...data }),
+              body: JSON.stringify(data),
             });
           }
 
@@ -52,31 +94,19 @@ export default function useBolleSync() {
         }
       }
 
-      // Eliminazioni offline
-      const eliminati = await getBolleEliminate();
-      for (const { id } of eliminati) {
-        try {
-          const res = await fetch(`http://localhost:4000/api/bolle/${id}`, {
-            method: 'DELETE'
-          });
-          if (res.ok) {
-            console.log(`🗑️ Bolla ID ${id} eliminata dal backend`);
-          } else {
-            console.error(`❌ Errore DELETE bolla ID ${id}:`, await res.text());
-          }
-        } catch (err) {
-          console.error('❌ Errore eliminazione remota bolla:', err);
-        }
-      }
-
+      // 6. ✅ Pulisci store delle eliminate
       await clearBolleEliminate();
+
+      // 7. 🔁 Recupera tutte le bolle aggiornate dal backend
       await fetchBackendBolle();
     };
 
+    // 🔁 Carica tutte le bolle online e salva localmente
     const fetchBackendBolle = async () => {
       try {
         const res = await fetch('http://localhost:4000/api/bolle');
         if (!res.ok) return;
+
         const backendBolle = await res.json();
         for (const bolla of backendBolle) {
           await saveBolla({ ...bolla, synced: true });
@@ -87,6 +117,7 @@ export default function useBolleSync() {
       }
     };
 
+    // 🚀 Avvia subito e riascolta il ritorno online
     sync();
     window.addEventListener('online', sync);
     return () => window.removeEventListener('online', sync);
