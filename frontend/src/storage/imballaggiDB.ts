@@ -2,7 +2,7 @@ import { getDB } from './indexedDb';
 //import type { Imballaggio } from '../types';
 
 export type Imballaggio = {
-  synced: any;
+  //synced: any;
   id: number;
   tipo: string;
   prezzo: number;
@@ -10,6 +10,7 @@ export type Imballaggio = {
   capacitaKg: number;
   note?: string;
   createdAt: string;
+  synced?: boolean;
 };
 
 const STORE_NAME = 'imballaggi';
@@ -22,7 +23,11 @@ export async function getAllImballaggi(): Promise<Imballaggio[]> {
 
 export async function saveImballaggio(imballaggio: Imballaggio) {
   const db = await getDB();
-  await db.put('imballaggi', { ...imballaggio, synced: false });
+  const data = {
+    ...imballaggio,
+    synced: imballaggio.synced ?? false,
+  };
+  await db.put('imballaggi', data);
 }
 
 export async function deleteImballaggio(id: number) {
@@ -38,7 +43,10 @@ export async function clearImballaggi() {
 // Eliminazioni offline
 export async function markImballaggiAsDeleted(id: number) {
   const db = await getDB();
-  await db.put(DELETED_STORE_NAME, { id });
+  const rec = await db.get(STORE_NAME, id);
+  if (rec?.synced) {
+    await db.put(DELETED_STORE_NAME, { id });
+  }
   await db.delete(STORE_NAME, id);
 }
 

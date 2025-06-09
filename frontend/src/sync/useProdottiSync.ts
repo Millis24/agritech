@@ -8,7 +8,7 @@ export default function useProdottiSync() {
 
       // sincronizza prodotti aggiunti o modificati offline
       const locali = await getAllProdotti();
-      const daSincronizzare = locali.filter(p => !p.synced);
+      const daSincronizzare = locali.filter(p => p.synced === false);
 
       for (const prodotto of daSincronizzare) {
         try {

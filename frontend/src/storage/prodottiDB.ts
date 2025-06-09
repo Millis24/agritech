@@ -7,6 +7,7 @@ export type Prodotto = {
   calibro: string;
   colore: string;
   createdAt: string;
+  synced?: boolean;
 };
 
 const STORE_NAME = 'prodotti';
@@ -19,7 +20,11 @@ export async function getAllProdotti(): Promise<Prodotto[]> {
 
 export async function saveProdotto(prodotto: Prodotto) {
   const db = await getDB();
-  await db.put('prodotti', { ...prodotto, synced: false });
+  const data = {
+    ...prodotto,
+    synced: prodotto.synced ?? false,
+  };
+  await db.put('prodotti', data);
 }
 
 export async function deleteProdotto(id: number) {
@@ -35,7 +40,10 @@ export async function clearProdotti() {
 // eliminazione offline
 export async function markProdottoAsDeleted(id: number) {
   const db = await getDB();
-  await db.put(DELETED_STORE_NAME, { id });
+  const rec = await db.get(STORE_NAME, id);
+  if (rec?.synced) {
+    await db.put(DELETED_STORE_NAME, { id });
+  }
   await db.delete(STORE_NAME, id);
 }
 

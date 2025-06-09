@@ -11,6 +11,7 @@ export type Cliente = {
   telefono: string;
   email: string;
   createdAt: string;
+  synced?: boolean;
 };
 
 export async function getAllClienti(): Promise<Cliente[]> {
@@ -20,7 +21,11 @@ export async function getAllClienti(): Promise<Cliente[]> {
 
 export async function saveCliente(cliente: Cliente) {
   const db = await getDB();
-  await db.put('clienti', { ...cliente, synced: false });
+  const data = {
+    ...cliente,
+    synced: cliente.synced ?? false,
+  };
+  await db.put('clienti', data);
 }
 
 export async function deleteCliente(id: number) {
@@ -36,7 +41,10 @@ export async function clearClienti() {
 // Eliminazioni offline
 export async function markClienteAsDeleted(id: number) {
   const db = await getDB();
-  await db.put(DELETED_STORE_NAME, { id });
+  const rec = await db.get(STORE_NAME, id);
+  if (rec?.synced) {
+    await db.put(DELETED_STORE_NAME, { id });
+  }
   await db.delete(STORE_NAME, id);
 }
 

@@ -8,7 +8,7 @@ export default function useClientiSync() {
 
       // sincronizza clienti aggiunti o modificati offline
       const locali = await getAllClienti();
-      const daSincronizzare = locali.filter(c => !c.synced);
+      const daSincronizzare = locali.filter(c => c.synced === false);
 
       for (const cliente of daSincronizzare) {
         try {

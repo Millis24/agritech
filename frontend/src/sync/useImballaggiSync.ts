@@ -8,7 +8,7 @@ export default function useImballaggiSync() {
 
       // sincronizza clienti aggiunti o modificati offline
       const locali = await getAllImballaggi();
-      const daSincronizzare = locali.filter(i => !i.synced);
+      const daSincronizzare = locali.filter(i => i.synced === false);
 
       for (const imballaggio of daSincronizzare) {
         try {
