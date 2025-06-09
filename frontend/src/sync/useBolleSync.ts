@@ -88,7 +88,7 @@ export default function useBolleSync() {
             const nuovaBolla = await res.json();
             await saveBolla({
               ...nuovaBolla,
-              //id: id ?? nuovaBolla.id, 
+              ///id: id ?? nuovaBolla.id, 
               synced: true,
               modifiedOffline: false,
             });

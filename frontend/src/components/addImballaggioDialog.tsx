@@ -67,7 +67,7 @@ export default function AddImballaggioDialog({
         note: ''
       });
     }
-  }, [imballaggio]);
+  }, [open, imballaggio]);
 
   const handleChange = (field: string, value: string | number) => {
     setFormData(prev => ({

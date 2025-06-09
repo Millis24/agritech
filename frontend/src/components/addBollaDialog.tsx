@@ -50,7 +50,7 @@ export default function AddBollaDialog({
   }, [selectedClienteId]);
 
   useEffect(() => {
-    if (bolla) {
+    if (bolla)  {
       setDestinatario({
         nome: bolla.destinatarioNome,
         indirizzo: bolla.destinatarioIndirizzo,
@@ -80,7 +80,7 @@ export default function AddBollaDialog({
       setConsegnaACarico('');
       setVettore('');
     }
-  }, [bolla]);
+  }, [open, bolla]);
 
   const handleAddProdotto = () => {
     setProdottiBolla([...prodottiBolla, {

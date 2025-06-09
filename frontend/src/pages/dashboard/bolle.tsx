@@ -228,8 +228,10 @@ const ricaricaDati = async () => {
             }
           } else {
             // 📴 OFFLINE
+            const tempId = Date.now();
             await saveBolla({
               ...bolla,
+              id: bolla.id ?? tempId,
               synced: false,
               modifiedOffline: Boolean(bolla.id),
             });
