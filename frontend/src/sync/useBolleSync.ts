@@ -16,6 +16,11 @@ export async function deleteLocalBolla(id: number) {
   await db.delete(STORE_NAME, id);
 }
 
+export async function removeBollaEliminata(id: number) {
+  const db = await getDB();
+  await db.delete('bolleEliminate', id);
+}
+
 // ✅ Effettua la sincronizzazione automatica
 export default function useBolleSync() {
   useEffect(() => {
@@ -47,6 +52,7 @@ export default function useBolleSync() {
             if (res.ok) {
               console.log(`🗑️ Bolla ID ${id} eliminata dal backend`);
               await deleteLocalBolla(id); // rimuove anche da IndexedDB
+              await removeBollaEliminata(id); // rimuovi SOLO quella da eliminate
             } else {
               console.error(`❌ Errore DELETE bolla ID ${id}:`, await res.text());
             }

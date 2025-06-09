@@ -21,8 +21,9 @@ export async function getAllBolle(): Promise<Bolla[]> {
   const db = await getDB();
   const tutte = await db.getAll('bolle');
   const eliminate = await db.getAll('bolleEliminate');
-  const eliminateIds = eliminate.map(e => e.id);
-  return tutte.filter(b => !eliminateIds.includes(b.id));
+  const eliminateIds = eliminate.map(e => e.id).filter((id): id is number => typeof id === 'number');
+
+  return tutte.filter(b => b.id !== undefined && !eliminateIds.includes(b.id));
 }
 
 export async function deleteBolla(id: number) {
