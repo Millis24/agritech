@@ -95,15 +95,24 @@ export default function Bolle() {
   // ————————————————————————————————————————————————
   function handlePrint(bolla: Bolla) {
     const doc = new jsPDF('p', 'mm', 'a4');
-    const M = 10;             // margin
-    let cursorY = M;
+    const M = 10;             // margine
+    doc.setFont('helvetica');
+
+    const pageWidth = doc.internal.pageSize.getWidth();
 
     // Logo (placeholder)
-    doc.setDrawColor(200);
-    doc.rect(M, cursorY, 40, 20);
-    doc.setFontSize(10);
-    doc.addImage(logoDataUrl, 'PNG', 10, 10, 40, 20);
+    const logoW = 60;
+    const logoH = 30;
+    const logoX = (pageWidth - logoW) / 2;
+    const logoY = 10;
+    let cursorY = M;        
+    doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoW, logoH);
     doc.setFontSize(16);
+
+    const marginBottomLogo = cursorY + 10;
+    cursorY = marginBottomLogo;
+    cursorY += 2;
+
 
     // MITTENTE
     const mittX = M;
@@ -112,17 +121,16 @@ export default function Bolle() {
     doc.setLineWidth(0.5);
     doc.rect(mittX, cursorY, mittW, 50);
     doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
     doc.text('Morselli Dottor Antonio', mittX + 4, cursorY + 8);
+    doc.setFont('helvetica', 'regular');
     doc.setFontSize(9);
     doc.text('Via Gallerana 28, 41030 Staggia (MO)', mittX + 4, cursorY + 14);
     doc.text('Tel. 329 97 80 703 · Fax 059 90 60 01', mittX + 4, cursorY + 19);
     doc.text('Mail: anguriadimodena@gmail.com', mittX + 4, cursorY + 24);
-    doc.text('P.IVA 03235970369 · Cod. Fisc. MRSNTN81A12E897H', mittX + 4, cursorY + 29);
-    doc.text('Iscriz. B.N.D.O.O. n°059906001', mittX + 4, cursorY + 34);
-    doc.setFontSize(10);
-    doc.text('DOCUMENTO DI TRASPORTO (D.P.R. 472 del 14/08/96)', mittX + 4, cursorY + 44);
-    doc.setFontSize(14);
-    doc.text(`${bolla.numeroBolla}`, mittX + mittW - 12, cursorY + 48);
+    doc.text('PEC: antonio.morselli@pec.agritel.it', mittX + 4, cursorY + 29);
+    doc.text('P.IVA 03235970369 · Cod. Fisc. MRSNTN81A12E897H', mittX + 4, cursorY + 34);
+    doc.text('Iscriz. B.N.D.O.O. n°059906001', mittX + 4, cursorY + 39);
 
     // DESTINATARIO
     const destX = mittX + mittW + 10;
@@ -138,23 +146,43 @@ export default function Bolle() {
     doc.text(`Tel.: ${bolla.destinatarioTelefono}`, destX + 4, cursorY + 33);
     doc.text(`P.IVA: ${bolla.destinatarioPartitaIva}`, destX + 4, cursorY + 38);
     doc.text(`SDI: ${bolla.destinatarioCodiceSDI}`, destX + 4, cursorY + 43);
+
+    // linea di separazione
+    doc.setLineWidth(0.5);
+    const boxBottom = cursorY + 50;
+    doc.line(mittX, boxBottom + 5, destX + destW, boxBottom + 5);
+
+    // doc trasporto + data
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`DOCUMENTO DI TRASPORTO (D.P.R. 472 del 14/08/96): \n${bolla.numeroBolla}`, mittX, boxBottom + 12); 
+    doc.setFont('helvetica', 'regular');
+    doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, destX, boxBottom + 12);
+
+    // spazio giusto
+    const marginBottom = cursorY + 10;
+    cursorY = marginBottom;
+    cursorY += 2;
+
     doc.setFontSize(12);
-    doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, destX + 4, cursorY + 53);
 
     // INDIRIZZO DESTINAZIONE & SEDE
     cursorY += 60;
     doc.setFontSize(10);
     doc.rect(M, cursorY, 95, 8);
     doc.rect(M + 95, cursorY, 95, 8);
-    doc.text('Indirizzo destinazione:', M + 2, cursorY + 6);
-    doc.text(bolla.indirizzoDestinazione, M + 2, cursorY + 16);
-    doc.text('Sede azienda destinataria:', M + 97, cursorY + 6);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Indirizzo di destinazione:', M + 2, cursorY + 6);
+    doc.setFont('helvetica', 'regular');
+    doc.text(bolla.indirizzoDestinazione, M + 97, cursorY + 6);
 
     // CAUSALE / VENDITA
     cursorY += 16;
     doc.rect(M, cursorY, 95, 8);
     doc.rect(M + 95, cursorY, 95, 8);
+    doc.setFont('helvetica', 'bold');
     doc.text('Causale del trasporto:', M + 2, cursorY + 6);
+    doc.setFont('helvetica', 'regular');
     doc.text(bolla.causale, M + 97, cursorY + 6);
 
     // TABELLA PRODOTTI
@@ -172,6 +200,7 @@ export default function Bolle() {
     autoTable(doc, {
       startY: cursorY,
       margin: { left: M, right: M },
+      tableWidth: pageWidth - 2 * M,
       head: [[
         'Prodotto','Qualità','Prezzo','Imballaggio','N° Colli','Peso lordo','Peso netto'
       ]],
@@ -185,16 +214,7 @@ export default function Bolle() {
         p.pesoNetto.toString(),
       ]),
       styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [200, 230, 200] },
-      columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 20 },
-        2: { cellWidth: 15, halign: 'right' },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 15, halign: 'right' },
-        5: { cellWidth: 20, halign: 'right' },
-        6: { cellWidth: 20, halign: 'right' },
-      }
+      headStyles: { textColor: [255, 255, 255] },
     });
     const afterTableY = (doc as any).lastAutoTable.finalY || cursorY;
 
@@ -217,6 +237,7 @@ export default function Bolle() {
     autoTable(doc, {
       startY: afterTableY + 12,
       margin: { left: M, right: M },
+      tableWidth: pageWidth - 2 * M,
       head: [[
         'Tipologia','Valore','In Vs giacenza','Da trasporto attuale','Totali a rendere'
       ]],
@@ -224,33 +245,41 @@ export default function Bolle() {
         r.tipo, r.valore, r.inGiacenza, r.daTrasporto, r.daRendere
       ]),
       styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [250, 240, 200] },
-      columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 20 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 25 },
-      }
+      headStyles: { textColor: [255, 255, 255] },
     });
     const afterImbY = (doc as any).lastAutoTable.finalY || (afterTableY + 12);
 
     // BARRA RESTITUZIONE E NOTE
     const restY = afterImbY + 8;
     doc.rect(M, restY, 180, 20);
+    doc.setFontSize(12);
+    
+    const tempoText = 'Tempo concesso per la restituzione degli imballaggi a rendere (in giorni): 15';
+    doc.setFont('helvetica', 'bold');
+    doc.text(tempoText,  M + 2, restY + 6);
+    const tmpWidth = doc.getTextWidth(tempoText);
+    doc.setLineWidth(0.5);
+    doc.line(M + 2, restY + 7, M + 2 + tmpWidth, restY + 7);
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text(`Tempo concesso per la restituzione degli imballaggi a rendere (in giorni): 15`, M + 2, restY + 6);
-    doc.text(`Si ricorda che ... penale pari al valore degli imballaggi non resi.`, M + 2, restY + 11);
-    doc.text(`Per contestazione di qualità ...`, M + 2, restY + 16);
+    doc.text(`Si ricorda che, in base agli accordi contrattuali presi, la mancata e/o la parziale restituzione entro I termini prefissati degli
+Imballaggi a rendere comporta il pagamento di una penale pari al valore degli imballaggi non resi. 
+Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore dall'arrivo. Spese a carico del cendente.`, M + 2, restY + 11);
+    //doc.text(`Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore dall'arrivo. Spese a carico del cendente.`, M + 2, restY + 16);
+
+    const fY = restY + 30;
+    // box “Consegna a carico del”
+    doc.rect(M, fY, mittW, 12);
+    doc.text('Consegna a carico del:', M + 2, fY + 6);
+    doc.text(bolla.consegnaACarico, M + mittW - 40, fY + 6);
+
+    // box “Vettore”
+    const vettX = M + mittW + 10;
+    doc.rect(vettX, fY, mittW, 12);
+    doc.text('Vettore:', vettX + 2, fY + 6);
+    doc.text(bolla.vettore, vettX + mittW - 40, fY + 6);
 
     // FIRME
-    const fY = restY + 30;
-    doc.rect(M, fY, 60, 12);
-    doc.text('Consegna a carico del:', M + 2, fY + 6);
-    doc.text(bolla.consegnaACarico, M + 45, fY + 6);
-    doc.rect(M + 65, fY, 60, 12);
-    doc.text('Vettore:', M + 67, fY + 6);
-    doc.text(bolla.vettore, M + 100, fY + 6);
     doc.text('Firma Conducente 1', M, fY + 22);
     doc.line(M, fY + 24, M + 50, fY + 24);
     doc.text('Firma Conducente 2', M + 60, fY + 22);
