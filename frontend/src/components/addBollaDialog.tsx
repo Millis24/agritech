@@ -40,11 +40,11 @@ export default function AddBollaDialog({
       if (cliente) {
         setDestinatario({
           nome: cliente.nomeCliente,
-          indirizzo: cliente.ragioneSociale,
+          indirizzo: cliente.indirizzo,
           email: cliente.email,
           telefono: cliente.telefono,
           partitaIva: cliente.partitaIva,
-          codiceSDI: ''
+          codiceSDI: cliente.codiceSDI
         });
       }
     }
