@@ -5,7 +5,9 @@ export interface Cliente {
   id: number;
   nomeCliente: string;
   ragioneSociale: string;
+  indirizzo: string;
   partitaIva: string;
+  codiceSDI: string;
   telefono: string;
   email: string;
   synced?: boolean;
@@ -15,7 +17,9 @@ export interface Cliente {
 export const imballaggioVuoto = {
   nomeCliente: '',
   ragioneSociale: '',
+  indirizzo: '',
   partitaIva: '',
+  codiceSDI: '',
   telefono: '',
   email: ''
 }
@@ -28,7 +32,7 @@ type Props = {
 };
 
 export default function AddClienteDialog({ open, onClose, onSave, cliente }: Props) {
-  const clienteVuoto = { nomeCliente: '', ragioneSociale: '', partitaIva: '', telefono: '', email: '' };
+  const clienteVuoto = { nomeCliente: '', ragioneSociale: '', partitaIva: '', telefono: '', email: '', indirizzo: '', codiceSDI: ''};
   const [data, setData] = useState(clienteVuoto);
 
   useEffect(() => {
@@ -65,7 +69,9 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
         <Stack spacing={2} mt={1}>
           <TextField label="Nome" value={data.nomeCliente} onChange={(e) => handleChange('nomeCliente', e.target.value)} fullWidth />
           <TextField label="Ragione Sociale" value={data.ragioneSociale} onChange={(e) => handleChange('ragioneSociale', e.target.value)} fullWidth />
+            <TextField label="Indirizzo" value={data.indirizzo} onChange={e => handleChange('indirizzo', e.target.value)} fullWidth/>
           <TextField label="Partita IVA" value={data.partitaIva} onChange={(e) => handleChange('partitaIva', e.target.value)} fullWidth />
+            <TextField label="Codice SDI" value={data.codiceSDI} onChange={e => handleChange('codiceSDI', e.target.value)} fullWidth/>
           <TextField label="Telefono" value={data.telefono} onChange={(e) => handleChange('telefono', e.target.value)} fullWidth />
           <TextField label="Email" value={data.email} onChange={(e) => handleChange('email', e.target.value)} fullWidth />
         </Stack>

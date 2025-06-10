@@ -10,6 +10,8 @@ export type Cliente = {
   partitaIva: string;
   telefono: string;
   email: string;
+  indirizzo: string;
+  codiceSDI: string;
   createdAt: string;
   synced?: boolean;
 };

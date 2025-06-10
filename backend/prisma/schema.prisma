@@ -17,7 +17,9 @@ model Cliente {
   id             Int      @id @default(autoincrement())
   nomeCliente    String
   ragioneSociale String
+  indirizzo      String
   partitaIva     String
+  codiceSDI      String
   telefono       String
   email          String
   createdAt      DateTime @default(now())
