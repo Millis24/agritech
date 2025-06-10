@@ -32,6 +32,7 @@ export default function AddBollaDialog({
   const [prodottiBolla, setProdottiBolla] = useState<any[]>([]);
   const [consegnaACarico, setConsegnaACarico] = useState('');
   const [vettore, setVettore] = useState('');
+  const [destTipo, setDestTipo] = useState<'sede'|'altra'>('sede');
 
   useEffect(() => {
     if (selectedClienteId !== '') {
@@ -93,6 +94,15 @@ export default function AddBollaDialog({
     const nuovi = [...prodottiBolla];
     nuovi[index][field] = value;
 
+    // aggiorna automaticamente qualità e prezzo del prodotto
+    if (field === 'nomeProdotto') {
+     const prodottoSelezionato = prodotti.find(p => p.nome === value);
+     if (prodottoSelezionato) {
+       nuovi[index].qualita = prodottoSelezionato.calibro;
+       //nuovi[index].prezzo = prodottoSelezionato.prezzo;
+     }
+   }
+
     // aggiorna automaticamente il prezzo dell'imballaggio selezionato
     if (field === 'nomeImballaggio') {
       const imballaggio = imballaggi.find(i => i.tipo === value);
@@ -114,7 +124,7 @@ export default function AddBollaDialog({
       destinatarioTelefono: destinatario.telefono,
       destinatarioPartitaIva: destinatario.partitaIva,
       destinatarioCodiceSDI: destinatario.codiceSDI,
-      indirizzoDestinazione,
+      indirizzoDestinazione: destTipo === 'sede' ? destinatario.indirizzo : indirizzoDestinazione,
       causale,
       prodotti: JSON.stringify(prodottiBolla),
       daTrasportare: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: p.numeroColli }))),
@@ -160,11 +170,33 @@ export default function AddBollaDialog({
           <Grid size={6}>
             <TextField fullWidth label="Data e ora" type="datetime-local" value={dataOra} onChange={(e) => setDataOra(e.target.value)} />
           </Grid>
+          
 
           <Grid size={6}>
-            <TextField fullWidth label="Indirizzo di destinazione" value={indirizzoDestinazione} onChange={(e) => setIndirizzoDestinazione(e.target.value)} />
+            <TextField select fullWidth label="Indirizzo destinazione" value={destTipo} onChange={e => setDestTipo(e.target.value as 'sede' | 'altra')}>
+              <MenuItem value="sede">Sede azienda destinataria</MenuItem>
+              <MenuItem value="altra">Altra sede</MenuItem>
+            </TextField>          
           </Grid>
-
+          {destTipo === 'altra' ? (
+            <Grid size={6}>
+              <TextField
+                fullWidth
+                label="Inserisci indirizzo"
+                value={indirizzoDestinazione}
+                onChange={e => setIndirizzoDestinazione(e.target.value)}
+              />
+            </Grid>
+          ) : (
+            <Grid size={6}>
+              <TextField
+                fullWidth
+                label="Sede destinataria (dal cliente)"
+                value={destinatario.indirizzo}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+          )}
           <Grid size={6}>
             <TextField select fullWidth label="Causale di trasporto" value={causale} onChange={(e) => setCausale(e.target.value)}>
               <MenuItem value="Vendita">Vendita</MenuItem>
@@ -175,8 +207,8 @@ export default function AddBollaDialog({
 
           <Grid size={6}>
             <TextField select fullWidth label="Consegna a carico del" value={consegnaACarico} onChange={(e) => setConsegnaACarico(e.target.value)}>
-              <MenuItem value="Mittente">Mittente</MenuItem>
               <MenuItem value="Destinatario">Destinatario</MenuItem>
+              <MenuItem value="Mittente">Mittente</MenuItem>
             </TextField>
           </Grid>
 
