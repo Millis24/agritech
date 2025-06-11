@@ -19,6 +19,8 @@ import { getAllClienti, type Cliente } from '../../storage/clientiDB';
 import { getAllProdotti, type Prodotto } from '../../storage/prodottiDB';
 import { getAllImballaggi, type Imballaggio } from '../../storage/imballaggiDB';
 
+import Swal from 'sweetalert2';
+
 interface ImballaggioRow {
   tipo: string;
   valore: string;
@@ -323,7 +325,29 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
       renderCell: params => (
         <>
           <IconButton onClick={() => { setEditing(params.row); setOpen(true); }}><EditIcon/></IconButton>
-          <IconButton onClick={() => handleDelete(params.row.id)}><DeleteIcon/></IconButton>
+          {/* <IconButton onClick={() => handleDelete(params.row.id)}><DeleteIcon/></IconButton> */}
+          <IconButton onClick={() => {
+            Swal.fire({
+                title: `Eliminare la bolla n. ${params.row.numeroBolla}?`,
+                text: "Questa operazione non può essere annullata.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, elimina',
+                cancelButtonText: 'No, annulla',
+                reverseButtons: true,
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  handleDelete(params.row.id);
+                  Swal.fire(
+                    'Eliminata!',
+                    `La bolla n. ${params.row.numeroBolla} è stata eliminata.`,
+                    'success'
+                  );
+                }
+              });
+            }}>
+            <DeleteIcon />
+          </IconButton>
           <IconButton onClick={() => handlePrint(params.row)}><PrintIcon/></IconButton>
         </>
       )
@@ -353,49 +377,12 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
 
       {/* Filtri  */}
       <Box display="flex" alignItems="center" gap={2} mb={2}>
-        <Button variant="contained" onClick={() => {
-          setFilterCliente('');
-          setDateFrom('');
-          setDateTo('');
-        }}>
-          Tutti
-        </Button>
-        <TextField
-          size="small"
-          label="Nome Cliente"
-          value={filterCliente}
-          onChange={e => setFilterCliente(e.target.value)}
-        />
-        <TextField
-          size="small"
-          label="Da"
-          type="date"
-          InputLabelProps={{ shrink: true }}
-          value={dateFrom}
-          onChange={e => setDateFrom(e.target.value)}
-        />
-        <TextField
-          size="small"
-          label="A"
-          type="date"
-          InputLabelProps={{ shrink: true }}
-          value={dateTo}
-          onChange={e => setDateTo(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            setFilterCliente('');
-            setDateFrom('');
-            setDateTo('');
-          }}
-        >
-          Pulisci filtri
-          <DeleteForeverIcon/>
-        </Button>
+        <Button variant="contained" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }}> Tutti </Button>
+        <TextField size="small" label="Nome Cliente" value={filterCliente} onChange={e => setFilterCliente(e.target.value)} />
+        <TextField size="small" label="Da" type="date" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+        <TextField size="small" label="A" type="date" InputLabelProps={{ shrink: true }} value={dateTo} onChange={e => setDateTo(e.target.value)} />
+        <Button variant="contained" color="secondary" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} > Pulisci filtri <DeleteForeverIcon/> </Button>
       </Box>
-
 
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid rows={filteredBolle} columns={columns} getRowId={row => row.id!} initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }} pageSizeOptions={[5, 10]}/>

@@ -6,7 +6,7 @@ export type Prodotto = {
   varieta: string;
   calibro: string;
   colore: string;
-  createdAt: string;
+  createdAt?: string;
   synced?: boolean;
 };
 

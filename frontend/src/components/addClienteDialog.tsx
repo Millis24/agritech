@@ -1,5 +1,6 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack } from '@mui/material';
 import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 export interface Cliente {
   id: number;
@@ -51,15 +52,43 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // 1) chiedi conferma
+    const isEdit = Boolean(cliente);
+    const result = await Swal.fire({
+      title: isEdit
+        ? `Modificare il cliente "${data.nomeCliente}"?`
+        : `Creare il cliente "${data.nomeCliente}"?`,
+      text: isEdit
+        ? 'I dati esistenti verranno aggiornati.'
+        : 'Verrà inserito un nuovo cliente nel sistema.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: isEdit ? 'Sì, modifica' : 'Sì, crea',
+      cancelButtonText: 'No, annulla',
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) {
+      return; // l'utente ha annullato
+    }
+
+    // 2) esegui POST o PUT
     if (cliente) {
-      // MODIFICA
       onSave({ ...cliente, ...data });
     } else {
-      // CREAZIONE
       onSave(data);
     }
     onClose();
+
+    // 3) toast di successo
+    await Swal.fire({
+      icon: 'success',
+      title: isEdit
+        ? 'Cliente modificato!'
+        : 'Cliente creato!',
+      showConfirmButton: false,
+      timer: 1400
+    });
   };
 
   return (

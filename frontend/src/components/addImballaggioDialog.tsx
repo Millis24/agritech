@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid } from '@mui/material';
+import Swal from 'sweetalert2';
 
 interface AddImballaggioDialogProps {
   open: boolean;
@@ -76,7 +77,8 @@ export default function AddImballaggioDialog({
     }));
   };
 
-  const handleSubmit = () => {
+ const handleSubmit = async () => {
+    // 1) Prepara l'oggetto da salvare
     const nuovo: any = {
       ...formData,
       prezzo: Number(formData.prezzo),
@@ -86,8 +88,39 @@ export default function AddImballaggioDialog({
     if (imballaggio?.id) {
       nuovo.id = imballaggio.id;
     }
+
+    const isEdit = Boolean(imballaggio?.id);
+    // 2) Finestra di conferma
+    const result = await Swal.fire({
+      title: isEdit
+        ? `Modificare l’imballaggio "${formData.tipo}"?`
+        : `Creare l’imballaggio "${formData.tipo}"?`,
+      text: isEdit
+        ? 'I dati esistenti verranno aggiornati.'
+        : 'Verrà aggiunto un nuovo imballaggio.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: isEdit ? 'Sì, modifica' : 'Sì, crea',
+      cancelButtonText: 'No, annulla',
+      reverseButtons: true
+    });
+    if (!result.isConfirmed) {
+      return; // annulla il submit
+    }
+
+    // 3) Salva e chiudi il dialog
     onSave(nuovo);
     onClose();
+
+    // 4) Toast di conferma successo
+    await Swal.fire({
+      icon: 'success',
+      title: isEdit
+        ? 'Imballaggio modificato!'
+        : 'Imballaggio creato!',
+      showConfirmButton: false,
+      timer: 1400
+    });
   };
 
   return (

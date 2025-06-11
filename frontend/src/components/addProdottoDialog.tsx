@@ -1,5 +1,6 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 export interface Prodotto {
   id: number;
@@ -45,15 +46,43 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // 1) chiedi conferma
+    const isEdit = Boolean(prodotto);
+    const result = await Swal.fire({
+      title: isEdit
+        ? `Modificare il prodotto "${data.nome}"?`
+        : `Creare il prodotto "${data.nome}"?`,
+      text: isEdit
+        ? 'I dati esistenti verranno aggiornati.'
+        : 'Verrà inserito un nuovo prodotto nel sistema.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: isEdit ? 'Sì, modifica' : 'Sì, crea',
+      cancelButtonText: 'No, annulla',
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) {
+      return; // l'utente ha annullato
+    }
+
+    // 2) esegui POST o PUT
     if (prodotto) {
-      // MODIFICA
       onSave({ ...prodotto, ...data });
     } else {
-      // CREAZIONE
       onSave(data);
     }
     onClose();
+
+    // 3) toast di successo
+    await Swal.fire({
+      icon: 'success',
+      title: isEdit
+        ? 'Cliente modificato!'
+        : 'Cliente creato!',
+      showConfirmButton: false,
+      timer: 1400
+    });
   };
 
   return (

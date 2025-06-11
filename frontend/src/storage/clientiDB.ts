@@ -12,7 +12,7 @@ export type Cliente = {
   email: string;
   indirizzo: string;
   codiceSDI: string;
-  createdAt: string;
+  createdAt?: string;
   synced?: boolean;
 };
 

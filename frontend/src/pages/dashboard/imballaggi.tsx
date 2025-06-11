@@ -9,6 +9,7 @@ import AddImballaggioDialog from '../../components/addImballaggioDialog';
 
 import useImballaggiSync from '../../sync/useImballaggiSync';
 import { saveImballaggio, deleteImballaggio as deleteLocalImballaggio, getAllImballaggi, markImballaggiAsDeleted } from '../../storage/imballaggiDB';
+import Swal from 'sweetalert2';
 
 interface Imballaggio {
   id: number;
@@ -64,7 +65,6 @@ export default function Imballaggi() {
         });
         if (response.ok) {
           await deleteLocalImballaggio(id);
-          alert('✅ Prodotto eliminato online');
         } else {
           alert('❌ Errore nella cancellazione');
         }
@@ -159,8 +159,22 @@ export default function Imballaggi() {
           <IconButton onClick={() => handleEditClick(params.row)}>
             <EditIcon />
           </IconButton>
-          <IconButton onClick={() => handleDelete(params.row.id)}>
-            <DeleteIcon />
+          <IconButton onClick={() => {
+              Swal.fire({
+                title: `Eliminare l'imballaggio ${params.row.tipo}?`,
+                text: 'Operazione irreversibile',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, elimina',
+                cancelButtonText: 'No',
+              }).then(res => {
+                if (res.isConfirmed) {
+                  handleDelete(params.row.id);
+                  Swal.fire('Eliminato!', '', 'success');
+                }
+              });
+            }}>
+              <DeleteIcon/>
           </IconButton>
         </>
       )

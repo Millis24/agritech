@@ -7,6 +7,7 @@ import type { Cliente } from './addClienteDialog';
 import type { Prodotto } from './addProdottoDialog';
 import type { Imballaggio } from './addImballaggioDialog';
 import type { Bolla } from '../storage/bolleDB';
+import Swal from 'sweetalert2';
 
 interface BollaDialogProps {
   open: boolean;
@@ -114,7 +115,7 @@ export default function AddBollaDialog({
     setProdottiBolla(nuovi);
   };
 
-  const handleSubmit = () => {
+  async function handleSubmit(){
     const baseBolla = {
       numeroBolla: bolla?.numeroBolla ?? numeroBolla,
       dataOra: new Date(dataOra).toISOString(),
@@ -141,8 +142,38 @@ export default function AddBollaDialog({
       : baseBolla;
     console.log('🚀 submit bolla', nuovaBolla);
 
+    // chiede conferma all’utente
+    const result = await Swal.fire({
+      title: bolla
+        ? `Salvare le modifiche alla bolla n. ${bolla.numeroBolla}?`
+        : `Creare la bolla n. ${numeroBolla}?`,
+      text: bolla
+        ? 'I dati esistenti verranno sovrascritti.'
+        : 'La nuova bolla verrà aggiunta al sistema.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: bolla ? 'Sì, salva' : 'Sì, crea',
+      cancelButtonText: 'No, annulla',
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) {
+      // l'utente ha scelto Annulla
+      return;
+    }
+
     onSave(nuovaBolla);
     onClose();
+
+     // notifica di successo
+    await Swal.fire({
+      title: 'Fatto!',
+      text: bolla
+        ? `La bolla n. ${bolla.numeroBolla} è stata aggiornata.`
+        : `La bolla n. ${nuovaBolla.numeroBolla} è stata creata.`,
+      icon: 'success',
+      timer: 1500,
+      showConfirmButton: false
+    });
   };
 
   return (

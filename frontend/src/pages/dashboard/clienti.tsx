@@ -4,6 +4,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Swal from 'sweetalert2';
 
 import AddClienteDialog from '../../components/addClienteDialog';
 import type { Cliente } from '../../components/addClienteDialog';
@@ -54,7 +55,6 @@ export default function Clienti() {
         });
         if (response.ok) {
           await deleteLocalCliente(id);
-          alert('✅ Cliente eliminato online');
         } else {
           alert('❌ Errore nella cancellazione online');
         }
@@ -108,7 +108,8 @@ export default function Clienti() {
       const offline = {
         ...dataToSend,
         id: isModifica && id !== undefined ? id : Date.now(),
-        synced: false
+        synced: false,
+        createdAt: new Date().toISOString(),
       } as Cliente;
 
       await saveCliente(offline);
@@ -144,8 +145,22 @@ export default function Clienti() {
           <IconButton onClick={() => handleEditClick(params.row)}>
             <EditIcon />
           </IconButton>
-          <IconButton onClick={() => handleDelete(params.row.id)}>
-            <DeleteIcon />
+          <IconButton onClick={() => {
+            Swal.fire({
+              title: `Eliminare il cliente ${params.row.nomeCliente}?`,
+              text: 'Operazione irreversibile',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, elimina',
+              cancelButtonText: 'No',
+            }).then(res => {
+              if (res.isConfirmed) {
+                handleDelete(params.row.id);             // la tua funzione di delete
+                Swal.fire('Eliminato!', '', 'success');
+              }
+            });
+          }}>
+            <DeleteIcon/>
           </IconButton>
         </>
       )

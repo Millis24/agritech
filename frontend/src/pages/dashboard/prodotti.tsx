@@ -10,6 +10,7 @@ import type { Prodotto } from '../../components/addProdottoDialog';
 
 import useProdottiSync from '../../sync/useProdottiSync';
 import { saveProdotto, deleteProdotto as deleteLocalProdotto, getAllProdotti, markProdottoAsDeleted } from '../../storage/prodottiDB';
+import Swal from 'sweetalert2';
 
 export default function Prodotti() {
   const [query, setQuery] = useState('');
@@ -54,7 +55,6 @@ export default function Prodotti() {
       });
       if (response.ok) {
         await deleteLocalProdotto(id);
-        alert('✅ Prodotto eliminato online');
       } else {
         alert('❌ Errore nella cancellazione online');
       }
@@ -119,7 +119,8 @@ export default function Prodotti() {
       const offline = {
         ...dataToSend,
         id: isModifica && id !== undefined ? id : Date.now(),
-        synced: false
+        synced: false,
+        createdAt: new Date().toISOString(),
       } as Prodotto;
 
       await saveProdotto(offline);
@@ -155,9 +156,23 @@ export default function Prodotti() {
           <IconButton onClick={() => handleEditClick(params.row)}>
             <EditIcon />
           </IconButton>
-          <IconButton onClick={() => handleDelete(params.row.id)}>
-            <DeleteIcon />
-          </IconButton>
+          <IconButton onClick={() => {
+            Swal.fire({
+              title: `Eliminare il prodotto ${params.row.nome}?`,
+              text: 'Operazione irreversibile',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, elimina',
+              cancelButtonText: 'No',
+            }).then(res => {
+              if (res.isConfirmed) {
+                handleDelete(params.row.id);
+                Swal.fire('Eliminato!', '', 'success');
+              }
+            });
+          }}>
+          <DeleteIcon/>
+        </IconButton>
         </>
       )
     }
