@@ -22,7 +22,7 @@ export default function Clienti() {
     if (navigator.onLine) {
       try {
         const res = await fetch('http://localhost:4000/api/clienti');
-        if (!res.ok) throw new Error('❌  Errore fetch clienti online');
+        if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setClienti(datiOnline);
       } catch (e) {
@@ -56,14 +56,29 @@ export default function Clienti() {
         if (response.ok) {
           await deleteLocalCliente(id);
         } else {
-          alert('❌ Errore nella cancellazione online');
+          const errTxt = await response.text();
+          await Swal.fire({
+            icon: 'error',
+            title: 'Errore nella cancellazione online',
+            text: errTxt || 'Si è verificato un problema sul server.'
+          });
         }
-      } catch (error) {
-        alert('❌ Errore di rete');
+      } catch (err:any) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore di rete',
+          text: err.message || 'Impossibile contattare il server.'
+        });
       }
     } else {
       await markClienteAsDeleted(id);
-      alert('⚠️ Eliminato offline, sarà sincronizzato');
+      await Swal.fire({
+      icon: 'warning',
+      title: 'Eliminazione offline',
+        text: `Il cliente è stato rimosso localmente e sincronizzato successivamente.`,
+        timer: 1400,
+        showConfirmButton: false
+      });
     }
     
     const locali = await getAllClienti();
@@ -86,7 +101,12 @@ export default function Clienti() {
             const aggiornato = await res.json();
             await saveCliente({ ...aggiornato, synced: true });
           } else {
-            alert('❌ Errore aggiornamento');
+            const testoErr = await res.text();
+            await Swal.fire({
+              icon: 'error',
+              title: 'Errore aggiornamento',
+              text: testoErr || 'Impossibile aggiornare il cliente.'
+            });
           }
         } else {
           const res = await fetch(`http://localhost:4000/api/clienti`, {
@@ -98,11 +118,20 @@ export default function Clienti() {
             const nuovo = await res.json();
             await saveCliente({ ...nuovo, synced: true });
           } else {
-            alert('❌ Errore salvataggio online');
+            const testoErr = await res.text();
+            await Swal.fire({
+              icon: 'error',
+              title: 'Errore salvataggio online',
+              text: testoErr || 'Impossibile creare il cliente.'
+            });
           }
         }
-      } catch {
-        alert('❌ Errore rete');
+      } catch (err: any){
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore di rete',
+          text: err.message || 'Controlla la connessione e riprova.'
+        });
       }
     } else {
       const offline = {
@@ -113,7 +142,15 @@ export default function Clienti() {
       } as Cliente;
 
       await saveCliente(offline);
-      alert(isModifica ? '⚠️ Modifica salvata offline' : '⚠️ Salvato offline');
+        await Swal.fire({
+          icon: 'warning',
+          title: isModifica
+            ? 'Modifica salvata offline'
+            : 'Cliente salvato offline',
+          text: 'Le modifiche verranno sincronizzate quando torni online.',
+          timer: 1400,
+          showConfirmButton: false
+        });
     }
 
     const locali = await getAllClienti();

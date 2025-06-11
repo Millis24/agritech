@@ -32,7 +32,7 @@ export default function Imballaggi() {
     if (navigator.onLine) {
       try {
         const res = await fetch('http://localhost:4000/api/imballaggi');
-        if (!res.ok) throw new Error('❌ Errore fetch imballaggi online');
+        if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setImballaggi(datiOnline);
       } catch (e) {
@@ -66,14 +66,29 @@ export default function Imballaggi() {
         if (response.ok) {
           await deleteLocalImballaggio(id);
         } else {
-          alert('❌ Errore nella cancellazione');
+          const errTxt = await response.text();
+          await Swal.fire({
+            icon: 'error',
+            title: 'Errore nella cancellazione online',
+            text: errTxt || 'Si è verificato un problema sul server.'
+          });
         }
-      } catch (error) {
-        alert('❌ Errore di rete');
+      } catch (err:any) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore di rete',
+          text: err.message || 'Impossibile contattare il server.'
+        });
       }
     } else {
         await markImballaggiAsDeleted(id);
-        alert('⚠️ Eliminato offline, sarà sincronizzato');
+        await Swal.fire({
+        icon: 'warning',
+        title: 'Eliminazione offline',
+          text: `Il cliente è stato rimosso localmente e sincronizzato successivamente.`,
+          timer: 1400,
+          showConfirmButton: false
+        });
     }
 
     const locali = await getAllImballaggi();

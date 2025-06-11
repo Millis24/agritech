@@ -22,7 +22,7 @@ export default function Prodotti() {
     if (navigator.onLine) {
       try {
         const res = await fetch('http://localhost:4000/api/prodotti');
-        if (!res.ok) throw new Error('❌ Errore fetch prodotti online');
+        if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setProdotti(datiOnline);
       } catch (e) {
@@ -56,14 +56,29 @@ export default function Prodotti() {
       if (response.ok) {
         await deleteLocalProdotto(id);
       } else {
-        alert('❌ Errore nella cancellazione online');
+        const errTxt = await response.text();
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore nella cancellazione online',
+          text: errTxt || 'Si è verificato un problema sul server.'
+        });
       }
-    } catch (error) {
-      alert('❌ Errore di rete');
+    } catch (err:any) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Errore di rete',
+        text: err.message || 'Impossibile contattare il server.'
+      });
     }
   } else {
     await markProdottoAsDeleted(id);
-    alert('⚠️ Eliminato offline, sarà sincronizzato');
+    await Swal.fire({
+    icon: 'warning',
+    title: 'Eliminazione offline',
+      text: `Il prodotto è stato rimosso localmente e sincronizzato successivamente.`,
+      timer: 1400,
+      showConfirmButton: false
+    });
   }
 
   const locali = await getAllProdotti();
@@ -108,12 +123,20 @@ export default function Prodotti() {
             const nuovo = JSON.parse(body);
             await saveProdotto({ ...nuovo, synced: true });
           } else {
-            alert('❌ Errore salvataggio online');
+            const testoErr = await res.text();
+            await Swal.fire({
+              icon: 'error',
+              title: 'Errore salvataggio online',
+              text: testoErr || 'Impossibile creare il prodotto.'
+            });
           }
         }
-      } catch (error) {
-        console.error('❌ Errore rete:', error);
-        alert('❌ Errore rete');
+      } catch (err:any) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore di rete',
+          text: err.message || 'Controlla la connessione e riprova.'
+        });
       }
     } else {
       const offline = {
@@ -124,7 +147,15 @@ export default function Prodotti() {
       } as Prodotto;
 
       await saveProdotto(offline);
-      alert(isModifica ? '⚠️ Modifica salvata offline' : '⚠️ Salvato offline');
+      await Swal.fire({
+                icon: 'warning',
+                title: isModifica
+                  ? 'Modifica salvata offline'
+                  : 'Prodotto salvato offline',
+                text: 'Le modifiche verranno sincronizzate quando torni online.',
+                timer: 1400,
+                showConfirmButton: false
+              });
     }
 
     const locali = await getAllProdotti();

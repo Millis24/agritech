@@ -75,16 +75,30 @@ export default function Bolle() {
         const response = await fetch(`http://localhost:4000/api/bolle/${id}`, { method: 'DELETE' });
         if (response.ok) {
           await deleteLocalBolla(id); // elimina le bolle online
-          alert('✅ Bolla eliminata online');
         } else {
-          alert('❌ Errore nella cancellazione online');
+          const errText = await response.text();
+          await Swal.fire({
+          icon: 'error',
+          title: 'Errore durante la cancellazione online',
+          text: errText || 'Si è verificato un problema sul server.'
+          });
         }
-      } catch {
-        alert('❌ Errore di rete');
+      } catch (err: any){
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore di rete',
+          text: err.message || 'Impossibile contattare il server.'
+        });
       }
     } else {
       await markBollaAsDeleted(id); // elimina le bolle offline
-      alert('⚠️ Eliminato offline, sarà sincronizzato');
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Eliminazione offline',
+        text: 'La bolla è stata rimossa localmente e sarà sincronizzata al ritorno online.',
+        timer: 1400,
+        showConfirmButton: false
+      });
     }
     await ricaricaDati();
   };
