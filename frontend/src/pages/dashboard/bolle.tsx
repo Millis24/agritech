@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography, IconButton, CircularProgress } from '@mui/material';
+import { Box, Button, Typography, IconButton, CircularProgress, TextField } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -8,17 +8,12 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 declare module '*.png';
 import logoDataUrl from '../../assets/logo_bolle.png';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import AddBollaDialog from '../../components/addBollaDialog';
 import useBolleSync from '../../sync/useBolleSync';
 
-import {
-  getAllBolle,
-  saveBolla,
-  deleteBolla as deleteLocalBolla,
-  type Bolla,
-  getBolleEliminate
-} from '../../storage/bolleDB';
+import { getAllBolle, saveBolla, deleteBolla as deleteLocalBolla, type Bolla, getBolleEliminate } from '../../storage/bolleDB';
 import { markBollaAsDeleted } from '../../storage/bolleEliminateDB';
 import { getAllClienti, type Cliente } from '../../storage/clientiDB';
 import { getAllProdotti, type Prodotto } from '../../storage/prodottiDB';
@@ -33,6 +28,7 @@ interface ImballaggioRow {
 }
 
 export default function Bolle() {
+  // dati all'interno della bolla dai vari componenti
   const [bolle, setBolle] = useState<Bolla[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Bolla | null>(null);
@@ -41,6 +37,7 @@ export default function Bolle() {
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ricarica dati bolla -> dovrebbe anche sistemare il problema dell'eliminazione offline/online
   const ricaricaDati = async () => {
     const [bolleData, clientiData, prodottiData, imballaggiData] = await Promise.all([
       getAllBolle(),
@@ -48,13 +45,13 @@ export default function Bolle() {
       getAllProdotti(),
       getAllImballaggi()
     ]);
-
+    // id eliminati
     const eliminatiIds = (await getBolleEliminate()).map(b => b.id);
-
+    // filtra le bolle visibili dopo l'eliminazione
     const bolleVisibili = bolleData
       .filter(b => b.id !== undefined)
       .filter(b => !eliminatiIds.includes(b.id!));
-
+    
     setBolle(bolleVisibili);
     setClienti(clientiData);
     setProdotti(prodottiData);
@@ -75,7 +72,7 @@ export default function Bolle() {
       try {
         const response = await fetch(`http://localhost:4000/api/bolle/${id}`, { method: 'DELETE' });
         if (response.ok) {
-          await deleteLocalBolla(id);
+          await deleteLocalBolla(id); // elimina le bolle online
           alert('✅ Bolla eliminata online');
         } else {
           alert('❌ Errore nella cancellazione online');
@@ -84,7 +81,7 @@ export default function Bolle() {
         alert('❌ Errore di rete');
       }
     } else {
-      await markBollaAsDeleted(id);
+      await markBollaAsDeleted(id); // elimina le bolle offline
       alert('⚠️ Eliminato offline, sarà sincronizzato');
     }
     await ricaricaDati();
@@ -291,6 +288,28 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
     doc.save(`bolla n. ${bolla.numeroBolla}.pdf`);
   }
 
+  // filtri per tabella bolle
+  const [filterCliente, setFilterCliente] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>(''); // ISO yyyy-MM-dd
+  const [dateTo, setDateTo]   = useState<string>('');
+  
+  // funzione per i filtri da mettere in <DataGrid>
+  // filtraggio combinato
+  const filteredBolle = bolle.filter((b) => {
+    // filtro per cliente, se vuoto passa tutto
+    const byCliente = filterCliente
+      ? b.destinatarioNome.toLowerCase().includes(filterCliente.toLowerCase())
+      : true;
+
+    // filtro per date
+    const dataBolla = new Date(b.dataOra);
+    const fromOK = dateFrom ? dataBolla >= new Date(dateFrom) : true;
+    const toOK   = dateTo   ? dataBolla <= new Date(dateTo)   : true;
+
+    return byCliente && fromOK && toOK;
+  });
+
+  // tabella bolle
   const columns: GridColDef[] = [
     { field: 'numeroBolla', headerName: 'Numero', width: 100 },
     { field: 'dataOra', headerName: 'Data', width: 150 },
@@ -332,14 +351,54 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
         }}>Aggiungi Bolla</Button>
       </Box>
 
-      <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={bolle}
-          columns={columns}
-          getRowId={row => row.id!}
-          initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-          pageSizeOptions={[5, 10]}
+      {/* Filtri  */}
+      <Box display="flex" alignItems="center" gap={2} mb={2}>
+        <Button variant="contained" onClick={() => {
+          setFilterCliente('');
+          setDateFrom('');
+          setDateTo('');
+        }}>
+          Tutti
+        </Button>
+        <TextField
+          size="small"
+          label="Nome Cliente"
+          value={filterCliente}
+          onChange={e => setFilterCliente(e.target.value)}
         />
+        <TextField
+          size="small"
+          label="Da"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={dateFrom}
+          onChange={e => setDateFrom(e.target.value)}
+        />
+        <TextField
+          size="small"
+          label="A"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={dateTo}
+          onChange={e => setDateTo(e.target.value)}
+        />
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            setFilterCliente('');
+            setDateFrom('');
+            setDateTo('');
+          }}
+        >
+          Pulisci filtri
+          <DeleteForeverIcon/>
+        </Button>
+      </Box>
+
+
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid rows={filteredBolle} columns={columns} getRowId={row => row.id!} initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }} pageSizeOptions={[5, 10]}/>
       </div>
 
       <AddBollaDialog
