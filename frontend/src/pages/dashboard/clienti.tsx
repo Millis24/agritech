@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+//import { useNavigate } from 'react-router-dom';
 import { Box, Button, Typography, IconButton, TextField } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import Swal from 'sweetalert2';
+import SchedaClienteDialog from '../../components/schedaClienteDialog.tsx';
 
 import AddClienteDialog from '../../components/addClienteDialog';
 import type { Cliente } from '../../components/addClienteDialog';
@@ -13,10 +16,13 @@ import useClientiSync from '../../sync/useClientiSync';
 import { saveCliente, deleteCliente as deleteLocalCliente, getAllClienti, markClienteAsDeleted } from '../../storage/clientiDB';
 
 export default function Clienti() {
+  //const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [clienti, setClienti] = useState<Cliente[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Cliente | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
 
   const ricaricaDati = async () => {
     if (navigator.onLine) {
@@ -204,6 +210,18 @@ export default function Clienti() {
           </IconButton>
         </>
       )
+    },
+    {
+      field: 'view',
+      headerName: 'Visualizza',
+      renderCell: params => (
+        <IconButton onClick={() => {
+            setSelectedCliente(params.row);
+            setViewOpen(true);
+          }}>
+          <VisibilityIcon />
+        </IconButton>
+      )
     }
   ];
 
@@ -247,6 +265,12 @@ export default function Clienti() {
         }}
         onSave={handleSave}
         cliente={editing}
+      />
+
+      <SchedaClienteDialog
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        cliente={selectedCliente}
       />
     </Box>
   );
