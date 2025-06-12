@@ -102,7 +102,10 @@ export default function AddImballaggioDialog({
       showCancelButton: true,
       confirmButtonText: isEdit ? 'Sì, modifica' : 'Sì, crea',
       cancelButtonText: 'No, annulla',
-      reverseButtons: true
+      reverseButtons: true,
+      focusConfirm: false,   // non mettere subito a fuoco il Confirm
+      focusCancel: true,     // metti a fuoco prima il Cancel
+      allowEnterKey: true,   // abilita Enter per confermare
     });
     if (!result.isConfirmed) {
       return; // annulla il submit
@@ -124,7 +127,7 @@ export default function AddImballaggioDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
       <DialogTitle>{imballaggio ? 'Modifica Imballaggio' : 'Nuovo Imballaggio'}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>

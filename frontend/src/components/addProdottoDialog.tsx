@@ -61,6 +61,9 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
       confirmButtonText: isEdit ? 'Sì, modifica' : 'Sì, crea',
       cancelButtonText: 'No, annulla',
       reverseButtons: true,
+      focusConfirm: false,   // non mettere subito a fuoco il Confirm
+      focusCancel: true,     // metti a fuoco prima il Cancel
+      allowEnterKey: true,   // abilita Enter per confermare
     });
     if (!result.isConfirmed) {
       return; // l'utente ha annullato
@@ -86,7 +89,7 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
       <DialogTitle>{prodotto ? 'Modifica Prodotto' : 'Aggiungi Prodotto'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} mt={1}>

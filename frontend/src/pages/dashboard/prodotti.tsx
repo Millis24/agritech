@@ -77,7 +77,7 @@ export default function Prodotti() {
     title: 'Eliminazione offline',
       text: `Il prodotto è stato rimosso localmente e sincronizzato successivamente.`,
       timer: 1400,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   }
 
@@ -154,7 +154,7 @@ export default function Prodotti() {
                   : 'Prodotto salvato offline',
                 text: 'Le modifiche verranno sincronizzate quando torni online.',
                 timer: 1400,
-                showConfirmButton: false
+                showConfirmButton: false,
               });
     }
 
@@ -195,6 +195,9 @@ export default function Prodotti() {
               showCancelButton: true,
               confirmButtonText: 'Sì, elimina',
               cancelButtonText: 'No',
+              focusConfirm: false,   // non mettere subito a fuoco il Confirm
+              focusCancel: true,     // metti a fuoco prima il Cancel
+              allowEnterKey: true,   // abilita Enter per confermare
             }).then(res => {
               if (res.isConfirmed) {
                 handleDelete(params.row.id);

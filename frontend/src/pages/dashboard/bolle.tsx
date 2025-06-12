@@ -97,7 +97,10 @@ export default function Bolle() {
         title: 'Eliminazione offline',
         text: 'La bolla è stata rimossa localmente e sarà sincronizzata al ritorno online.',
         timer: 1400,
-        showConfirmButton: false
+        showConfirmButton: false,
+        focusConfirm: false,   // non mettere subito a fuoco il Confirm
+        focusCancel: true,     // metti a fuoco prima il Cancel
+        allowEnterKey: true,   // abilita Enter per confermare
       });
     }
     await ricaricaDati();
@@ -354,6 +357,9 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
                 confirmButtonText: 'Sì, elimina',
                 cancelButtonText: 'No, annulla',
                 reverseButtons: true,
+                focusConfirm: false,   // non mettere subito a fuoco il Confirm
+                focusCancel: true,     // metti a fuoco prima il Cancel
+                allowEnterKey: true,   // abilita Enter per confermare
               }).then((result) => {
                 if (result.isConfirmed) {
                   handleDelete(params.row.id);
