@@ -146,8 +146,8 @@ export default function AddImballaggioDialog({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Annulla</Button>
-        <Button variant="contained" onClick={handleSubmit}>Salva</Button>
+        <Button type="button" onClick={onClose}>Annulla</Button>
+        <Button type="submit" variant="contained" onClick={handleSubmit}>Salva</Button>
       </DialogActions>
     </Dialog>
   );

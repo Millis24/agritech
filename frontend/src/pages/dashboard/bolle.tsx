@@ -305,6 +305,7 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
   }
 
   // filtri per tabella bolle
+  const [filterNumero, setFilterNumero] = useState<string>('');
   const [filterCliente, setFilterCliente] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<string>(''); // ISO yyyy-MM-dd
   const [dateTo, setDateTo]   = useState<string>('');
@@ -312,6 +313,10 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
   // funzione per i filtri da mettere in <DataGrid>
   // filtraggio combinato
   const filteredBolle = bolle.filter((b) => {
+    // filtro per numero bolla
+    const matchNumero = filterNumero
+      ? b.numeroBolla.toString().includes(filterNumero)
+      : true;
     // filtro per cliente, se vuoto passa tutto
     const byCliente = filterCliente
       ? b.destinatarioNome.toLowerCase().includes(filterCliente.toLowerCase())
@@ -322,7 +327,7 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
     const fromOK = dateFrom ? dataBolla >= new Date(dateFrom) : true;
     const toOK   = dateTo   ? dataBolla <= new Date(dateTo)   : true;
 
-    return byCliente && fromOK && toOK;
+    return matchNumero && byCliente && fromOK && toOK;
   });
 
   // tabella bolle
@@ -392,6 +397,7 @@ Per contestazione di qualità, prezzo e peso la merce va restituita entro 48 ore
       {/* Filtri  */}
       <Box display="flex" alignItems="center" gap={2} mb={2}>
         <Button variant="contained" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }}> Tutti </Button>
+        <TextField size="small" label="N. bolla" value={filterNumero} onChange={e => setFilterNumero(e.target.value)}/>
         <TextField size="small" label="Nome Cliente" value={filterCliente} onChange={e => setFilterCliente(e.target.value)} />
         <TextField size="small" label="Da" type="date" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
         <TextField size="small" label="A" type="date" InputLabelProps={{ shrink: true }} value={dateTo} onChange={e => setDateTo(e.target.value)} />

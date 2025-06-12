@@ -8,9 +8,14 @@ export type Cliente = {
   nomeCliente: string;
   ragioneSociale: string;
   partitaIva: string;
-  telefono: string;
+  telefonoFisso: string;
+  telefonoCell: string;
   email: string;
-  indirizzo: string;
+  via: string;
+  numeroCivico: string;
+  cap: string;
+  paese: string;
+  provincia: string;
   codiceSDI: string;
   createdAt?: string;
   synced?: boolean;

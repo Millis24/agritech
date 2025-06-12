@@ -97,8 +97,8 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Annulla</Button>
-        <Button onClick={handleSubmit} variant="contained">Salva</Button>
+        <Button type="button" onClick={onClose}>Annulla</Button>
+        <Button type="submit" onClick={handleSubmit} variant="contained">Salva</Button>
       </DialogActions>
     </Dialog>
   );

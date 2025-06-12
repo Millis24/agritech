@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, MenuItem, Typography, Grid
 } from '@mui/material';
-import type { Cliente } from './addClienteDialog';
+import type { Cliente } from '../storage/clientiDB';
 import type { Prodotto } from './addProdottoDialog';
 import type { Imballaggio } from './addImballaggioDialog';
 import type { Bolla } from '../storage/bolleDB';
@@ -24,7 +24,7 @@ export default function AddBollaDialog({
   open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla
 }: BollaDialogProps) {
   const [destinatario, setDestinatario] = useState({
-    nome: '', indirizzo: '', email: '', telefono: '', partitaIva: '', codiceSDI: ''
+    nome: '',   via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: ''
   });
   const [selectedClienteId, setSelectedClienteId] = useState<number | ''>('');
   const [indirizzoDestinazione, setIndirizzoDestinazione] = useState('');
@@ -34,6 +34,7 @@ export default function AddBollaDialog({
   const [consegnaACarico, setConsegnaACarico] = useState('');
   const [vettore, setVettore] = useState('');
   const [destTipo, setDestTipo] = useState<'sede'|'altra'>('sede');
+  const [selectedPhoneType, setSelectedPhoneType] = useState<'fisso'|'cell'>('fisso');
 
   useEffect(() => {
     if (selectedClienteId !== '') {
@@ -41,27 +42,43 @@ export default function AddBollaDialog({
       if (cliente) {
         setDestinatario({
           nome: cliente.nomeCliente,
-          indirizzo: cliente.indirizzo,
+          via: cliente.via,
+          numeroCivico: cliente.numeroCivico,
           email: cliente.email,
-          telefono: cliente.telefono,
+          telefonoFisso: cliente.telefonoFisso,
+          telefonoCell: cliente.telefonoCell,
           partitaIva: cliente.partitaIva,
           codiceSDI: cliente.codiceSDI
         });
       }
     }
-  }, [selectedClienteId]);
+  }, [selectedClienteId, clienti]);
 
   useEffect(() => {
-    if (bolla)  {
+      if (bolla)  {
+        // split indirizzo
+        let via = '', numeroCivico = '';
+        const indir = bolla.destinatarioIndirizzo || '';
+        const parts = indir.split(' ');
+        if (parts.length >= 2) {
+          via = parts.slice(0, -1).join(' ');
+          numeroCivico = parts.slice(-1)[0];
+      } else {
+        via = indir;
+      }
       setDestinatario({
         nome: bolla.destinatarioNome,
-        indirizzo: bolla.destinatarioIndirizzo,
+        via,
+        numeroCivico,
         email: bolla.destinatarioEmail,
-        telefono: bolla.destinatarioTelefono,
+        telefonoFisso: bolla.destinatarioTelefono,
+        telefonoCell: '',
         partitaIva: bolla.destinatarioPartitaIva,
         codiceSDI: bolla.destinatarioCodiceSDI
       });
+      setSelectedPhoneType('fisso');
       setDataOra(bolla.dataOra.slice(0, 16));
+      setDestTipo('sede');
       setIndirizzoDestinazione(bolla.indirizzoDestinazione);
       setCausale(bolla.causale);
       setConsegnaACarico(bolla.consegnaACarico);
@@ -73,14 +90,16 @@ export default function AddBollaDialog({
         setProdottiBolla([]);
       }
     } else {
-      setDestinatario({ nome: '', indirizzo: '', email: '', telefono: '', partitaIva: '', codiceSDI: '' });
+      setDestinatario({ nome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: '' });
       setSelectedClienteId('');
+      setDestTipo('sede');
       setIndirizzoDestinazione('');
       setCausale('');
       setDataOra(new Date().toISOString().slice(0, 16));
       setProdottiBolla([]);
       setConsegnaACarico('');
       setVettore('');
+      setSelectedPhoneType('fisso');
     }
   }, [open, bolla]);
 
@@ -116,16 +135,22 @@ export default function AddBollaDialog({
   };
 
   async function handleSubmit(){
+    const destinatarioInd = destTipo==='sede'
+      ? `${destinatario.via} ${destinatario.numeroCivico}`
+      : indirizzoDestinazione;
+    const telefonoSel = selectedPhoneType==='fisso'
+      ? destinatario.telefonoFisso
+      : destinatario.telefonoCell;
     const baseBolla = {
       numeroBolla: bolla?.numeroBolla ?? numeroBolla,
       dataOra: new Date(dataOra).toISOString(),
       destinatarioNome: destinatario.nome,
-      destinatarioIndirizzo: destinatario.indirizzo,
+       destinatarioIndirizzo:destinatarioInd,
       destinatarioEmail: destinatario.email,
-      destinatarioTelefono: destinatario.telefono,
+      destinatarioTelefono:telefonoSel,
       destinatarioPartitaIva: destinatario.partitaIva,
       destinatarioCodiceSDI: destinatario.codiceSDI,
-      indirizzoDestinazione: destTipo === 'sede' ? destinatario.indirizzo : indirizzoDestinazione,
+      indirizzoDestinazione: destinatarioInd,
       causale,
       prodotti: JSON.stringify(prodottiBolla),
       daTrasportare: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: p.numeroColli }))),
@@ -155,6 +180,9 @@ export default function AddBollaDialog({
       confirmButtonText: bolla ? 'Sì, salva' : 'Sì, crea',
       cancelButtonText: 'No, annulla',
       reverseButtons: true,
+      focusConfirm: false,   // non mettere subito a fuoco il Confirm
+      focusCancel: true,     // metti a fuoco prima il Cancel
+      allowEnterKey: true,   // abilita Enter per confermare
     });
     if (!result.isConfirmed) {
       // l'utente ha scelto Annulla
@@ -219,14 +247,14 @@ export default function AddBollaDialog({
               />
             </Grid>
           ) : (
-            <Grid size={6}>
-              <TextField
-                fullWidth
-                label="Sede destinataria (dal cliente)"
-                value={destinatario.indirizzo}
-                InputProps={{ readOnly: true }}
-              />
-            </Grid>
+             <Grid size={6}>
+                <TextField
+                  fullWidth
+                  label="Sede destinataria"
+                  value={`${destinatario.via} ${destinatario.numeroCivico}`}
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
           )}
           <Grid size={6}>
             <TextField select fullWidth label="Causale di trasporto" value={causale} onChange={(e) => setCausale(e.target.value)}>
@@ -294,8 +322,8 @@ export default function AddBollaDialog({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Annulla</Button>
-        <Button variant="contained" onClick={handleSubmit}>Salva</Button>
+        <Button type="button" onClick={onClose}>Annulla</Button>
+        <Button type="submit" variant="contained" onClick={handleSubmit}>Salva</Button>
       </DialogActions>
     </Dialog>
   );
