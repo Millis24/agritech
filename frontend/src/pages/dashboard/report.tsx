@@ -1,28 +1,7 @@
 // File: src/pages/dashboard/report.tsx
-import React, { useEffect, useState, useMemo } from 'react';
-import {
-  Box,
-  Typography,
-  Stack,
-  Button,
-  TextField,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-} from '@mui/material';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+import { useEffect, useState, useMemo } from 'react';
+import { Box, Typography, Stack, Button, TextField, MenuItem, FormControlLabel, Checkbox} from '@mui/material';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { saveAs } from 'file-saver';
 import { getAllBolle, type Bolla } from '../../storage/bolleDB';
 import { getAllClienti, type Cliente } from '../../storage/clientiDB';
@@ -184,16 +163,23 @@ export default function ReportPage() {
       </Stack>
       <Box height={300} mb={4}>
         <ResponsiveContainer>
-          <BarChart data={dataProd} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="kg" fill="#8884d8" name="Kg spediti" />
-            {showCountProd && <Bar dataKey="count" fill="#82ca9d" name="Numero bolle" />}  
-          </BarChart>
-        </ResponsiveContainer>
+  <BarChart data={dataProd} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="name" />
+    {/* Asse dei Kg a sinistra */}
+    <YAxis yAxisId="left" />
+    {/* Asse del conteggio a destra */}
+    <YAxis yAxisId="right" orientation="right" allowDecimals={false} />
+    <Tooltip />
+    <Legend />
+    {/* Barre Kg → asse sinistro */}
+    <Bar yAxisId="left" dataKey="kg" fill="#8884d8" name="Kg spediti" />
+    {/* Barre Conteggio → asse destro */}
+    {showCountProd && (
+      <Bar yAxisId="right" dataKey="count" fill="#82ca9d" name="Numero bolle" />
+    )}
+  </BarChart>
+</ResponsiveContainer>
       </Box>
 
       {/* Grafico 2 */}
@@ -272,8 +258,7 @@ export default function ReportPage() {
           </ResponsiveContainer>
         </Box>
         <Box width="45%" height={250}>
-          <Typography>Causali</
-Typography>
+          <Typography>Causali</Typography>
           <ResponsiveContainer>
             <PieChart>
               <Legend verticalAlign="bottom" />
