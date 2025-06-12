@@ -27,7 +27,7 @@ export async function handlePrint(bolla: Bolla) {
   doc.setFontSize(16);
 
   // Spazio sotto logo
-  cursorY = logoY + logoH + 2;
+  cursorY = 25; // ridotto gap sotto logo
 
   // MITTENTE
   const mittX = M;
@@ -123,7 +123,7 @@ export async function handlePrint(bolla: Bolla) {
   // IMBALLAGGI A RENDERE
   const trasportoArr = JSON.parse(bolla.daTrasportare) as Array<any>;
   const rendArr = JSON.parse(bolla.daRendere) as Array<any>;
-  const imballaggiData = trasportoArr.map((d, i) => ({
+  const imballaggiData = trasportoArr.map((d) => ({
     nomeImballaggio: d.nomeImballaggio,
     numeroColli: d.numeroColli,
     prezzo: imballaggi.find(im => im.tipo === d.nomeImballaggio)?.prezzo
@@ -146,7 +146,7 @@ export async function handlePrint(bolla: Bolla) {
 
   // BARRA RESTITUZIONE E NOTE
   const restY = afterImbY + 8;
-  doc.rect(M, restY, 180, 20);
+  doc.rect(M, restY, pageWidth - 2 * M, 20);  // usa larghezza piena con margini
   doc.setFontSize(12);
   doc.setFont('helvetica','bold');
   const tempoText = 'Tempo concesso per la restituzione degli imballaggi a rendere (in giorni): 15';
