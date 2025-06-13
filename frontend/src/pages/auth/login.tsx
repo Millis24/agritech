@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, TextField, Button, Link, Stack } from '@mui/material';
+import { Box, Card, CardContent, Typography, TextField, Button, Link, Stack, InputAdornment, IconButton } from '@mui/material';
 import decorativeSvg from '../../assets/head.svg';
 import logoCCDD from '../../assets/CAMILLACINODESIGN&DEV_b.svg';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 export default function Login() {
   const [nomeUtente, setNomeUtente] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const toggleShowPassword = () => setShowPassword(show => !show);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,12 +83,25 @@ export default function Login() {
                 />
                 <TextField
                   label="Password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   fullWidth
                   required
                   className='input-tondi'
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={toggleShowPassword}
+                          edge="end"
+                          aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
                 />
                 <Button type="submit" variant="text" disableElevation disableRipple className='btn-save'>
                   Login
@@ -98,14 +115,14 @@ export default function Login() {
           </Stack>
         </CardContent>
         <Box sx={{ p: 1 }} className='logo-login-ccdd'>
-          <Typography variant="caption" display="block" align="center" sx={{color: 'rgba(0, 0, 0, 0.87) !important'}}>
+          <Link href='https://www.camillacinodesigndev.it/' target='_blank' variant="caption" display="block" align="center" sx={{color: 'rgba(0, 0, 0, 0.87) !important'}}>
             powered by <Box
             component="img"
             src={logoCCDD}
             alt="CamillaCino Design & Dev"
             sx={{ height: 40, mx: 'auto' }}
           />
-          </Typography>
+          </Link>
         </Box>
       </Card>
     </Box>
