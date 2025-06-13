@@ -281,7 +281,7 @@ export default function AddBollaDialog({
 
           <Grid size={12}>
             <Typography variant="h6">Prodotti</Typography>
-            <Button variant="outlined" onClick={handleAddProdotto}>+ Aggiungi Prodotto</Button>
+            <Button variant="outlined" onClick={handleAddProdotto} className='btn-neg'>+ Aggiungi Prodotto</Button>
             {prodottiBolla.map((r, i) => (
               <Grid container spacing={1} key={i} sx={{ mt: 1 }}>
                 <Grid size={3}>
@@ -322,8 +322,8 @@ export default function AddBollaDialog({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button type="button" onClick={onClose}>Annulla</Button>
-        <Button type="submit" variant="contained" onClick={handleSubmit}>Salva</Button>
+        <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>
+        <Button type="submit" variant="contained" onClick={handleSubmit} className='btn'>Salva</Button>
       </DialogActions>
     </Dialog>
   );

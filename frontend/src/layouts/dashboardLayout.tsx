@@ -20,7 +20,7 @@ export default function DashboardLayout() {
 
   return (
     <Box>
-      <AppBar position="static" sx={{display: 'flex', alignItems: 'space-between', justifyContent: 'center'}}>
+      <AppBar position="static" sx={{display: 'flex', alignItems: 'space-between', justifyContent: 'center', }}>
         <Toolbar>
           <Typography
             variant="h6"

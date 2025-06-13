@@ -176,13 +176,13 @@ export default function Clienti() {
   const columns: GridColDef[] = [
     { field: 'nomeCliente', headerName: 'Nome', width: 150 },
     { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
-    { field: 'partitaIva', headerName: 'P.IVA', width: 150 },
-    { field: 'telefono', headerName: 'Telefono', width: 150 },
+    // { field: 'partitaIva', headerName: 'P.IVA', width: 150 },
+    { field: 'telefonoCell', headerName: 'Telefono', width: 150 },
     { field: 'email', headerName: 'Email', width: 200 },
     {
       field: 'actions',
       headerName: 'Azioni',
-      width: 150,
+      width: 100,
       renderCell: (params) => (
         <>
           <IconButton onClick={() => handleEditClick(params.row)}>
@@ -211,7 +211,8 @@ export default function Clienti() {
         </>
       )
     },
-    {
+    { 
+      width: 100,
       field: 'view',
       headerName: 'Visualizza',
       renderCell: params => (
@@ -228,11 +229,15 @@ export default function Clienti() {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Gestione Clienti</Typography>
-        <Button variant="contained" onClick={() => {
-          setEditing(null);
-          setOpen(true);
-        }}>
+        <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Clienti</Typography>
+        <Button 
+          variant="contained" 
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+          className='btn'
+        >
           Aggiungi Cliente
         </Button>
       </Box>
@@ -243,17 +248,19 @@ export default function Clienti() {
         size="small"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 2 }}
+        className='input-tondi'
       />
 
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
         <DataGrid
           rows={clientiFiltrati}
           columns={columns}
           initialState={{
-            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+            pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}
-          pageSizeOptions={[5, 10]}
+          pageSizeOptions={[25, 50, 100]}
+          sx={{borderRadius: '32px', padding: '1em'}}
         />
       </div>
 

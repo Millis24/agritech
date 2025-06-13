@@ -10,6 +10,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { logout } from '../hooks/useAuth';
+import logoAgritech from '../assets/agritech-verde.png';
 import '../App.scss';
 
 const drawerWidth = 240;
@@ -40,16 +41,28 @@ export default function Layout() {
 
   const drawer = (
     <div>
-      <Toolbar>
-       <Typography
+      <Toolbar sx={{ justifyContent: 'center' }}>
+        <Typography
           variant="h6"
           noWrap
           component={RouterLink}
           to="/dashboard"
-          sx={{ textDecoration: 'none', color: 'inherit' }}
+          sx={{ textDecoration: 'none', color: 'inherit'}}
         >
-          CRM AgriTech
+          <Box
+            component="img"
+            src={logoAgritech}
+            alt="CRM AgriTech"
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              height: 100,
+              width: 'auto',
+              cursor: 'pointer',
+              mr: 2
+            }}
+          />
         </Typography>
+        
       </Toolbar>
       <Divider />
       <List>
@@ -59,7 +72,7 @@ export default function Layout() {
             selected={location.pathname.startsWith(path)}
             onClick={() => navigate(path)}
           >
-            <ListItemIcon sx={{ color: theme.palette.primary.main }}>
+            <ListItemIcon sx={{ color: 'inherit', backgroundColor: '#8a92ff', display: 'flex', justifyContent: 'center', padding: '.5em', borderRadius: '11px', minWidth: 'auto', marginRight: '1em', boxShadow: '0px 4px 10px 0px #00000045' }}>
               {icon}
             </ListItemIcon>
             <ListItemText primary={text} />
@@ -84,6 +97,7 @@ export default function Layout() {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
+          bgcolor: '#fff',  
         }}
       >
         <Toolbar>
@@ -115,7 +129,12 @@ export default function Layout() {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+              '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              bgcolor: '#4C57E5',
+              color: '#fff'
+            },
           }}
         >
           {drawer}
@@ -125,7 +144,12 @@ export default function Layout() {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+              '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              bgcolor: '#4C57E5',
+              color: '#fff'
+            },
           }}
           open
         >

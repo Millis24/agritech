@@ -215,11 +215,14 @@ export default function Prodotti() {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Gestione Prodotti</Typography>
-        <Button variant="contained" onClick={() => {
-          setEditing(null);
-          setOpen(true);
-        }}>
+        <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Prodotti</Typography>
+        <Button variant="contained" 
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+          className='btn'
+        >
           Aggiungi Prodotto
         </Button>
       </Box>
@@ -230,17 +233,19 @@ export default function Prodotti() {
         size="small"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 2 }}
+        className='input-tondi'
       />
 
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
         <DataGrid
           rows={prodottiFiltrati}
           columns={columns}
           initialState={{
-            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+            pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}
-          pageSizeOptions={[5, 10]}
+          pageSizeOptions={[25, 50, 100]}
+          sx={{borderRadius: '32px', padding: '1em'}}
         />
       </div>
 

@@ -5,6 +5,8 @@ import decorativeSvg from '../../assets/head.svg';
 import logoCCDD from '../../assets/CAMILLACINODESIGN&DEV_b.svg';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Swal from 'sweetalert2';
+
 
 export default function Login() {
   const [nomeUtente, setNomeUtente] = useState('');
@@ -15,10 +17,6 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: chiamata API di login
-    // es: const { token } = await login(username, password);
-    // localStorage.setItem('token', token);
-    navigate('/dashboard');
 
     const res = await fetch('http://localhost:4000/api/login', {
       method: 'POST',
@@ -31,19 +29,24 @@ export default function Login() {
       localStorage.setItem('token', token);
       navigate('/dashboard');
     } else {
-      alert('Credenziali non valide');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Errore',
+        text: 'Credenziali non valide',
+      });
     }
   };
 
   return (
     <Box
       sx={{
+        width: '100vw',
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'background.default',
-        p: 2
+        bgcolor: 'transparent',
+        p: 1
       }}
     >
 
@@ -53,10 +56,10 @@ export default function Login() {
         src={decorativeSvg}
         alt="Decorazione"
         sx={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
-          width: '100%',
+          width: '100vw',
           maxHeight: 400,
           objectFit: 'cover',
           pointerEvents: 'none',

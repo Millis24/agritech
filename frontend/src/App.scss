@@ -2,6 +2,11 @@ body{
   margin: 0 !important;
 }
 
+main{
+  background-color: #F2F5FF;
+  min-height: 100vh;
+}
+
 .swal2-container {
   z-index: 1400 !important;
 }
@@ -16,7 +21,7 @@ body{
   }
 }
 
-.btn-save{
+.btn-save, .btn{
   &.MuiButton-root,
   &.MuiButton-root:hover,
   &.MuiButton-contained,
@@ -26,12 +31,33 @@ body{
     border-radius: 50px;
     width: fit-content;
     padding: .5em 3em;
-    margin: 2em auto;
     text-transform: none;
     box-shadow: 0px 4px 10px 0px #00000045;
+    font-weight: bold;
   }
 }
 
+.btn-save{
+  &.MuiButton-text {
+    margin: 2em auto;
+  }
+}
+
+.btn-neg{
+  &.MuiButton-root,
+  &.MuiButton-root:hover,
+  &.MuiButton-contained,
+  &.MuiButton-text {
+    background-color: #fff;
+    color: #4C57E5;
+    border-radius: 50px;
+    width: fit-content;
+    padding: .5em 3em;
+    text-transform: none;
+    box-shadow: 0px 4px 10px 0px #00000045;
+    font-weight: bold;
+  }
+}
 
 .logo-login-ccdd{
   a{

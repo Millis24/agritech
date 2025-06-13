@@ -191,28 +191,41 @@ export default function Bolle() {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Gestione Bolle</Typography>
-        <Button variant="contained" onClick={() => {
-          if (clienti.length && prodotti.length && imballaggi.length) {
-            setEditing(null); setOpen(true);
-          } else {
-            alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
-          }
-        }}>Aggiungi Bolla</Button>
+        <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Bolle</Typography>
+        <Button variant="contained" 
+          onClick={() => {
+            if (clienti.length && prodotti.length && imballaggi.length) {
+              setEditing(null); setOpen(true);
+            } else {
+              alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
+            }
+          }}
+          className='btn'
+        >
+        Aggiungi Bolla</Button>
       </Box>
 
       {/* Filtri  */}
-      <Box display="flex" alignItems="center" gap={2} mb={2}>
-        <Button variant="contained" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }}> Tutti </Button>
-        <TextField size="small" label="N. bolla" value={filterNumero} onChange={e => setFilterNumero(e.target.value)}/>
-        <TextField size="small" label="Nome Cliente" value={filterCliente} onChange={e => setFilterCliente(e.target.value)} />
-        <TextField size="small" label="Da" type="date" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-        <TextField size="small" label="A" type="date" InputLabelProps={{ shrink: true }} value={dateTo} onChange={e => setDateTo(e.target.value)} />
-        <Button variant="contained" color="secondary" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} > Pulisci filtri <DeleteForeverIcon/> </Button>
+      <Box display="flex" alignItems="center" gap={2} mb={5} mt={5}>
+        <Button variant="contained" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} className='btn'> Tutti </Button>
+        <TextField size="small" label="N. bolla" value={filterNumero} onChange={e => setFilterNumero(e.target.value)} className='input-tondi'/>
+        <TextField size="small" label="Nome Cliente" value={filterCliente} onChange={e => setFilterCliente(e.target.value)} className='input-tondi'/>
+        <TextField size="small" label="Da" type="date" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} className='input-tondi'/>
+        <TextField size="small" label="A" type="date" InputLabelProps={{ shrink: true }} value={dateTo} onChange={e => setDateTo(e.target.value)} className='input-tondi'/>
+        <Button color="error" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} > <DeleteForeverIcon/> </Button>
       </Box>
 
-      <div style={{ height: 400, width: '100%' }}>
-        <DataGrid rows={filteredBolle} columns={columns} getRowId={row => row.id!} initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }} pageSizeOptions={[5, 10]}/>
+      <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
+        <DataGrid 
+          rows={filteredBolle} 
+          columns={columns} 
+          getRowId={row => row.id!} 
+          initialState={{
+            pagination: { paginationModel: { pageSize: 25, page: 0 } }
+          }}
+          pageSizeOptions={[25, 50, 100]}
+          sx={{borderRadius: '32px', padding: '1em'}}
+        />
       </div>
 
       <AddBollaDialog
