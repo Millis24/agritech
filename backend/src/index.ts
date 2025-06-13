@@ -59,6 +59,52 @@ app.post('/api/login', async (req: Request, res: Response) => {
   }
 });
 
+
+// -------------------- UTENTE - PAGINA IMPOSTAZIONI --------------------
+
+// GET /api/user/profile
+app.get('/api/user/profile', verificaToken, async (req, res) => {
+  const userId = (req as any).user.userId;
+  const utente = await prisma.utente.findUnique({ where: { id: userId } });
+  if (!utente) return res.status(404).json({ error: 'Utente non trovato' });
+  // Includi nomeUtente oltre agli altri campi
+  res.json({
+    nomeUtente: utente.nomeUtente,
+    email:      utente.email,
+    notifySync: utente.notifySync,
+    notifyErrors: utente.notifyErrors,
+    darkMode:     utente.darkMode,
+  });
+});
+
+// PUT /api/user/profile
+app.put('/api/user/profile', verificaToken, async (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
+  const { nomeUtente, email, notifySync, notifyErrors, darkMode } = req.body;
+  try {
+    await prisma.utente.update({
+      where: { id: userId },
+      data: { nomeUtente, email, notifySync, notifyErrors, darkMode },
+    });
+    res.sendStatus(200);
+  } catch {
+    res.status(500).json({ error: 'Errore aggiornamento profilo' });
+  }
+});
+
+// POST /api/user/change-password
+app.post('/api/user/change-password', verificaToken, async (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
+  const { oldPassword, newPassword } = req.body;
+  const utente = await prisma.utente.findUnique({ where: { id: userId } });
+  if (!utente) return res.status(404).json({ error: 'Utente non trovato' });
+  const match = await bcrypt.compare(oldPassword, utente.password);
+  if (!match) return res.status(400).json({ error: 'Password attuale errata' });
+  const hashed = await bcrypt.hash(newPassword, 10);
+  await prisma.utente.update({ where: { id: userId }, data: { password: hashed } });
+  res.sendStatus(200);
+});
+
 // -------------------- CLIENTI --------------------
 
 app.get('/api/clienti', async (req, res) => {
@@ -377,6 +423,4 @@ app.delete('/api/bolle/:id', async (req, res) => {
 
 // -------------------- AVVIO SERVER --------------------
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server backend attivo su http://localhost:${PORT}`);
-});
+app.listen(process.env.PORT || 4000, () => console.log('Server avviato'));
