@@ -14,6 +14,7 @@ export default function SettingsPage() {
   // Notifiche
   const [notifySync, setNotifySync] = useState(false);
   const [notifyErrors, setNotifyErrors] = useState(false);
+  
 
   // Tema
   const [darkMode, setDarkMode] = useState(false);
@@ -80,7 +81,7 @@ export default function SettingsPage() {
             onChange={e => setEmail(e.target.value)}
             fullWidth
           />
-          <FormControlLabel
+          {/* <FormControlLabel
             control={
               <Switch
                 checked={notifySync}
@@ -97,7 +98,7 @@ export default function SettingsPage() {
               />
             }
             label="Notifica errori"
-          />
+          /> */}
           <FormControlLabel
             control={
               <Switch
