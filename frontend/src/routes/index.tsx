@@ -1,6 +1,6 @@
 import type { RouteObject } from 'react-router-dom';
 import Login from '../pages/auth/login.tsx';
-import DashboardLayout from '../layouts/dashboardLayout.tsx';
+import Layout from '../layouts/layout.tsx';
 import Home from '../pages/dashboard/home.tsx';
 import Clienti from '../pages/dashboard/clienti.tsx';
 import Imballaggi from '../pages/dashboard/imballaggi.tsx';
@@ -16,7 +16,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/dashboard',
-    element: <DashboardLayout />,
+    element: <Layout />,
     children: [
       { path: '', element: <Home /> },
       { path: 'clienti', element: <Clienti /> },

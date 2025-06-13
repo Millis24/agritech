@@ -1,0 +1,47 @@
+body{
+  margin: 0 !important;
+}
+
+.swal2-container {
+  z-index: 1400 !important;
+}
+
+.input-tondi{
+  border-radius: 50px;
+  background-color: #dedede6b;
+  box-shadow: 0px 4px 10px 0px #00000045;
+
+  fieldset {
+    border: none;
+  }
+}
+
+.btn-save{
+  &.MuiButton-root,
+  &.MuiButton-root:hover,
+  &.MuiButton-contained,
+  &.MuiButton-text {
+    background-color: #4C57E5;
+    color: #fff;
+    border-radius: 50px;
+    width: fit-content;
+    padding: .5em 3em;
+    margin: 2em auto;
+    text-transform: none;
+    box-shadow: 0px 4px 10px 0px #00000045;
+  }
+}
+
+
+.logo-login-ccdd{
+  span{
+    display: flex;
+    align-items: center;
+    justify-content: right;
+  }
+
+  img{    
+    max-width: 200px;
+    margin: 0 0 0 1em;
+  }
+}
