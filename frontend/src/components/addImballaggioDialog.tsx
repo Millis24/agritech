@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, InputAdornment, Box, Stack } from '@mui/material';
 import Swal from 'sweetalert2';
 
 interface AddImballaggioDialogProps {
@@ -130,23 +130,20 @@ export default function AddImballaggioDialog({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
       <DialogTitle>{imballaggio ? 'Modifica Imballaggio' : 'Nuovo Imballaggio'}</DialogTitle>
       <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid size={12}>
-            <TextField fullWidth label="Tipo" value={formData.tipo} onChange={(e) => handleChange('tipo', e.target.value)} />
-          </Grid>
-          <Grid size={6}>
-            <TextField fullWidth type="number" label="Prezzo" value={formData.prezzo} onChange={(e) => handleChange('prezzo', parseFloat(e.target.value))} />
-          </Grid>
-          <Grid size={6}>
-            <TextField fullWidth label="Dimensioni" value={formData.dimensioni} onChange={(e) => handleChange('dimensioni', e.target.value)} />
-          </Grid>
-          <Grid size={6}>
-            <TextField fullWidth type="number" label="Capacità (Kg)" value={formData.capacitaKg} onChange={(e) => handleChange('capacitaKg', parseFloat(e.target.value))} />
-          </Grid>
-          <Grid size={12}>
-            <TextField fullWidth label="Note" value={formData.note} onChange={(e) => handleChange('note', e.target.value)} />
-          </Grid>
-        </Grid>
+        <Stack spacing={4} mt={1}>
+          {/* Tipo e prezzo */}
+          <Box display="flex" gap={2}>
+            <TextField className='input-tondi' fullWidth label="Tipo" value={formData.tipo} onChange={(e) => handleChange('tipo', e.target.value)} />
+            <TextField className='input-tondi' fullWidth type="number" label="Prezzo" value={formData.prezzo} onChange={(e) => handleChange('prezzo', parseFloat(e.target.value))} InputProps={{ startAdornment: ( <InputAdornment position="start"> € </InputAdornment> ), }} />
+          </Box>
+          {/* Dimensioni e Capacità */}
+          <Box display="flex" gap={2}>
+            <TextField className='input-tondi' fullWidth label="Dimensioni" value={formData.dimensioni} onChange={(e) => handleChange('dimensioni', e.target.value)} />
+            <TextField className='input-tondi' fullWidth type="number" label="Capacità (Kg)" value={formData.capacitaKg} onChange={(e) => handleChange('capacitaKg', parseFloat(e.target.value))} />
+          </Box>
+          {/* Note */}
+          <TextField className='input-tondi' fullWidth label="Note" value={formData.note} onChange={(e) => handleChange('note', e.target.value)} />
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>

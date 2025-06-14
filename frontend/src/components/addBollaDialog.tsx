@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, MenuItem, Typography, Grid
+  TextField, Button, MenuItem, Typography, Grid,
+  InputAdornment
 } from '@mui/material';
 import type { Cliente } from '../storage/clientiDB';
 import type { Prodotto } from './addProdottoDialog';
@@ -211,31 +212,29 @@ export default function AddBollaDialog({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
       <DialogTitle>{bolla ? 'Modifica Bolla' : 'Nuova Bolla'}</DialogTitle>
       <DialogContent>
-        <Grid container spacing={2}>
+        <Grid container spacing={4}>
+          {/* Select Cliente */}
           <Grid size={12}>
-            <TextField
-              select fullWidth label="Cliente"
-              value={selectedClienteId} onChange={(e) => setSelectedClienteId(Number(e.target.value))}
-            >
+            <TextField className='input-tondi' select fullWidth label="Cliente" value={selectedClienteId} onChange={(e) => setSelectedClienteId(Number(e.target.value))} >
               {clienti.map(c => (
                 <MenuItem key={c.id} value={c.id}>{c.nomeCliente}</MenuItem>
               ))}
             </TextField>
           </Grid>
-
+          {/*  */}
           {Object.entries(destinatario).map(([field, val]) => (
             <Grid size={6} key={field}>
-              <TextField fullWidth label={field} value={val} onChange={(e) => setDestinatario({ ...destinatario, [field]: e.target.value })} />
+              <TextField className='input-tondi' fullWidth label={field} value={val} onChange={(e) => setDestinatario({ ...destinatario, [field]: e.target.value })} />
             </Grid>
           ))}
-
+          {/* Data e ora */}
           <Grid size={6}>
-            <TextField fullWidth label="Data e ora" type="datetime-local" value={dataOra} onChange={(e) => setDataOra(e.target.value)} />
+            <TextField className='input-tondi' fullWidth label="Data e ora" type="datetime-local" value={dataOra} onChange={(e) => setDataOra(e.target.value)} />
           </Grid>
           
 
           <Grid size={6}>
-            <TextField select fullWidth label="Indirizzo destinazione" value={destTipo} onChange={e => setDestTipo(e.target.value as 'sede' | 'altra')}>
+            <TextField className='input-tondi' select fullWidth label="Indirizzo destinazione" value={destTipo} onChange={e => setDestTipo(e.target.value as 'sede' | 'altra')}>
               <MenuItem value="sede">Sede azienda destinataria</MenuItem>
               <MenuItem value="altra">Altra sede</MenuItem>
             </TextField>          
@@ -243,6 +242,7 @@ export default function AddBollaDialog({
           {destTipo === 'altra' ? (
             <Grid size={6}>
               <TextField
+                className='input-tondi'
                 fullWidth
                 label="Inserisci indirizzo"
                 value={indirizzoDestinazione}
@@ -252,6 +252,7 @@ export default function AddBollaDialog({
           ) : (
              <Grid size={6}>
                 <TextField
+                  className='input-tondi'
                   fullWidth
                   label="Sede destinataria"
                   value={`${destinatario.via} ${destinatario.numeroCivico}`}
@@ -260,7 +261,7 @@ export default function AddBollaDialog({
               </Grid>
           )}
           <Grid size={6}>
-            <TextField select fullWidth label="Causale di trasporto" value={causale} onChange={(e) => setCausale(e.target.value)}>
+            <TextField className='input-tondi' select fullWidth label="Causale di trasporto" value={causale} onChange={(e) => setCausale(e.target.value)}>
               <MenuItem value="Vendita">Vendita</MenuItem>
               <MenuItem value="Conto visione">Conto visione</MenuItem>
               <MenuItem value="Reso">Reso</MenuItem>
@@ -268,14 +269,14 @@ export default function AddBollaDialog({
           </Grid>
 
           <Grid size={6}>
-            <TextField select fullWidth label="Consegna a carico del" value={consegnaACarico} onChange={(e) => setConsegnaACarico(e.target.value)}>
+            <TextField className='input-tondi' select fullWidth label="Consegna a carico del" value={consegnaACarico} onChange={(e) => setConsegnaACarico(e.target.value)}>
               <MenuItem value="Destinatario">Destinatario</MenuItem>
               <MenuItem value="Mittente">Mittente</MenuItem>
             </TextField>
           </Grid>
 
           <Grid size={6}>
-            <TextField select fullWidth label="Vettore" value={vettore} onChange={(e) => setVettore(e.target.value)}>
+            <TextField className='input-tondi' select fullWidth label="Vettore" value={vettore} onChange={(e) => setVettore(e.target.value)}>
               <MenuItem value="Corriere A">Corriere A</MenuItem>
               <MenuItem value="Corriere B">Corriere B</MenuItem>
               <MenuItem value="Altro">Altro</MenuItem>
@@ -286,9 +287,10 @@ export default function AddBollaDialog({
             <Typography variant="h6">Prodotti</Typography>
             <Button variant="outlined" onClick={handleAddProdotto} className='btn-neg'>+ Aggiungi Prodotto</Button>
             {prodottiBolla.map((r, i) => (
-              <Grid container spacing={1} key={i} sx={{ mt: 1 }}>
+              <Grid container spacing={4} key={i} sx={{ mt: 1 }}>
                 <Grid size={3}>
                   <TextField
+                    className='input-tondi'
                     select fullWidth label="Prodotto"
                     value={r.nomeProdotto}
                     onChange={(e) => handleProdottoChange(i, 'nomeProdotto', e.target.value)}
@@ -298,27 +300,24 @@ export default function AddBollaDialog({
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={3}><TextField fullWidth label="Qualità" value={r.qualita} onChange={(e) => handleProdottoChange(i, 'qualita', e.target.value)} /></Grid>
-                <Grid size={2}><TextField fullWidth type="number" label="Prezzo" value={r.prezzo} onChange={(e) => handleProdottoChange(i, 'prezzo', +e.target.value)} /></Grid>
+                <Grid size={3}><TextField className='input-tondi' fullWidth label="Qualità" value={r.qualita} onChange={(e) => handleProdottoChange(i, 'qualita', e.target.value)} /></Grid>
                 <Grid size={2}>
-                  <TextField select fullWidth label="Imballaggio" value={r.nomeImballaggio} onChange={(e) => handleProdottoChange(i, 'nomeImballaggio', e.target.value)}>
+                    <TextField className='input-tondi' fullWidth type="number" label="Prezzo" value={r.prezzo} onChange={(e) => handleProdottoChange(i, 'prezzo', +e.target.value)} InputProps={{ startAdornment: ( <InputAdornment position="start">€</InputAdornment> ), }} />                    
+                  </Grid>
+                <Grid size={2}>
+                  <TextField className='input-tondi' select fullWidth label="Imballaggio" value={r.nomeImballaggio} onChange={(e) => handleProdottoChange(i, 'nomeImballaggio', e.target.value)}>
                     {imballaggi.map(im => (
                       <MenuItem key={im.id} value={im.tipo}>{im.tipo}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>
                 <Grid size={2}>
-                  <TextField
-                    fullWidth
-                    label="Prezzo Imballaggio"
-                    value={r.prezzoImballaggio ?? ''}
-                    InputProps={{ readOnly: true }}
-                  />
+                  <TextField className='input-tondi' fullWidth type="number" label="Prezzo Imballaggio" value={r.prezzoImballaggio ?? ''} InputProps={{ readOnly: true, startAdornment: ( <InputAdornment position="start">€</InputAdornment> ), }} />
                 </Grid>
-                <Grid size={2}><TextField fullWidth type="number" label="Colli" value={r.numeroColli} onChange={(e) => handleProdottoChange(i, 'numeroColli', +e.target.value)} /></Grid>
-                <Grid size={2}><TextField fullWidth type="number" label="Peso lordo" value={r.pesoLordo} onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)} /></Grid>
-                <Grid size={2}><TextField fullWidth type="number" label="Peso netto" value={r.pesoNetto} onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)} /></Grid>
-                <Grid size={2}><TextField fullWidth type="number" label="Tot Kg" value={r.totKgSpediti} onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)} /></Grid>
+                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Colli" value={r.numeroColli} onChange={(e) => handleProdottoChange(i, 'numeroColli', +e.target.value)} /></Grid>
+                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Peso lordo" value={r.pesoLordo} onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)} /></Grid>
+                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Peso netto" value={r.pesoNetto} onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)} /></Grid>
+                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Tot Kg" value={r.totKgSpediti} onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)} /></Grid>
               </Grid>
             ))}
           </Grid>

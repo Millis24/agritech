@@ -82,7 +82,7 @@ export default function Login() {
                   onChange={(e) => setNomeUtente(e.target.value)}
                   fullWidth
                   required
-                  className='input-tondi'
+                  className='input-login'
                 />
                 <TextField
                   label="Password"
@@ -91,7 +91,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   fullWidth
                   required
-                  className='input-tondi'
+                  className='input-login'
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">

@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack, Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
@@ -92,11 +92,17 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
       <DialogTitle>{prodotto ? 'Modifica Prodotto' : 'Aggiungi Prodotto'}</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} mt={1}>
-          <TextField label="Nome" value={data.nome} onChange={(e) => handleChange('nome', e.target.value)} fullWidth />
-          <TextField label="Varietà" value={data.varieta} onChange={(e) => handleChange('varieta', e.target.value)} fullWidth />
-          <TextField label="Calibro" value={data.calibro} onChange={(e) => handleChange('calibro', e.target.value)} fullWidth />
-          <TextField label="Colore" value={data.colore} onChange={(e) => handleChange('colore', e.target.value)} fullWidth />
+        <Stack spacing={4} mt={1}>
+          {/* Nome e Varietà */}
+          <Box display="flex" gap={2}>
+            <TextField className='input-tondi' label="Nome" value={data.nome} onChange={(e) => handleChange('nome', e.target.value)} fullWidth />
+            <TextField className='input-tondi' label="Varietà" value={data.varieta} onChange={(e) => handleChange('varieta', e.target.value)} fullWidth />
+          </Box>
+          {/* Calibro e Colore */}
+          <Box display="flex" gap={2}>
+            <TextField className='input-tondi' label="Calibro" value={data.calibro} onChange={(e) => handleChange('calibro', e.target.value)} fullWidth />
+            <TextField className='input-tondi' label="Colore" value={data.colore} onChange={(e) => handleChange('colore', e.target.value)} fullWidth />
+          </Box>
         </Stack>
       </DialogContent>
       <DialogActions>

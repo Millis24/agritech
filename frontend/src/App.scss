@@ -12,8 +12,18 @@ main{
 }
 
 .input-tondi{
-  border-radius: 50px;
-  background-color: #dedede6b;
+  border-radius: 11px;
+  background-color: #dedede30;
+  box-shadow: 0px 4px 10px 0px #00000045;
+
+  fieldset {
+    border: none;
+  }
+}
+
+.input-login{
+  border-radius:50px;
+  background-color: #dedede30;
   box-shadow: 0px 4px 10px 0px #00000045;
 
   fieldset {

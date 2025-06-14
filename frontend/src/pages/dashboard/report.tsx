@@ -138,82 +138,52 @@ export default function ReportPage() {
     <Box p={2}>
       <Typography variant="h5" mb={2} sx={{fontWeight: 'bold'}}>Report Vendite</Typography>
 
-      {/* Grafico 1 */}
+      {/* Grafico 1: FILTRI */}
       <Typography variant="h6" gutterBottom>Quantità per Prodotto</Typography>
-      <Stack direction="row" spacing={2} mb={2} flexWrap="wrap">
-        <TextField
-          label="Da"
-          type="date"
-          value={fromProd}
-          onChange={e => setFromProd(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <TextField
-          label="A"
-          type="date"
-          value={toProd}
-          onChange={e => setToProd(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <FormControlLabel
-          control={<Checkbox checked={showCountProd} onChange={e => setShowCountProd(e.target.checked)} />}
-          label="Mostra N. bolle"
-        />
-        <Button variant="outlined" onClick={exportProdCSV}>Esporta CSV</Button>
+      <Stack direction="row" spacing={2} mb={2} mt={4} flexWrap="wrap">
+        <TextField className='input-tondi' label="Da" type="date" value={fromProd} onChange={e => setFromProd(e.target.value)} InputLabelProps={{ shrink: true }} />
+        <TextField className='input-tondi' label="A" type="date" value={toProd} onChange={e => setToProd(e.target.value)} InputLabelProps={{ shrink: true }} />
+        <FormControlLabel control={<Checkbox checked={showCountProd} onChange={e => setShowCountProd(e.target.checked)} />} label="Mostra N. bolle" />
+        <Button className='input-tondi' variant="outlined" onClick={exportProdCSV}>Esporta CSV</Button>
       </Stack>
-      <Box height={300} mb={4}>
+
+      {/* Grafico 1 */}
+      <Box height={300} mb={10} mt={8}>
         <ResponsiveContainer>
-  <BarChart data={dataProd} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="name" />
-    {/* Asse dei Kg a sinistra */}
-    <YAxis yAxisId="left" />
-    {/* Asse del conteggio a destra */}
-    <YAxis yAxisId="right" orientation="right" allowDecimals={false} />
-    <Tooltip />
-    <Legend />
-    {/* Barre Kg → asse sinistro */}
-    <Bar yAxisId="left" dataKey="kg" fill="#8884d8" name="Kg spediti" />
-    {/* Barre Conteggio → asse destro */}
-    {showCountProd && (
-      <Bar yAxisId="right" dataKey="count" fill="#82ca9d" name="Numero bolle" />
-    )}
-  </BarChart>
-</ResponsiveContainer>
+          <BarChart data={dataProd} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            {/* asse dei Kg a sinistra */}
+            <YAxis yAxisId="left" />
+            {/* asse del conteggio a destra */}
+            <YAxis yAxisId="right" orientation="right" allowDecimals={false} />
+            <Tooltip />
+            <Legend />
+            {/* barre Kg → asse sinistro */}
+            <Bar yAxisId="left" dataKey="kg" fill="#8884d8" name="Kg spediti" />
+            {/* barre Conteggio → asse destro */}
+            {showCountProd && (
+              <Bar yAxisId="right" dataKey="count" fill="#82ca9d" name="Numero bolle" />
+            )}
+          </BarChart>
+        </ResponsiveContainer>
       </Box>
 
-      {/* Grafico 2 */}
+      {/* Grafico 2: filtri */}
       <Typography variant="h6" gutterBottom>Prodotti per Cliente</Typography>
-      <Stack direction="row" spacing={2} mb={2} flexWrap="wrap">
-        <TextField
-          select
-          label="Cliente"
-          value={selCliente}
-          onChange={e => setSelCliente(e.target.value)}
-          sx={{ minWidth: 200 }}
-        >
+      <Stack direction="row" spacing={2} mb={2} mt={4} flexWrap="wrap">
+        <TextField className='input-tondi' select label="Cliente" value={selCliente} onChange={e => setSelCliente(e.target.value)} sx={{ minWidth: 200 }}>
           <MenuItem value="">-- tutti --</MenuItem>
           {clienti.map(c => (
             <MenuItem key={c.id} value={c.nomeCliente}>{c.nomeCliente}</MenuItem>
           ))}
         </TextField>
-        <TextField
-          label="Da"
-          type="date"
-          value={fromClient}
-          onChange={e => setFromClient(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <TextField
-          label="A"
-          type="date"
-          value={toClient}
-          onChange={e => setToClient(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
+        <TextField className='input-tondi' label="Da" type="date" value={fromClient} onChange={e => setFromClient(e.target.value)} InputLabelProps={{ shrink: true }} />
+        <TextField className='input-tondi' label="A" type="date" value={toClient} onChange={e => setToClient(e.target.value)} InputLabelProps={{ shrink: true }} />
       </Stack>
+      {/* Grafico 2 */}
       {selCliente && (
-        <Box height={250} mb={4}>
+        <Box height={250} mb={10} mt={8}>
           <ResponsiveContainer>
             <BarChart data={dataClient} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -226,26 +196,15 @@ export default function ReportPage() {
         </Box>
       )}
 
-      {/* Grafico 3 */}
+      {/* Grafico 3: filtri */}
       <Typography variant="h6" gutterBottom>Imballaggi / Causali</Typography>
-      <Stack direction="row" spacing={2} mb={2} flexWrap="wrap">
-        <TextField
-          label="Da"
-          type="date"
-          value={fromUse}
-          onChange={e => setFromUse(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <TextField
-          label="A"
-          type="date"
-          value={toUse}
-          onChange={e => setToUse(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
+      <Stack direction="row" spacing={2} mb={2} mt={4} flexWrap="wrap">
+        <TextField className='input-tondi' label="Da" type="date" value={fromUse} onChange={e => setFromUse(e.target.value)} InputLabelProps={{ shrink: true }} />
+        <TextField className='input-tondi' label="A" type="date" value={toUse} onChange={e => setToUse(e.target.value)} InputLabelProps={{ shrink: true }} />
       </Stack>
+      {/* Grafico 3: imballaggi */}
       <Box display="flex" gap={4} flexWrap="wrap">
-        <Box width="45%" height={250}>
+        <Box width="45%" height={250} mb={10} mt={8}>
           <Typography>Imballaggi (colli)</Typography>
           <ResponsiveContainer>
             <BarChart data={dataUse.imballaggi} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -257,7 +216,8 @@ export default function ReportPage() {
             </BarChart>
           </ResponsiveContainer>
         </Box>
-        <Box width="45%" height={250}>
+        {/* Grafico 3: causali */}
+        <Box width="45%" height={250}  mb={10} mt={8}>
           <Typography>Causali</Typography>
           <ResponsiveContainer>
             <PieChart>
