@@ -146,7 +146,6 @@ export default function ReportPage() {
         <FormControlLabel control={<Checkbox checked={showCountProd} onChange={e => setShowCountProd(e.target.checked)} />} label="Mostra N. bolle" />
         <Button className='input-tondi' variant="outlined" onClick={exportProdCSV}>Esporta CSV</Button>
       </Stack>
-
       {/* Grafico 1 */}
       <Box height={300} mb={10} mt={8}>
         <ResponsiveContainer>
@@ -173,7 +172,6 @@ export default function ReportPage() {
       <Typography variant="h6" gutterBottom>Prodotti per Cliente</Typography>
       <Stack direction="row" spacing={2} mb={2} mt={4} flexWrap="wrap">
         <TextField className='input-tondi' select label="Cliente" value={selCliente} onChange={e => setSelCliente(e.target.value)} sx={{ minWidth: 200 }}>
-          <MenuItem value="">-- tutti --</MenuItem>
           {clienti.map(c => (
             <MenuItem key={c.id} value={c.nomeCliente}>{c.nomeCliente}</MenuItem>
           ))}
@@ -183,7 +181,7 @@ export default function ReportPage() {
       </Stack>
       {/* Grafico 2 */}
       {selCliente && (
-        <Box height={250} mb={10} mt={8}>
+        <Box height={250} mt={8}>
           <ResponsiveContainer>
             <BarChart data={dataClient} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -197,7 +195,7 @@ export default function ReportPage() {
       )}
 
       {/* Grafico 3: filtri */}
-      <Typography variant="h6" gutterBottom>Imballaggi / Causali</Typography>
+      <Typography variant="h6" gutterBottom mt={10}>Imballaggi / Causali</Typography>
       <Stack direction="row" spacing={2} mb={2} mt={4} flexWrap="wrap">
         <TextField className='input-tondi' label="Da" type="date" value={fromUse} onChange={e => setFromUse(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField className='input-tondi' label="A" type="date" value={toUse} onChange={e => setToUse(e.target.value)} InputLabelProps={{ shrink: true }} />
