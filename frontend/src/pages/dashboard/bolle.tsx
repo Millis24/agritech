@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography, IconButton, CircularProgress, TextField } from '@mui/material';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { Box, Button, Typography, IconButton, CircularProgress, TextField, Stack } from '@mui/material';
+import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PrintIcon from '@mui/icons-material/Print';
@@ -19,6 +19,11 @@ import { getAllImballaggi, type Imballaggio } from '../../storage/imballaggiDB';
 import Swal from 'sweetalert2';
 
 export default function Bolle() {
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set<GridRowId>(),
+  });
+
   // dati all'interno della bolla dai vari componenti
   const [bolle, setBolle] = useState<Bolla[]>([]);
   const [open, setOpen] = useState(false);
@@ -95,10 +100,16 @@ export default function Bolle() {
     await ricaricaDati();
   };
 
-  // ————————————————————————————————————————————————
-  // Stampa in PDF con layout custom
-  // ————————————————————————————————————————————————
-
+  // funzione per cancellare in massa
+  const handleBulkDeleteBolle = async () => {
+    for (const id of rowSelectionModel.ids) {
+      await handleDelete(Number(id));
+    }
+    // poi ricarichi i dati
+    await ricaricaDati();
+    // pulisci la selezione
+    setRowSelectionModel({ type: 'include', ids: new Set() });
+  };
 
   // filtri per tabella bolle
   const [filterNumero, setFilterNumero] = useState<string>('');
@@ -184,7 +195,7 @@ export default function Bolle() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Bolle</Typography>
-        <Button variant="contained" 
+        <Button variant="contained" className='btn'
           onClick={() => {
             if (clienti.length && prodotti.length && imballaggi.length) {
               setEditing(null); setOpen(true);
@@ -192,9 +203,7 @@ export default function Bolle() {
               alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
             }
           }}
-          className='btn'
-        >
-        Aggiungi Bolla</Button>
+        > Aggiungi Bolla</Button>
       </Box>
 
       {/* Filtri  */}
@@ -208,10 +217,39 @@ export default function Bolle() {
       </Box>
 
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
+        <Stack direction="row" spacing={1} mb={1}>
+          <Button
+            variant="outlined"
+            color="error"
+            disabled={rowSelectionModel.ids.size === 0}
+            onClick={async () => {
+            const result = await Swal.fire({
+              title: `Eliminare ${rowSelectionModel.ids.size} bolle?`,
+              text: 'Operazione irreversibile',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, elimina',
+              cancelButtonText: 'No, annulla',
+              reverseButtons: true
+            });
+            if (result.isConfirmed) {
+              await handleBulkDeleteBolle();
+              await Swal.fire('Eliminati!', '', 'success');
+            }
+          }}
+          >
+            Elimina selezionati ({rowSelectionModel.ids.size})
+          </Button>
+        </Stack>
         <DataGrid 
           rows={filteredBolle} 
           columns={columns} 
           getRowId={row => row.id!} 
+          checkboxSelection
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={(model: GridRowSelectionModel) => {
+            setRowSelectionModel(model);
+          }}
           initialState={{
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}

@@ -61,6 +61,7 @@ model Bolla {
   numeroBolla            Int      @unique
   dataOra                DateTime
   destinatarioNome       String
+  destinatarioCognome    String
   destinatarioIndirizzo  String
   destinatarioEmail      String
   destinatarioTelefono   String

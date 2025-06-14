@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography, IconButton, TextField } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef } from '@mui/x-data-grid';
+import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
+import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -13,6 +12,11 @@ import { saveProdotto, deleteProdotto as deleteLocalProdotto, getAllProdotti, ma
 import Swal from 'sweetalert2';
 
 export default function Prodotti() {
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set<GridRowId>(),
+  });
+
   const [query, setQuery] = useState('');
   const [prodotti, setProdotti] = useState<Prodotto[]>([]);
   const [open, setOpen] = useState(false);
@@ -164,6 +168,17 @@ export default function Prodotti() {
     setOpen(false);
   };
 
+    // funzione per cancellare in massa
+  const handleBulkDeleteProdotti = async () => {
+    for (const id of rowSelectionModel.ids) {
+      await handleDelete(Number(id));
+    }
+    // poi ricarichi i dati
+    await ricaricaDati();
+    // pulisci la selezione
+    setRowSelectionModel({ type: 'include', ids: new Set() });
+  };
+
   // filtri
   const prodottiFiltrati = prodotti.filter(p =>
     p.nome.toLowerCase().includes(query.toLowerCase()) ||
@@ -216,31 +231,46 @@ export default function Prodotti() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Prodotti</Typography>
-        <Button variant="contained" 
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          className='btn'
-        >
-          Aggiungi Prodotto
-        </Button>
+        <Button className='btn' variant="contained" onClick={() => { setEditing(null); setOpen(true); }} > Aggiungi Prodotto </Button>
       </Box>
 
-      <TextField
-        label="Cerca prodotto"
-        variant="outlined"
-        size="small"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        sx={{ mb: 3, mt: 2 }}
-        className='input-tondi'
-      />
+      {/* Ricerca Prodotto */}
+      <TextField className='input-tondi' label="Cerca prodotto" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
 
+      {/* Tabella Prodotti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
+        <Stack direction="row" spacing={1} mb={1}>
+          <Button
+            variant="outlined"
+            color="error"
+            disabled={rowSelectionModel.ids.size === 0}
+            onClick={async () => {
+            const result = await Swal.fire({
+              title: `Eliminare ${rowSelectionModel.ids.size} prodotti?`,
+              text: 'Operazione irreversibile',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, elimina',
+              cancelButtonText: 'No, annulla',
+              reverseButtons: true
+            });
+            if (result.isConfirmed) {
+              await handleBulkDeleteProdotti();
+              await Swal.fire('Eliminati!', '', 'success');
+            }
+          }}
+          >
+            Elimina selezionati ({rowSelectionModel.ids.size})
+          </Button>
+        </Stack>
         <DataGrid
           rows={prodottiFiltrati}
           columns={columns}
+          checkboxSelection
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={(model: GridRowSelectionModel) => {
+            setRowSelectionModel(model);
+          }}
           initialState={{
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-//import { useNavigate } from 'react-router-dom';
-import { Box, Button, Typography, IconButton, TextField } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef } from '@mui/x-data-grid';
+import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
+import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -16,7 +14,11 @@ import useClientiSync from '../../sync/useClientiSync';
 import { saveCliente, deleteCliente as deleteLocalCliente, getAllClienti, markClienteAsDeleted } from '../../storage/clientiDB';
 
 export default function Clienti() {
-  //const navigate = useNavigate();
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set<GridRowId>(),
+  });
+  
   const [query, setQuery] = useState('');
   const [clienti, setClienti] = useState<Cliente[]>([]);
   const [open, setOpen] = useState(false);
@@ -165,6 +167,17 @@ export default function Clienti() {
     setOpen(false);
   };
 
+  // funzione per cancellare in massa
+  const handleBulkDeleteClienti = async () => {
+    for (const id of rowSelectionModel.ids) {
+      await handleDelete(Number(id));
+    }
+    // poi ricarichi i dati
+    await ricaricaDati();
+    // pulisci la selezione
+    setRowSelectionModel({ type: 'include', ids: new Set() });
+  };
+  
   // filtri
   const clientiFiltrati = clienti.filter(c =>
     c.nomeCliente.toLowerCase().includes(query.toLowerCase()) ||
@@ -232,32 +245,46 @@ export default function Clienti() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Clienti</Typography>
-        <Button 
-          variant="contained" 
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          className='btn'
-        >
-          Aggiungi Cliente
-        </Button>
+        <Button className='btn' variant="contained"  onClick={() => { setEditing(null); setOpen(true); }} > Aggiungi Cliente </Button>
       </Box>
 
-      <TextField
-        label="Cerca cliente"
-        variant="outlined"
-        size="small"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        sx={{ mb: 3, mt: 2 }}
-        className='input-tondi'
-      />
+      {/* Ricerca Cliente */}
+      <TextField className='input-tondi' label="Cerca cliente" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
 
+      {/* Tabella Clienti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
+        <Stack direction="row" spacing={1} mb={1}>
+          <Button
+            variant="outlined"
+            color="error"
+            disabled={rowSelectionModel.ids.size === 0}
+            onClick={async () => {
+            const result = await Swal.fire({
+              title: `Eliminare ${rowSelectionModel.ids.size} clienti?`,
+              text: 'Operazione irreversibile',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, elimina',
+              cancelButtonText: 'No, annulla',
+              reverseButtons: true
+            });
+            if (result.isConfirmed) {
+              await handleBulkDeleteClienti();
+              await Swal.fire('Eliminati!', '', 'success');
+            }
+          }}
+          >
+            Elimina selezionati ({rowSelectionModel.ids.size})
+          </Button>
+        </Stack>
         <DataGrid
           rows={clientiFiltrati}
           columns={columns}
+          checkboxSelection
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={(model: GridRowSelectionModel) => {
+            setRowSelectionModel(model);
+          }}
           initialState={{
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}

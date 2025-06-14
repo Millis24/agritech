@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography, IconButton, TextField } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef } from '@mui/x-data-grid';
+import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
+import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -23,6 +22,11 @@ interface Imballaggio {
 }
 
 export default function Imballaggi() {
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set<GridRowId>(),
+  });
+
   const [query, setQuery] = useState('');
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
   const [open, setOpen] = useState(false);
@@ -151,6 +155,18 @@ export default function Imballaggi() {
     setOpen(false);
   };
 
+    // funzione per cancellare in massa
+  const handleBulkDeleteImballaggi = async () => {
+    for (const id of rowSelectionModel.ids) {
+      await handleDelete(Number(id));
+    }
+    // poi ricarichi i dati
+    await ricaricaDati();
+    // pulisci la selezione
+    setRowSelectionModel({ type: 'include', ids: new Set() });
+  };
+  
+
   // filtri
   const imballaggiFiltrati = imballaggi.filter(i =>
     i.tipo.toLowerCase().includes(query.toLowerCase()) ||
@@ -203,31 +219,46 @@ export default function Imballaggi() {
     <Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Imballaggi</Typography>
-        <Button variant="contained" 
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          className='btn'
-        >
-          Aggiungi Imballaggio
-        </Button>
+        <Button variant="contained" className='btn' onClick={() => { setEditing(null); setOpen(true); }} > Aggiungi Imballaggio </Button>
       </Box>
 
-      <TextField
-        label="Cerca imballaggio"
-        variant="outlined"
-        size="small"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        sx={{ mb: 3, mt: 2 }}
-        className='input-tondi'
-      />
+      {/* Ricerca Imballaggio */}
+      <TextField className='input-tondi' label="Cerca imballaggio" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
 
+      {/* Tabella Imballaggi */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
+         <Stack direction="row" spacing={1} mb={1}>
+            <Button
+              variant="outlined"
+              color="error"
+              disabled={rowSelectionModel.ids.size === 0}
+              onClick={async () => {
+              const result = await Swal.fire({
+                title: `Eliminare ${rowSelectionModel.ids.size} imballaggi?`,
+                text: 'Operazione irreversibile',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, elimina',
+                cancelButtonText: 'No, annulla',
+                reverseButtons: true
+              });
+              if (result.isConfirmed) {
+                await handleBulkDeleteImballaggi();
+                await Swal.fire('Eliminati!', '', 'success');
+              }
+            }}
+            >
+              Elimina selezionati ({rowSelectionModel.ids.size})
+            </Button>
+          </Stack>
         <DataGrid
           rows={imballaggiFiltrati}
           columns={columns}
+          checkboxSelection
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={(model: GridRowSelectionModel) => {
+            setRowSelectionModel(model);
+          }}
           initialState={{
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}
