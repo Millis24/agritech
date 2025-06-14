@@ -5,8 +5,9 @@ import Swal from 'sweetalert2';
 export interface Cliente {
   id: number;
   nomeCliente: string;
+  cognomeCliente: string;
   ragioneSociale: string;
-   via: string,
+  via: string,
   numeroCivico: string,
   cap: string,
   paese: string,
@@ -22,8 +23,9 @@ export interface Cliente {
 
 export const imballaggioVuoto = {
   nomeCliente: '',
+  cognomeCliente: '',
   ragioneSociale: '',
-   via: '',
+  via: '',
   numeroCivico: '',
   cap: '',
   paese: '',
@@ -43,7 +45,7 @@ type Props = {
 };
 
 export default function AddClienteDialog({ open, onClose, onSave, cliente }: Props) {
-  const clienteVuoto = { nomeCliente: '', ragioneSociale: '', partitaIva: '', telefonoFisso: '', telefonoCell: '', email: '',  via: '', numeroCivico: '', cap: '', paese: '', provincia: '', codiceSDI: ''};
+  const clienteVuoto = { nomeCliente: '', cognomeCliente: '', ragioneSociale: '', partitaIva: '', telefonoFisso: '', telefonoCell: '', email: '',  via: '', numeroCivico: '', cap: '', paese: '', provincia: '', codiceSDI: ''};
   const [data, setData] = useState(clienteVuoto);
 
   useEffect(() => {
@@ -110,6 +112,8 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField label="Nome" value={data.nomeCliente} onChange={(e) => handleChange('nomeCliente', e.target.value)} fullWidth />
+          <TextField label="Cognome" value={data.cognomeCliente} onChange={(e) => handleChange('cognomeCliente', e.target.value)} fullWidth />
+
           <TextField label="Ragione Sociale" value={data.ragioneSociale} onChange={(e) => handleChange('ragioneSociale', e.target.value)} fullWidth />
             
             

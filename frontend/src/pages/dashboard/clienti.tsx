@@ -168,6 +168,7 @@ export default function Clienti() {
   // filtri
   const clientiFiltrati = clienti.filter(c =>
     c.nomeCliente.toLowerCase().includes(query.toLowerCase()) ||
+    c.cognomeCliente.toLowerCase().includes(query.toLowerCase()) ||
     c.ragioneSociale.toLowerCase().includes(query.toLowerCase()) ||
     c.partitaIva.includes(query)
   );
@@ -175,6 +176,7 @@ export default function Clienti() {
   // colonne tabella
   const columns: GridColDef[] = [
     { field: 'nomeCliente', headerName: 'Nome', width: 150 },
+    { field: 'cognomeCliente', headerName: 'Cognome', width: 150 },
     { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
     // { field: 'partitaIva', headerName: 'P.IVA', width: 150 },
     { field: 'telefonoCell', headerName: 'Telefono', width: 150 },

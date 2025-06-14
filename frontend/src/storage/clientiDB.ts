@@ -6,6 +6,7 @@ const DELETED_STORE_NAME = 'clientiEliminati';
 export type Cliente = {
   id: number;
   nomeCliente: string;
+  cognomeCliente: string;
   ragioneSociale: string;
   partitaIva: string;
   telefonoFisso: string;

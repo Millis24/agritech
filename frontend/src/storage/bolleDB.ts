@@ -51,6 +51,7 @@ export async function clearBolleEliminate() {
 }
 
 export interface Bolla {
+  destinatarioCognome: string;
   id?: number;
   numeroBolla: number;
   dataOra: string;

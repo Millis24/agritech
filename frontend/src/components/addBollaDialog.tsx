@@ -24,7 +24,7 @@ export default function AddBollaDialog({
   open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla
 }: BollaDialogProps) {
   const [destinatario, setDestinatario] = useState({
-    nome: '',   via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: ''
+    nome: '', cognome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: ''
   });
   const [selectedClienteId, setSelectedClienteId] = useState<number | ''>('');
   const [indirizzoDestinazione, setIndirizzoDestinazione] = useState('');
@@ -42,6 +42,7 @@ export default function AddBollaDialog({
       if (cliente) {
         setDestinatario({
           nome: cliente.nomeCliente,
+          cognome: cliente.cognomeCliente,
           via: cliente.via,
           numeroCivico: cliente.numeroCivico,
           email: cliente.email,
@@ -68,6 +69,7 @@ export default function AddBollaDialog({
       }
       setDestinatario({
         nome: bolla.destinatarioNome,
+        cognome: bolla.destinatarioCognome,
         via,
         numeroCivico,
         email: bolla.destinatarioEmail,
@@ -90,7 +92,7 @@ export default function AddBollaDialog({
         setProdottiBolla([]);
       }
     } else {
-      setDestinatario({ nome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: '' });
+      setDestinatario({ nome: '', cognome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: '' });
       setSelectedClienteId('');
       setDestTipo('sede');
       setIndirizzoDestinazione('');
@@ -145,7 +147,8 @@ export default function AddBollaDialog({
       numeroBolla: bolla?.numeroBolla ?? numeroBolla,
       dataOra: new Date(dataOra).toISOString(),
       destinatarioNome: destinatario.nome,
-       destinatarioIndirizzo:destinatarioInd,
+      destinatarioCognome: destinatario.cognome,
+      destinatarioIndirizzo:destinatarioInd,
       destinatarioEmail: destinatario.email,
       destinatarioTelefono:telefonoSel,
       destinatarioPartitaIva: destinatario.partitaIva,

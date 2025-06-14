@@ -54,7 +54,7 @@ export async function handlePrint(bolla: Bolla) {
   doc.setFontSize(10);
   doc.text('Destinatario:', destX + 4, cursorY + 6);
   doc.setFontSize(12);
-  doc.text(bolla.destinatarioNome, destX + 4, cursorY + 16);
+  doc.text(`${bolla.destinatarioNome} ${bolla.destinatarioCognome}`, destX + 4, cursorY + 16);
   doc.setFontSize(9);
   doc.text(bolla.destinatarioIndirizzo, destX + 4, cursorY + 22);
   doc.text(`Mail: ${bolla.destinatarioEmail}`, destX + 4, cursorY + 28);

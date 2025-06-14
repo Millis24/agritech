@@ -136,7 +136,7 @@ export default function ReportPage() {
 
   return (
     <Box p={2}>
-      <Typography variant="h5" mb={2}>Report Vendite</Typography>
+      <Typography variant="h5" mb={2} sx={{fontWeight: 'bold'}}>Report Vendite</Typography>
 
       {/* Grafico 1 */}
       <Typography variant="h6" gutterBottom>Quantità per Prodotto</Typography>

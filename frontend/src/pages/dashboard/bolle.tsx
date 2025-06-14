@@ -18,14 +18,6 @@ import { getAllImballaggi, type Imballaggio } from '../../storage/imballaggiDB';
 
 import Swal from 'sweetalert2';
 
-// interface ImballaggioRow {
-//   tipo: string;
-//   valore: string;
-//   inGiacenza: string;
-//   daTrasporto: string;
-//   daRendere: string;
-// }
-
 export default function Bolle() {
   // dati all'interno della bolla dai vari componenti
   const [bolle, setBolle] = useState<Bolla[]>([]);

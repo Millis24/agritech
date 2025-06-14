@@ -22,6 +22,7 @@ model Utente {
 model Cliente {
   id             Int      @id @default(autoincrement())
   nomeCliente    String
+  cognomeCliente String
   ragioneSociale String
   via            String   @default("")
   numeroCivico   String   @default("")
