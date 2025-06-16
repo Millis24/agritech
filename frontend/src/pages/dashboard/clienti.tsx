@@ -14,6 +14,9 @@ import type { Cliente } from '../../components/addClienteDialog';
 import useClientiSync from '../../sync/useClientiSync';
 import { saveCliente, deleteCliente as deleteLocalCliente, getAllClienti, markClienteAsDeleted } from '../../storage/clientiDB';
 
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { saveAs } from 'file-saver';
+
 export default function Clienti() {
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
@@ -173,13 +176,39 @@ export default function Clienti() {
 
   // funzione per cancellare in massa
   const handleBulkDeleteClienti = async () => {
-    for (const id of rowSelectionModel.ids) {
+    for (const id of Array.from(rowSelectionModel.ids) as GridRowId[]) {
       await handleDelete(Number(id));
     }
     // poi ricarichi i dati
     await ricaricaDati();
     // pulisci la selezione
     setRowSelectionModel({ type: 'include', ids: new Set() });
+  };
+
+  const exportSelectedClientsCSV = async () => {
+    // prendi solo gli ID selezionati
+    const selectedIds = Array.from(rowSelectionModel.ids).map(id => Number(id));
+    const selected = clienti.filter(c => selectedIds.includes(c.id));
+    // costruisci il CSV con i nuovi campi indirizzo
+    let csv = 'id,nomeCliente,cognomeCliente,ragioneSociale,partitaIva,via,numeroCivico,paese,provincia,cap,codiceSDI,telefonoCell,email\n';
+    selected.forEach(c => {
+      csv += [
+        c.id,
+        `"${c.nomeCliente.replace(/"/g,'""')}"`,
+        `"${c.cognomeCliente.replace(/"/g,'""')}"`,
+        `"${c.ragioneSociale.replace(/"/g,'""')}"`,
+        `"${c.partitaIva.replace(/"/g,'""')}"`,
+        `"${c.via.replace(/"/g,'""')}"`,
+        `"${c.numeroCivico.replace(/"/g,'""')}"`,
+        `"${c.paese.replace(/"/g,'""')}"`,
+        `"${c.provincia.replace(/"/g,'""')}"`,
+        `"${c.cap.replace(/"/g,'""')}"`,
+        c.codiceSDI,
+        c.telefonoCell,
+        c.email
+      ].join(',') + '\n';
+    });
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'tabella_clienti.csv');
   };
   
   // filtri
@@ -205,6 +234,11 @@ export default function Clienti() {
     { field: 'nomeCliente', headerName: 'Nome', width: 150 },
     { field: 'cognomeCliente', headerName: 'Cognome', width: 150 },
     { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
+    { field: 'via', headerName: 'Via', width: 150 },
+    { field: 'numeroCivico', headerName: 'Civico', width: 100 },
+    { field: 'paese', headerName: 'Paese', width: 150 },
+    { field: 'provincia', headerName: 'Provincia', width: 100 },
+    { field: 'cap', headerName: 'CAP', width: 100 },
     // { field: 'partitaIva', headerName: 'P.IVA', width: 150 },
     { field: 'telefonoCell', headerName: 'Telefono', width: 150 },
     { field: 'email', headerName: 'Email', width: 200 },
@@ -276,7 +310,7 @@ export default function Clienti() {
 
       {/* Tabella Clienti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
-        <Stack direction="row" spacing={1} mb={1}>
+        <Stack direction="row" display='flex' justifyContent='space-between'  spacing={1} mb={1}>
           <Button
             className='btn-elimina-selezionati'
             variant="outlined"
@@ -299,6 +333,10 @@ export default function Clienti() {
           }}
           >
             Elimina selezionati ({rowSelectionModel.ids.size})
+          </Button>
+
+          <Button onClick={exportSelectedClientsCSV} disabled={rowSelectionModel.ids.size === 0}>
+            <FileDownloadIcon color="success"/>
           </Button>
         </Stack>
         <DataGrid

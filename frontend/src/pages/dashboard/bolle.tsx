@@ -16,13 +16,18 @@ import { getAllClienti, type Cliente } from '../../storage/clientiDB';
 import { getAllProdotti, type Prodotto } from '../../storage/prodottiDB';
 import { getAllImballaggi, type Imballaggio } from '../../storage/imballaggiDB';
 
+import { saveAs } from 'file-saver';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+
 import Swal from 'sweetalert2';
+
 
 export default function Bolle() {
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set<GridRowId>(),
   });
+
 
   // dati all'interno della bolla dai vari componenti
   const [bolle, setBolle] = useState<Bolla[]>([]);
@@ -194,6 +199,31 @@ export default function Bolle() {
     }
   ];
 
+  const exportSelectedCSV = async () => {
+    // get selected IDs as numbers
+    const selectedIds = Array.from(rowSelectionModel.ids).map(id => Number(id));
+    // filter only selected bolle
+    const selected = bolle.filter(b => b.id !== undefined && selectedIds.includes(b.id));
+    // build CSV
+    let csv = 'NumeroBolla,DataOra,Destinatario,IndirizzoDestinazione,Causale,NProdotti,TotKgSpediti\n';
+    selected.forEach(b => {
+      const prodottiArr = JSON.parse(b.prodotti) as Array<{ totKgSpediti: number }>;
+      const nProd = prodottiArr.length;
+      const totKg = prodottiArr.reduce((sum, p) => sum + p.totKgSpediti, 0);
+      csv += [
+        b.numeroBolla,
+        b.dataOra,
+        `"${(b.destinatarioNome ?? '').replace(/"/g,'""')}"`,
+        `"${(b.indirizzoDestinazione ?? '').replace(/"/g,'""')}"`,
+        b.causale,
+        nProd,
+        totKg
+      ].join(',') + '\n';
+    });
+    // trigger download
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'tabella_bolle.csv');
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="300px">
@@ -225,10 +255,12 @@ export default function Bolle() {
         <TextField size="small" label="Da" type="date" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} className='input-tondi'/>
         <TextField size="small" label="A" type="date" InputLabelProps={{ shrink: true }} value={dateTo} onChange={e => setDateTo(e.target.value)} className='input-tondi'/>
         <Button color="error" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} > <DeleteForeverIcon/> </Button>
+
+       
       </Box>
 
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
-        <Stack direction="row" spacing={1} mb={1}>
+        <Stack direction="row" display='flex' justifyContent='space-between' spacing={1} mb={1}>
           <Button
             className='btn-elimina-selezionati'
             variant="outlined"
@@ -251,6 +283,10 @@ export default function Bolle() {
           }}
           >
             Elimina selezionati ({rowSelectionModel.ids.size})
+          </Button>
+
+          <Button onClick={exportSelectedCSV} disabled={rowSelectionModel.ids.size === 0}>
+            <FileDownloadIcon color="success"/>
           </Button>
         </Stack>
         <DataGrid 

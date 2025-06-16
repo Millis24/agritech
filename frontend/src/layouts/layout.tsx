@@ -11,7 +11,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { logout } from '../hooks/useAuth';
-import logoAgritech from '../assets/agritech-verde.png';
+import logoAgritech from '../assets/logo-agritech-bianco.png';
 import '../App.scss';
 
 
