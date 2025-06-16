@@ -49,6 +49,7 @@ export default function SchedaClienteDialog({
           }}
           startIcon={<PrintIcon />}
           size="small"
+          sx={{ color: '#4C57E5 !important' }}
         >
           PDF
         </Button>
