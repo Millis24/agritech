@@ -21,6 +21,11 @@ main{
   }
 }
 
+.custom-dialog .MuiPaper-root {
+  border-radius: 32px !important;
+  padding: 1rem !important;
+}
+
 .input-login{
   border-radius:50px;
   background-color: #dedede30;

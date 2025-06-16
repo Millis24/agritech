@@ -58,7 +58,7 @@ export default function SchedaClienteDialog({
   ];
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth className="custom-dialog">
       <DialogTitle
         sx={{
           bgcolor: '#fafafa',

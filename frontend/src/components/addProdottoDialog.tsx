@@ -89,7 +89,7 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
       <DialogTitle>{prodotto ? 'Modifica Prodotto' : 'Aggiungi Prodotto'}</DialogTitle>
       <DialogContent>
         <Stack spacing={4} mt={1}>

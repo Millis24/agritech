@@ -107,7 +107,7 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
       <DialogTitle>{cliente ? 'Modifica Cliente' : 'Aggiungi Cliente'}</DialogTitle>
       <DialogContent>
         <Stack spacing={4} mt={1}>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, TextField, Button, Link, Stack, InputAdornment, IconButton, CardActionArea, CardMedia } from '@mui/material';
+import { Box, Card, CardContent, Typography, TextField, Button, Link, Stack, InputAdornment, IconButton } from '@mui/material';
 import decorativeSvg from '../../assets/head.svg';
 import logoCCDD from '../../assets/CAMILLACINODESIGN&DEV_b.svg';
 import Visibility from '@mui/icons-material/Visibility';
