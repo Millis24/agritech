@@ -282,7 +282,7 @@ useEffect(() => {
             <Typography variant="h6">Prodotti</Typography>
             <Button variant="outlined" onClick={handleAddProdotto} className='btn-neg'>+ Aggiungi Prodotto</Button>
             {prodottiBolla.map((r, i) => (
-              <Grid container spacing={4} key={i} sx={{ mt: 1 }}>
+              <Grid container spacing={4} key={i} sx={{ mt: 2 }}>
                 <Grid size={3}>
                   <TextField
                     className='input-tondi'
