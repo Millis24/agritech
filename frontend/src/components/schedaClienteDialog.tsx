@@ -1,9 +1,7 @@
-// File: src/components/SchedaClienteDialog.tsx
 import { useEffect, useState } from 'react';
-import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Button, Box, IconButton
-} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab, Card, Accordion, AccordionSummary, AccordionDetails, Typography, Button, Box, Grid } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import PrintIcon from '@mui/icons-material/Print';
 import type { Cliente } from '../storage/clientiDB';
@@ -17,7 +15,12 @@ interface SchedaClienteDialogProps {
   cliente: Cliente | null;
 }
 
-export default function SchedaClienteDialog({ open, onClose, cliente }: SchedaClienteDialogProps) {
+export default function SchedaClienteDialog({
+  open,
+  onClose,
+  cliente
+}: SchedaClienteDialogProps) {
+  const [tabIndex, setTabIndex] = useState(0);
   const [bolleCliente, setBolleCliente] = useState<Bolla[]>([]);
 
   useEffect(() => {
@@ -29,8 +32,6 @@ export default function SchedaClienteDialog({ open, onClose, cliente }: SchedaCl
     })();
   }, [cliente]);
 
-
-
   const columns: GridColDef[] = [
     { field: 'numeroBolla', headerName: 'Numero', width: 100 },
     { field: 'dataOra', headerName: 'Data', width: 150 },
@@ -41,43 +42,128 @@ export default function SchedaClienteDialog({ open, onClose, cliente }: SchedaCl
       headerName: 'Stampa',
       width: 100,
       renderCell: params => (
-        <IconButton onClick={() => handlePrint(params.row as Bolla)}>
-          <PrintIcon />
-        </IconButton>
-      ),
+        <Button
+          onClick={e => {
+            e.stopPropagation();
+            handlePrint(params.row as Bolla);
+          }}
+          startIcon={<PrintIcon />}
+          size="small"
+        >
+          PDF
+        </Button>
+      )
     }
   ];
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Dettaglio Cliente</DialogTitle>
+      <DialogTitle
+        sx={{
+          bgcolor: '#fafafa',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
+        <AccountCircleIcon fontSize="large" sx={{ mr: 1 }} />
+        Dettaglio Cliente
+      </DialogTitle>
+
+      <Tabs
+        value={tabIndex}
+        onChange={(_, v) => setTabIndex(v)}
+        centered
+      >
+        <Tab label="Anagrafica" />
+        <Tab label="Bolle" />
+      </Tabs>
+
       <DialogContent>
-        {cliente && (
-          <Box mb={2}>
-            <Typography><strong>Nome:</strong> {cliente.nomeCliente}</Typography>
-            <Typography><strong>Ragione Sociale:</strong> {cliente.ragioneSociale}</Typography>
-            <Typography><strong>Via:</strong> {cliente.via}, <strong>n.</strong> {cliente.numeroCivico}</Typography>
-            <Typography><strong>CAP:</strong> {cliente.cap} <strong>Città:</strong> {cliente.paese} <strong>Prov:</strong> {cliente.provincia}</Typography>
-            <Typography><strong>Telefono Fisso:</strong> {cliente.telefonoFisso}</Typography>
-            <Typography><strong>Cellulare:</strong> {cliente.telefonoCell}</Typography>
-            <Typography><strong>Email:</strong> {cliente.email}</Typography>
-            <Typography><strong>P.IVA:</strong> {cliente.partitaIva}</Typography>
-            <Typography><strong>Codice SDI:</strong> {cliente.codiceSDI}</Typography>
+        {tabIndex === 0 && cliente && (
+          <Box mt={2}>
+            <Card variant="outlined" sx={{ p: 2, mb: 2, filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', borderRadius:'32px' }}>
+              <Typography variant="h4" gutterBottom> Anagrafica </Typography>
+              <Grid container spacing={2}>
+                <Grid size={6} sx={{display: 'flex', flexDirection: 'column'}}>
+                  <Typography variant="h5" gutterBottom> Dati cliente </Typography>
+                  <Box>
+                    <strong>Nome:</strong> {cliente.nomeCliente}
+                  </Box>
+                  <Box>
+                    <strong>Cognome:</strong> {cliente.cognomeCliente}
+                  </Box>
+                  <Box>
+                    <strong>Telefono Fisso:</strong> {cliente.telefonoFisso}
+                  </Box>
+                  <Box>
+                    <strong>Cellulare:</strong> {cliente.telefonoCell}
+                  </Box>
+                  <Box>
+                    <strong>Email:</strong> {cliente.email}
+                  </Box>
+                  <Box>
+                    <strong>P.IVA:</strong> {cliente.partitaIva}
+                  </Box>
+                  <Box>
+                    <strong>Codice SDI:</strong> {cliente.codiceSDI}
+                  </Box>
+                </Grid>
+                <Grid size={6} sx={{display: 'flex', flexDirection: 'column'}}>
+                  <Typography variant="h5" gutterBottom> Indirizzo cliente </Typography>
+                  <Box sx={{display: 'flex', flexDirection: 'row'}}>
+                    <Box>
+                      <strong>Via:</strong> {cliente.via}
+                    </Box>
+                    <Box ml={1}>
+                      <strong>n.:</strong> {cliente.numeroCivico}
+                    </Box>
+                  </Box>
+                  <Box>
+                    <strong>CAP:</strong> {cliente.cap}
+                  </Box>
+                  <Box>
+                    <strong>Città:</strong> {cliente.paese}
+                  </Box>
+                  <Box>
+                    <strong>Prov.:</strong> {cliente.provincia}
+                  </Box>
+                </Grid>
+              </Grid>
+            </Card>
           </Box>
         )}
-        <Typography variant="h6" gutterBottom>Liste Bolle</Typography>
-        <div style={{ height: 400, width: '100%' }}>
-          <DataGrid
-            rows={bolleCliente}
-            columns={columns}
-            getRowId={row => row.id!}
-            pageSizeOptions={[5, 10]}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          />
-        </div>
+
+        {tabIndex === 1 && (
+          <Accordion defaultExpanded sx={{ boxShadow: ' 0px 4px 10px 0px #00000045', padding: '1em', borderRadius: '32px !important' }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography><strong> Totale bolle: </strong> {bolleCliente.length} </Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ boxShadow: ' 0' }}>
+              <Box sx={{ height: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', borderRadius: '32px' }}>
+                <DataGrid
+                  rows={bolleCliente}
+                  columns={columns}
+                  getRowId={row => row.id!}
+                  pageSizeOptions={[5, 10]}
+                  initialState={{
+                    pagination: { paginationModel: { pageSize: 5 } }
+                  }}
+                  sx={{
+                    borderRadius: '32px',
+                    padding: '1em',
+                    '& .MuiDataGrid-row:nth-of-type(odd)': {
+                      bgcolor: '#f7f7f7'
+                    }
+                  }}
+                />
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        )}
       </DialogContent>
+
       <DialogActions>
-        <Button onClick={onClose}>Chiudi</Button>
+        <Button className='btn' sx={{marginBottom: '1em', marginRight: '24px'}} onClick={onClose}>Chiudi</Button>
       </DialogActions>
     </Dialog>
   );

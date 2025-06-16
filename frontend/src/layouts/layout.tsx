@@ -5,6 +5,7 @@ import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItemButton, 
 import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import Description from '@mui/icons-material/Description';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -13,13 +14,14 @@ import { logout } from '../hooks/useAuth';
 import logoAgritech from '../assets/agritech-verde.png';
 import '../App.scss';
 
+
 const drawerWidth = 240;
 
 const navItems = [
   { text: 'Clienti', icon: <PeopleIcon />, path: '/dashboard/clienti' },
   { text: 'Prodotti', icon: <InventoryIcon />, path: '/dashboard/prodotti' },
   { text: 'Imballaggi', icon: <LocalShippingIcon />, path: '/dashboard/imballaggi' },
-  { text: 'Bolle', icon: <LocalShippingIcon />, path: '/dashboard/bolle' },
+  { text: 'Bolle', icon: <Description />, path: '/dashboard/bolle' },
   { text: 'Report', icon: <AssessmentIcon />, path: '/dashboard/report' },
   { text: 'Impostazioni', icon: <SettingsIcon />, path: '/dashboard/impostazioni' },
 ];

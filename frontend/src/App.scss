@@ -82,6 +82,13 @@ main{
   }
 }
 
-// .input-dialog{
-  
-// }
+
+// Override MUI Tabs indicator color --> tab dettaglio clienti
+.MuiTabs-indicator {
+  background-color: #4C57E5 !important;
+}
+
+// Override MUI Tab selected text color --> tab dettaglio clienti
+.MuiTab-root.Mui-selected {
+  color: #4C57E5 !important;
+}
