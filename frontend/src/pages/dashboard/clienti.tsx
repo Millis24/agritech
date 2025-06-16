@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Swal from 'sweetalert2';
 import SchedaClienteDialog from '../../components/schedaClienteDialog.tsx';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import AddClienteDialog from '../../components/addClienteDialog';
 import type { Cliente } from '../../components/addClienteDialog';
@@ -20,6 +21,8 @@ export default function Clienti() {
   });
   
   const [query, setQuery] = useState('');
+  const [filterFrom, setFilterFrom] = useState<string>('');
+  const [filterTo, setFilterTo] = useState<string>('');
   const [clienti, setClienti] = useState<Cliente[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Cliente | null>(null);
@@ -36,7 +39,8 @@ export default function Clienti() {
       } catch (e) {
         console.error('❌ Errore nel caricamento online, provo offline');
         const locali = await getAllClienti();
-        setClienti(locali);
+        const sorted = locali.slice().sort((a,b) => a.id - b.id);
+        setClienti(sorted);
       }
     } else {
       const locali = await getAllClienti();
@@ -179,12 +183,22 @@ export default function Clienti() {
   };
   
   // filtri
-  const clientiFiltrati = clienti.filter(c =>
-    c.nomeCliente.toLowerCase().includes(query.toLowerCase()) ||
-    c.cognomeCliente.toLowerCase().includes(query.toLowerCase()) ||
-    c.ragioneSociale.toLowerCase().includes(query.toLowerCase()) ||
-    c.partitaIva.includes(query)
-  );
+  const clientiFiltrati = useMemo(() => 
+    clienti
+      .slice()                  // clona, per non mutare lo stato originale
+      .sort((a, b) => a.id - b.id)
+            .filter(c => {
+        // text search
+        const matchesText = c.nomeCliente.toLowerCase().includes(query.toLowerCase())
+          || c.ragioneSociale.toLowerCase().includes(query.toLowerCase());
+        if (!matchesText) return false;
+        // date filter on createdAt (if field exists)
+        const created = new Date(c.createdAt ?? '');
+        if (filterFrom && created < new Date(filterFrom)) return false;
+        if (filterTo && created > new Date(filterTo)) return false;
+        return true;
+      })
+  , [clienti, query, filterFrom, filterTo]);
 
   // colonne tabella
   const columns: GridColDef[] = [
@@ -249,7 +263,16 @@ export default function Clienti() {
       </Box>
 
       {/* Ricerca Cliente */}
-      <TextField className='input-tondi' label="Cerca cliente" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
+      <Box display="flex" alignItems="center" gap={2} mb={3}>
+        <TextField className='input-tondi' label="Cerca cliente" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
+        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" />
+        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" />
+        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} >
+          <DeleteForeverIcon />
+        </Button>
+      </Box>
+
+
 
       {/* Tabella Clienti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
@@ -280,12 +303,16 @@ export default function Clienti() {
         <DataGrid
           rows={clientiFiltrati}
           columns={columns}
+          getRowId={(row) => row.id!}
           checkboxSelection
           rowSelectionModel={rowSelectionModel}
           onRowSelectionModelChange={(model: GridRowSelectionModel) => {
             setRowSelectionModel(model);
           }}
           initialState={{
+            sorting: {
+              sortModel: [{ field: 'id', sort: 'asc' }],
+            },
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}
           pageSizeOptions={[25, 50, 100]}

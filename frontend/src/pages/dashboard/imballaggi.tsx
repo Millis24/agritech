@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import AddImballaggioDialog from '../../components/addImballaggioDialog';
 
@@ -28,6 +29,8 @@ export default function Imballaggi() {
   });
 
   const [query, setQuery] = useState('');
+  const [filterFrom, setFilterFrom] = useState<string>('');
+  const [filterTo, setFilterTo] = useState<string>('');
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Imballaggio | null>(null);
@@ -168,11 +171,25 @@ export default function Imballaggi() {
   
 
   // filtri
-  const imballaggiFiltrati = imballaggi.filter(i =>
-    i.tipo.toLowerCase().includes(query.toLowerCase()) ||
-    i.dimensioni.toLowerCase().includes(query.toLowerCase()) ||
-    String(i.capacitaKg).includes(query)
-  );
+  // const imballaggiFiltrati = imballaggi.filter(i =>
+  //   i.tipo.toLowerCase().includes(query.toLowerCase()) ||
+  //   i.dimensioni.toLowerCase().includes(query.toLowerCase()) ||
+  //   String(i.capacitaKg).includes(query)
+  // );
+
+  const imballaggiFiltrati = useMemo(() =>
+    imballaggi
+    .slice()
+    .sort((a, b) => a.id - b.id)
+            .filter(i => {
+    const matchesText = i.tipo.toLowerCase().includes(query.toLowerCase())
+      || i.dimensioni.toLowerCase().includes(query.toLowerCase());
+    if (!matchesText) return false;
+    const created = new Date(i.createdAt ?? '');
+        if (filterFrom && created < new Date(filterFrom)) return false;
+        if (filterTo && created > new Date(filterTo)) return false;
+        return true;
+ }), [imballaggi, query, filterFrom, filterTo]);
 
   // colonne tabella
   const columns: GridColDef[] = [
@@ -223,7 +240,14 @@ export default function Imballaggi() {
       </Box>
 
       {/* Ricerca Imballaggio */}
-      <TextField className='input-tondi' label="Cerca imballaggio" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
+      <Box display="flex" alignItems="center" gap={2} mb={3}>
+        <TextField className='input-tondi' label="Cerca imballaggio" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
+        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" />
+        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" />
+        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} >
+          <DeleteForeverIcon />
+        </Button>
+      </Box>
 
       {/* Tabella Imballaggi */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>

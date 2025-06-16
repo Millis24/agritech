@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import AddProdottoDialog from '../../components/addProdottoDialog';
 import type { Prodotto } from '../../components/addProdottoDialog';
@@ -18,6 +19,8 @@ export default function Prodotti() {
   });
 
   const [query, setQuery] = useState('');
+  const [filterFrom, setFilterFrom] = useState<string>('');
+  const [filterTo, setFilterTo] = useState<string>('');
   const [prodotti, setProdotti] = useState<Prodotto[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prodotto | null>(null);
@@ -180,12 +183,26 @@ export default function Prodotti() {
   };
 
   // filtri
-  const prodottiFiltrati = prodotti.filter(p =>
-    p.nome.toLowerCase().includes(query.toLowerCase()) ||
-    p.varieta.toLowerCase().includes(query.toLowerCase()) ||
-    p.calibro.toLowerCase().includes(query.toLowerCase()) ||
-    p.colore.toLowerCase().includes(query.toLowerCase())
-  );
+  // const prodottiFiltrati = prodotti.filter(p =>
+  //   p.nome.toLowerCase().includes(query.toLowerCase()) ||
+  //   p.varieta.toLowerCase().includes(query.toLowerCase()) ||
+  //   p.calibro.toLowerCase().includes(query.toLowerCase()) ||
+  //   p.colore.toLowerCase().includes(query.toLowerCase())
+  // );
+
+  const prodottiFiltrati = useMemo(() =>
+    prodotti
+    .slice()
+    .sort((a, b) => a.id - b.id)
+            .filter(p => {
+    const matchesText = p.nome.toLowerCase().includes(query.toLowerCase())
+      || p.varieta.toLowerCase().includes(query.toLowerCase()) || p.calibro.toLowerCase().includes(query.toLowerCase());
+    if (!matchesText) return false;
+    const created = new Date(p.createdAt ?? '');
+        if (filterFrom && created < new Date(filterFrom)) return false;
+        if (filterTo && created > new Date(filterTo)) return false;
+        return true;
+ }), [prodotti, query, filterFrom, filterTo]);
 
   // colonne tabella
   const columns: GridColDef[] = [
@@ -235,7 +252,15 @@ export default function Prodotti() {
       </Box>
 
       {/* Ricerca Prodotto */}
-      <TextField className='input-tondi' label="Cerca prodotto" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
+      <Box display="flex" alignItems="center" gap={2} mb={3}>
+        <TextField className='input-tondi' label="Cerca prodotto" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
+        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" />
+        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" />
+        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} >
+          <DeleteForeverIcon />
+        </Button>
+      </Box>
+
 
       {/* Tabella Prodotti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
