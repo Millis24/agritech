@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, MenuItem, Typography, Grid,
-  InputAdornment
+  InputAdornment, IconButton
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import type { Cliente } from '../storage/clientiDB';
 import type { Prodotto } from './addProdottoDialog';
 import type { Imballaggio } from './addImballaggioDialog';
@@ -115,12 +116,12 @@ useEffect(() => {
 
     // aggiorna automaticamente qualità e prezzo del prodotto
     if (field === 'nomeProdotto') {
-     const prodottoSelezionato = prodotti.find(p => p.nome === value);
-     if (prodottoSelezionato) {
-       nuovi[index].qualita = prodottoSelezionato.calibro;
-       //nuovi[index].prezzo = prodottoSelezionato.prezzo;
-     }
-   }
+      const prodottoSelezionato = prodotti.find(p => p.nome === value);
+      if (prodottoSelezionato) {
+        nuovi[index].qualita = prodottoSelezionato.calibro;
+        //nuovi[index].prezzo = prodottoSelezionato.prezzo;
+      }
+    }
 
     // aggiorna automaticamente il prezzo dell'imballaggio selezionato
     if (field === 'nomeImballaggio') {
@@ -130,6 +131,12 @@ useEffect(() => {
       }
     }
 
+    setProdottiBolla(nuovi);
+  };
+
+  const handleRemoveProdotto = (index: number) => {
+    const nuovi = [...prodottiBolla];
+    nuovi.splice(index, 1);
     setProdottiBolla(nuovi);
   };
 
@@ -313,6 +320,11 @@ useEffect(() => {
                 <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Peso lordo" value={r.pesoLordo} onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)} /></Grid>
                 <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Peso netto" value={r.pesoNetto} onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)} /></Grid>
                 <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Tot Kg" value={r.totKgSpediti} onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)} /></Grid>
+                <Grid size={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconButton onClick={() => handleRemoveProdotto(i)} size="small">
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Grid>
               </Grid>
             ))}
           </Grid>
