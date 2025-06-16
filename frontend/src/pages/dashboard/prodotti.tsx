@@ -291,12 +291,16 @@ export default function Prodotti() {
         <DataGrid
           rows={prodottiFiltrati}
           columns={columns}
+          getRowId={(row) => row.id!}
           checkboxSelection
           rowSelectionModel={rowSelectionModel}
           onRowSelectionModelChange={(model: GridRowSelectionModel) => {
             setRowSelectionModel(model);
           }}
           initialState={{
+            sorting: {
+              sortModel: [{ field: 'id', sort: 'asc' }],
+            },
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}
           pageSizeOptions={[25, 50, 100]}
