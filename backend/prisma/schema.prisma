@@ -62,9 +62,11 @@ model Bolla {
   dataOra                DateTime
   destinatarioNome       String
   destinatarioCognome    String
-  destinatarioIndirizzo  String
+  destinatarioVia         String?
+  destinatarioNumeroCivico String?
   destinatarioEmail      String
-  destinatarioTelefono   String
+  destinatarioTelefonoFisso   String?
+  destinatarioTelefonoCell   String?
   destinatarioPartitaIva String
   destinatarioCodiceSDI  String
   indirizzoDestinazione  String

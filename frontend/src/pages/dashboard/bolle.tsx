@@ -177,7 +177,14 @@ export default function Bolle() {
             }}>
             <DeleteIcon />
           </IconButton>
-          <IconButton onClick={() => handlePrint(params.row)}><PrintIcon/></IconButton>
+          <IconButton
+  onClick={(e) => {
+    e.stopPropagation();           // blocca la selezione della riga
+    handlePrint(params.row);       // esegue la stampa
+  }}
+>
+  <PrintIcon />
+</IconButton>
         </>
       )
     }

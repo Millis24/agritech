@@ -56,9 +56,10 @@ export async function handlePrint(bolla: Bolla) {
   doc.setFontSize(12);
   doc.text(`${bolla.destinatarioNome} ${bolla.destinatarioCognome}`, destX + 4, cursorY + 16);
   doc.setFontSize(9);
-  doc.text(bolla.destinatarioIndirizzo, destX + 4, cursorY + 22);
+  const indirizzo = `via ${bolla.destinatarioVia ?? ''}, n. ${bolla.destinatarioNumeroCivico ?? ''}`.trim();
+  doc.text(indirizzo, destX + 4, cursorY + 22);
   doc.text(`Mail: ${bolla.destinatarioEmail}`, destX + 4, cursorY + 28);
-  doc.text(`Tel.: ${bolla.destinatarioTelefono}`, destX + 4, cursorY + 33);
+  doc.text(`Tel.: ${bolla.destinatarioTelefonoCell}`, destX + 4, cursorY + 33);
   doc.text(`P.IVA: ${bolla.destinatarioPartitaIva}`, destX + 4, cursorY + 38);
   doc.text(`SDI: ${bolla.destinatarioCodiceSDI}`, destX + 4, cursorY + 43);
 
@@ -91,7 +92,7 @@ export async function handlePrint(bolla: Bolla) {
   // CAUSALE
   cursorY += 16;
   doc.rect(M, cursorY, 95, 8);
-  doc.rect(M + 95, cursorY, 95, 8);
+  doc.rect(M + 95, cursorY, 95, 8); 
   doc.setFont('helvetica', 'bold');
   doc.text('Causale del trasporto:', M + 2, cursorY + 6);
   doc.setFont('helvetica', 'regular');

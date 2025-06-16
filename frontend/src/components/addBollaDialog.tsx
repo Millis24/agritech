@@ -22,7 +22,7 @@ interface BollaDialogProps {
 }
 
 export default function AddBollaDialog({
-  open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla
+  open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla 
 }: BollaDialogProps) {
   const [destinatario, setDestinatario] = useState({
     nome: '', cognome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: ''
@@ -35,7 +35,6 @@ export default function AddBollaDialog({
   const [consegnaACarico, setConsegnaACarico] = useState('');
   const [vettore, setVettore] = useState('');
   const [destTipo, setDestTipo] = useState<'sede'|'altra'>('sede');
-  const [selectedPhoneType, setSelectedPhoneType] = useState<'fisso'|'cell'>('fisso');
 
   useEffect(() => {
     if (selectedClienteId !== '') {
@@ -56,55 +55,52 @@ export default function AddBollaDialog({
     }
   }, [selectedClienteId, clienti]);
 
-  useEffect(() => {
-      if (bolla)  {
-        // split indirizzo
-        let via = '', numeroCivico = '';
-        const indir = bolla.destinatarioIndirizzo || '';
-        const parts = indir.split(' ');
-        if (parts.length >= 2) {
-          via = parts.slice(0, -1).join(' ');
-          numeroCivico = parts.slice(-1)[0];
-      } else {
-        via = indir;
-      }
-      setDestinatario({
-        nome: bolla.destinatarioNome,
-        cognome: bolla.destinatarioCognome,
-        via,
-        numeroCivico,
-        email: bolla.destinatarioEmail,
-        telefonoFisso: bolla.destinatarioTelefono,
-        telefonoCell: '',
-        partitaIva: bolla.destinatarioPartitaIva,
-        codiceSDI: bolla.destinatarioCodiceSDI
-      });
-      setSelectedPhoneType('fisso');
-      setDataOra(bolla.dataOra.slice(0, 16));
-      setDestTipo('sede');
-      setIndirizzoDestinazione(bolla.indirizzoDestinazione);
-      setCausale(bolla.causale);
-      setConsegnaACarico(bolla.consegnaACarico);
-      setVettore(bolla.vettore);
-      setSelectedClienteId('');
-      try {
-        setProdottiBolla(JSON.parse(bolla.prodotti));
-      } catch {
-        setProdottiBolla([]);
-      }
-    } else {
-      setDestinatario({ nome: '', cognome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: '' });
-      setSelectedClienteId('');
-      setDestTipo('sede');
-      setIndirizzoDestinazione('');
-      setCausale('');
-      setDataOra(new Date().toISOString().slice(0, 16));
+useEffect(() => {
+  if (bolla) {
+    setDestinatario({
+      nome: bolla.destinatarioNome,
+      cognome: bolla.destinatarioCognome || '',
+      via: bolla.destinatarioVia || '',
+      numeroCivico: bolla.destinatarioNumeroCivico || '',
+      email: bolla.destinatarioEmail,
+      telefonoFisso: bolla.destinatarioTelefonoFisso || '',
+      telefonoCell: bolla.destinatarioTelefonoCell || '',
+      partitaIva: bolla.destinatarioPartitaIva,
+      codiceSDI: bolla.destinatarioCodiceSDI
+    });
+    setDataOra(bolla.dataOra.slice(0, 16));
+    setDestTipo('sede');
+    setIndirizzoDestinazione(bolla.indirizzoDestinazione);
+    setCausale(bolla.causale);
+    setConsegnaACarico(bolla.consegnaACarico);
+    setVettore(bolla.vettore);
+    try {
+      setProdottiBolla(JSON.parse(bolla.prodotti));
+    } catch {
       setProdottiBolla([]);
-      setConsegnaACarico('');
-      setVettore('');
-      setSelectedPhoneType('fisso');
     }
-  }, [open, bolla]);
+  } else {
+    // reset
+    setDestinatario({
+      nome: '',
+      cognome: '',
+      via: '',
+      numeroCivico: '',
+      email: '',
+      telefonoFisso: '',
+      telefonoCell: '',
+      partitaIva: '',
+      codiceSDI: ''
+    });
+    setDataOra(new Date().toISOString().slice(0, 16));
+    setDestTipo('sede');
+    setIndirizzoDestinazione('');
+    setCausale('');
+    setProdottiBolla([]);
+    setConsegnaACarico('');
+    setVettore('');
+  }
+}, [open, bolla]);
 
   const handleAddProdotto = () => {
     setProdottiBolla([...prodottiBolla, {
@@ -141,17 +137,16 @@ export default function AddBollaDialog({
     const destinatarioInd = destTipo==='sede'
       ? `${destinatario.via} ${destinatario.numeroCivico}`
       : indirizzoDestinazione;
-    const telefonoSel = selectedPhoneType==='fisso'
-      ? destinatario.telefonoFisso
-      : destinatario.telefonoCell;
     const baseBolla = {
       numeroBolla: bolla?.numeroBolla ?? numeroBolla,
       dataOra: new Date(dataOra).toISOString(),
       destinatarioNome: destinatario.nome,
       destinatarioCognome: destinatario.cognome,
-      destinatarioIndirizzo:destinatarioInd,
+      destinatarioVia:destinatario.via,
+      destinatarioNumeroCivico:destinatario.numeroCivico,
       destinatarioEmail: destinatario.email,
-      destinatarioTelefono:telefonoSel,
+      destinatarioTelefonoFisso: destinatario.telefonoFisso,
+      destinatarioTelefonoCell: destinatario.telefonoCell,
       destinatarioPartitaIva: destinatario.partitaIva,
       destinatarioCodiceSDI: destinatario.codiceSDI,
       indirizzoDestinazione: destinatarioInd,
