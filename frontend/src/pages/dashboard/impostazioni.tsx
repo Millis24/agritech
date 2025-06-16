@@ -88,7 +88,7 @@ export default function SettingsPage() {
     <Box p={3} maxWidth={600} mx="auto">
       <Typography variant="h4" mb={2}>Impostazioni</Typography>
 
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper sx={{ p: 2, mb: 3, filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', padding: '1.5em', borderRadius: '32px'  }} >
         <Typography variant="h6">Profilo</Typography>
         <Stack spacing={2} mt={1}>
           <TextField
@@ -114,7 +114,7 @@ export default function SettingsPage() {
 
       <Divider sx={{ mb: 3 }} />
 
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: 2, filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', padding: '1.5em', borderRadius: '32px' }}>
         <Typography variant="h6">Password</Typography>
         <Stack spacing={2} mt={1}>
           <TextField
