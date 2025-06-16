@@ -18,7 +18,7 @@ export default function ReportPage() {
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
 
   useEffect(() => {
-    (async () => {
+    const load = async () => {
       const [allBolle, allClienti, allProdotti, allImballaggi] = await Promise.all([
         getAllBolle(),
         getAllClienti(),
@@ -29,7 +29,10 @@ export default function ReportPage() {
       setClienti(allClienti);
       setProdotti(allProdotti);
       setImballaggi(allImballaggi);
-    })();
+    };
+    load();
+    window.addEventListener('focus', load);
+    return () => window.removeEventListener('focus', load);
   }, []);
 
   // --- Grafico 1: Generale per prodotto ---

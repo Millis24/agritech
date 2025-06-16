@@ -131,8 +131,12 @@ export default function Bolle() {
 
     // filtro per date
     const dataBolla = new Date(b.dataOra);
-    const fromOK = dateFrom ? dataBolla >= new Date(dateFrom) : true;
-    const toOK   = dateTo   ? dataBolla <= new Date(dateTo)   : true;
+    const fromOK = dateFrom
+      ? dataBolla >= new Date(dateFrom)
+      : true;
+    const toOK = dateTo
+      ? dataBolla <= new Date(new Date(dateTo).setHours(23, 59, 59, 999))
+      : true;
 
     return matchNumero && byCliente && fromOK && toOK;
   });

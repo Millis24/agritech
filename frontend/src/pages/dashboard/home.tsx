@@ -1,120 +1,116 @@
 // src/pages/dashboard/home.tsx
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button
-} from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { getAllBolle } from '../../storage/bolleDB';
-import { getAllClienti } from '../../storage/clientiDB';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
+
+const MONTH_LABELS = [
+  'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
+  'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'
+];
+const COLORS = [
+  '#4C57E5', '#E54C57', '#57E54C', '#E5D34C', '#4CE5D3',
+  '#A14CE5', '#E54C4C', '#4CE58F', '#E58F4C', '#8FE54C'
+];
 
 export default function Home() {
-  // Prendi username salvato in login
-  const username = localStorage.getItem('username') || 'utente';
+  const [username, setUsername] = useState<string>('');
+  const [chartData, setChartData] = useState<Array<{ month: string } & Record<string, number>>>([]);
+  const [productList, setProductList] = useState<string[]>([]);
 
-  // Stati per i KPI
-  const [totalBolle, setTotalBolle] = useState(0);
-  const [totalClienti, setTotalClienti] = useState(0);
-  const [recentBolle, setRecentBolle] = useState<any[]>([]);
+  const reloadData = async () => {
+    const bolle = await getAllBolle();
+    const products = new Set<string>();
+    bolle.forEach(b =>
+      JSON.parse(b.prodotti).forEach((p: any) => products.add(p.nomeProdotto))
+    );
+    const prodArray = Array.from(products);
+    setProductList(prodArray);
+    const data = MONTH_LABELS.map(m => {
+      const obj: any = { month: m };
+      prodArray.forEach(p => (obj[p] = 0));
+      return obj;
+    });
+    bolle.forEach(b => {
+      const monthIdx = new Date(b.dataOra).getMonth();
+      const row = data[monthIdx];
+      JSON.parse(b.prodotti).forEach((p: any) => {
+        row[p.nomeProdotto] += p.totKgSpediti;
+      });
+    });
+    setChartData(data);
+  };
 
   useEffect(() => {
+    // load user profile
     (async () => {
-      const bolle = await getAllBolle();
-      const clienti = await getAllClienti();
-      setTotalBolle(bolle.length);
-      setTotalClienti(clienti.length);
-      // tieni solo le ultime 5 bolle ordinate per data
-      const sorted = bolle
-        .slice()
-        .sort((a, b) => new Date(b.dataOra).getTime() - new Date(a.dataOra).getTime());
-      setRecentBolle(sorted.slice(0, 5));
+      try {
+        const res = await fetch('http://localhost:4000/api/user/profile', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) {
+          const profile = await res.json();
+          setUsername(profile.nomeUtente);
+        } else {
+          setUsername('utente');
+        }
+      } catch {
+        setUsername('utente');
+      }
     })();
+
+    // initial load
+    reloadData();
+    // reload on window focus
+    window.addEventListener('focus', reloadData);
+    return () => window.removeEventListener('focus', reloadData);
   }, []);
 
   return (
     <Box>
-      {/* Welcome */}
-      <Typography variant="h4" gutterBottom>
-        Benvenuto, {username}!
-      </Typography>
-
-      {/* KPI cards */}
-      <Grid container spacing={2} mb={4}>
-        <Grid sx={{ xs: 12, sm: 6,  md: 3}} >
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary">Totale Bolle</Typography>
-              <Typography variant="h5">{totalBolle}</Typography>
-              <Button size="small" sx={{ mt: 1 }} href="/dashboard/bolle">
-                Vedi tutte
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid sx={{ xs: 12, sm: 6,  md: 3}}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary">Totale Clienti</Typography>
-              <Typography variant="h5">{totalClienti}</Typography>
-              <Button size="small" sx={{ mt: 1 }} href="/dashboard/clienti">
-                Vedi tutti
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-        {/* Qui puoi aggiungere altre card (Kg spediti oggi, Fatturato, ecc.) */}
-      </Grid>
-
-      {/* Bolle recenti */}
-      <Box mb={2}>
-        <Typography variant="h6">Ultime 5 Bolle</Typography>
-        {recentBolle.length === 0 ? (
-          <Typography color="textSecondary">Nessuna bolla ancora creata.</Typography>
-        ) : (
-          <Box component="ul" sx={{ pl: 2 }}>
-            {recentBolle.map(b => {
-              const kgTotali = JSON.parse(b.prodotti).reduce(
-                (s: number, p: any) => s + p.totKgSpediti,
-                0
-              );
-              return (
-                <li key={b.id}>
-                  <Typography>
-                    Bolla n. {b.numeroBolla} —{' '}
-                    {new Date(b.dataOra).toLocaleDateString('it-IT')} — {kgTotali} kg
-                  </Typography>
-                </li>
-              );
-            })}
-          </Box>
-        )}
+      <Box display="flex" alignItems="center" mb={2}>
+        <Typography variant="h4" gutterBottom sx={{ flexGrow: 1 }}>
+          Benvenuto, {username}!
+        </Typography>
+        <IconButton onClick={reloadData} size="large">
+          <RefreshIcon />
+        </IconButton>
       </Box>
 
-      {/* Quick actions */}
-      <Box>
-        <Typography variant="h6" mb={1}>
-          Azioni rapide
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid>
-            <Button variant="contained" href="/dashboard/bolle">
-              + Nuova Bolla
-            </Button>
-          </Grid>
-          <Grid>
-            <Button variant="contained" href="/dashboard/clienti">
-              + Nuovo Cliente
-            </Button>
-          </Grid>
-          <Grid>
-            <Button variant="outlined" href="/dashboard/impostazioni">
-              Impostazioni
-            </Button>
-          </Grid>
-        </Grid>
+      <Typography variant="h6" mt={4}>
+        Vendite per Prodotto (kg totali anno)
+      </Typography>
+      <Box sx={{ width: '100%', height: 400 }}>
+        <ResponsiveContainer>
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            {productList.map((prod, i) => (
+              <Bar
+                key={prod}
+                dataKey={prod}
+                name={prod}
+                fill={COLORS[i % COLORS.length]}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
       </Box>
     </Box>
   );
