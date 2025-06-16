@@ -11,12 +11,7 @@ model Utente {
   id         Int    @id @default(autoincrement())
   nomeUtente String @unique
   password   String
-
   email                String  @default("")
-  notifySync           Boolean @default(false)
-  notifyErrors         Boolean @default(false)
-  darkMode             Boolean @default(false)
-  defaultReportRange   String  @default("month")
 }
 
 model Cliente {

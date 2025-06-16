@@ -3,11 +3,14 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 
 const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = 'segreto_super_sicuro';
+const JWT_SECRET = process.env.JWT_SECRET || 'segreto_super_sicuro';
 
 app.use(cors());
 app.use(express.json());
@@ -44,19 +47,14 @@ app.post('/api/register', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/login', async (req: Request, res: Response) => {
+app.post('/api/login', async (req, res) => {
   const { nomeUtente, password } = req.body;
-  try {
-    const user = await prisma.utente.findUnique({ where: { nomeUtente } });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Credenziali non valide' });
-    }
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token });
-  } catch (error) {
-    console.error('❌ Errore login:', error);
-    res.status(500).json({ error: 'Errore interno' });
+  const user = await prisma.utente.findUnique({ where: { nomeUtente } });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ error: 'Credenziali non valide' });
   }
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1d' });
+  return res.json({ token });
 });
 
 
@@ -71,20 +69,17 @@ app.get('/api/user/profile', verificaToken, async (req, res) => {
   res.json({
     nomeUtente: utente.nomeUtente,
     email:      utente.email,
-    notifySync: utente.notifySync,
-    notifyErrors: utente.notifyErrors,
-    darkMode:     utente.darkMode,
   });
 });
 
 // PUT /api/user/profile
 app.put('/api/user/profile', verificaToken, async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;
-  const { nomeUtente, email, notifySync, notifyErrors, darkMode } = req.body;
+  const { nomeUtente, email } = req.body;
   try {
     await prisma.utente.update({
       where: { id: userId },
-      data: { nomeUtente, email, notifySync, notifyErrors, darkMode },
+      data: { nomeUtente, email },
     });
     res.sendStatus(200);
   } catch {
@@ -353,9 +348,11 @@ app.put('/api/bolle/:id', async (req, res) => {
     const {
       dataOra,
       destinatarioNome,
-      destinatarioIndirizzo,
+      destinatarioVia,
+      destinatarioNumeroCivico,
       destinatarioEmail,
-      destinatarioTelefono,
+      destinatarioTelefonoFisso,
+      destinatarioTelefonoCell,
       destinatarioPartitaIva,
       destinatarioCodiceSDI,
       indirizzoDestinazione,
@@ -374,9 +371,11 @@ app.put('/api/bolle/:id', async (req, res) => {
       data: {
         dataOra: new Date(dataOra),
         destinatarioNome,
-        destinatarioIndirizzo,
+        destinatarioVia,
+        destinatarioNumeroCivico,
         destinatarioEmail,
-        destinatarioTelefono,
+        destinatarioTelefonoFisso,
+        destinatarioTelefonoCell,
         destinatarioPartitaIva,
         destinatarioCodiceSDI,
         indirizzoDestinazione,

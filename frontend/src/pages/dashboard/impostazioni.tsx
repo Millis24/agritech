@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Divider, Switch,FormControlLabel, Stack, Paper, InputAdornment, IconButton } from '@mui/material';
+import { Box, Typography, TextField, Button, Divider, Stack, Paper, InputAdornment, IconButton } from '@mui/material';
 import { getUserProfile, updateUserProfile, changePassword, type UserProfile } from '../../api/user';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -18,13 +18,6 @@ export default function SettingsPage() {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  // Notifiche
-  const [notifySync, setNotifySync] = useState(false);
-  const [notifyErrors, setNotifyErrors] = useState(false);
-  
-
-  // Tema
-  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -33,11 +26,12 @@ export default function SettingsPage() {
         // Se il backend restituisce solo email/etc, potresti dover adattare per ottenere nomeUtente
         setUsername((profile as any).nomeUtente || '');
         setEmail(profile.email);
-        setNotifySync(profile.notifySync);
-        setNotifyErrors(profile.notifyErrors);
-        setDarkMode(profile.darkMode);
-      } catch (err) {
-        console.error('Errore caricamento profilo:', err);
+      } catch (err:any) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore caricamento profilo',
+          text: err.message || 'Impossibile recuperare i dati',
+        });
       }
     }
     load();
@@ -45,7 +39,7 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     try {
-      await updateUserProfile({ nomeUtente: username, email, notifySync, notifyErrors, darkMode });
+      await updateUserProfile({ nomeUtente: username, email});
       await Swal.fire({
         icon: 'success',
         title: 'Profilo aggiornato!',
@@ -98,46 +92,21 @@ export default function SettingsPage() {
         <Typography variant="h6">Profilo</Typography>
         <Stack spacing={2} mt={1}>
           <TextField
+            className='input-tondi'
             label="Nome Utente"
             value={username}
             onChange={e => setUsername(e.target.value)}
             fullWidth
           />
           <TextField
+            className='input-tondi'
             label="Email"
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             fullWidth
           />
-          {/* <FormControlLabel
-            control={
-              <Switch
-                checked={notifySync}
-                onChange={e => setNotifySync(e.target.checked)}
-              />
-            }
-            label="Notifica sincronizzazione"
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={notifyErrors}
-                onChange={e => setNotifyErrors(e.target.checked)}
-              />
-            }
-            label="Notifica errori"
-          /> */}
-          <FormControlLabel
-            control={
-              <Switch
-                checked={darkMode}
-                onChange={e => setDarkMode(e.target.checked)}
-              />
-            }
-            label="Dark Mode"
-          />
-          <Button variant="contained" onClick={handleSaveProfile}>
+          <Button className='btn-save' onClick={handleSaveProfile}>
             Aggiorna Profilo
           </Button>
         </Stack>
@@ -149,6 +118,7 @@ export default function SettingsPage() {
         <Typography variant="h6">Password</Typography>
         <Stack spacing={2} mt={1}>
           <TextField
+            className='input-tondi'
             label="Password attuale"
             type={showOldPassword ? 'text' : 'password'}
             value={oldPassword}
@@ -169,6 +139,7 @@ export default function SettingsPage() {
             }}
           />
           <TextField
+            className='input-tondi'
             label="Nuova password"
             type={showNewPassword ? 'text' : 'password'}
             value={newPassword}
@@ -188,7 +159,7 @@ export default function SettingsPage() {
               )
             }}
           />
-          <Button variant="contained" onClick={handleChangePassword}>
+          <Button className='btn-save' onClick={handleChangePassword}>
             Cambia Password
           </Button>
         </Stack>

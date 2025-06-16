@@ -266,6 +266,7 @@ export default function Prodotti() {
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
         <Stack direction="row" spacing={1} mb={1}>
           <Button
+            className='btn-elimina-selezionati'
             variant="outlined"
             color="error"
             disabled={rowSelectionModel.ids.size === 0}
