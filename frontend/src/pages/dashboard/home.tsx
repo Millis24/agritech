@@ -90,7 +90,7 @@ export default function Home() {
       <Typography variant="h6" mt={4}>
         Vendite per Prodotto (kg totali anno)
       </Typography>
-      <Box sx={{ width: '100%', height: 400 }}>
+      <Box mt={5} sx={{ width: '100%', height: 500 , backgroundColor: '#fff', padding: '1em', borderRadius: '32px', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))'}}>
         <ResponsiveContainer>
           <BarChart
             data={chartData}

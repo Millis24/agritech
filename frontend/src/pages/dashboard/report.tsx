@@ -1,12 +1,10 @@
 // File: src/pages/dashboard/report.tsx
 import { useEffect, useState, useMemo } from 'react';
-import { Box, Typography, Stack, Button, TextField, MenuItem, FormControlLabel, Checkbox} from '@mui/material';
+import { Box, Typography, Stack, Button, TextField, MenuItem, FormControlLabel, Checkbox, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { saveAs } from 'file-saver';
 import { getAllBolle, type Bolla } from '../../storage/bolleDB';
 import { getAllClienti, type Cliente } from '../../storage/clientiDB';
-import { getAllProdotti, type Prodotto } from '../../storage/prodottiDB';
-import { getAllImballaggi, type Imballaggio } from '../../storage/imballaggiDB';
 
 const PIE_COLORS = ['#8884d8', '#82ca9d', '#FFBB28', '#FF8042'];
 
@@ -14,21 +12,15 @@ export default function ReportPage() {
   // Caricamento dati
   const [bolle, setBolle] = useState<Bolla[]>([]);
   const [clienti, setClienti] = useState<Cliente[]>([]);
-  const [prodotti, setProdotti] = useState<Prodotto[]>([]);
-  const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      const [allBolle, allClienti, allProdotti, allImballaggi] = await Promise.all([
+      const [allBolle, allClienti] = await Promise.all([
         getAllBolle(),
         getAllClienti(),
-        getAllProdotti(),
-        getAllImballaggi(),
       ]);
       setBolle(allBolle);
       setClienti(allClienti);
-      setProdotti(allProdotti);
-      setImballaggi(allImballaggi);
     };
     load();
     window.addEventListener('focus', load);
@@ -67,12 +59,37 @@ export default function ReportPage() {
       .map(([name, v]) => ({ name, kg: v.kg, count: v.count }));
   }, [filteredProd]);
 
-  const exportProdCSV = () => {
-    let csv = 'prodotto,kg,count\n';
-    dataProd.forEach(({ name, kg, count }) => {
-      csv += `${name},${kg},${count}\n`;
+  const exportProdDetailedCSV = () => {
+    let csv = 'bollaId,dataOra,cliente,nomeProdotto,qualita,prezzo,numeroColli,totKgSpediti,nomeImballaggio,prezzoImballaggio\n';
+    let totalKg = 0;
+    filteredProd.forEach(b => {
+      const prodottiList = JSON.parse(b.prodotti) as Array<any>;
+      prodottiList.forEach(p => {
+        csv += [
+          b.id,
+          `"${b.dataOra}"`,
+          `"${b.destinatarioNome}"`,
+          `"${p.nomeProdotto}"`,
+          `"${p.qualita}"`,
+          p.prezzo,
+          p.numeroColli,
+          p.totKgSpediti,
+          `"${p.nomeImballaggio}"`,
+          p.prezzoImballaggio
+        ].join(',') + '\n';
+        totalKg += p.totKgSpediti;
+      });
     });
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'prodotti_report.csv');
+    // Append total line
+    csv += `"Totale Kg spediti",,,, ,,, ,${totalKg}\n`;
+    // Append summary table header
+    csv += '\nProdotto,Kg Spediti\n';
+    // Append per-product totals
+    dataProd.forEach(row => {
+      csv += `${row.name},${row.kg}\n`;
+    });
+    // Trigger download
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'prodotti_report_dettaglio.csv');
   };
 
   // --- Grafico 2: Prodotti per Cliente ---
@@ -147,7 +164,7 @@ export default function ReportPage() {
         <TextField className='input-tondi' label="Da" type="date" value={fromProd} onChange={e => setFromProd(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField className='input-tondi' label="A" type="date" value={toProd} onChange={e => setToProd(e.target.value)} InputLabelProps={{ shrink: true }} />
         <FormControlLabel control={<Checkbox checked={showCountProd} onChange={e => setShowCountProd(e.target.checked)} />} label="Mostra N. bolle" />
-        <Button className='input-tondi' variant="outlined" onClick={exportProdCSV}>Esporta CSV</Button>
+        <Button className='input-tondi' variant="outlined" onClick={exportProdDetailedCSV}>Esporta CSV</Button>
       </Stack>
       {/* Grafico 1 */}
       <Box height={300} mb={10} mt={8}>
@@ -171,8 +188,29 @@ export default function ReportPage() {
         </ResponsiveContainer>
       </Box>
 
+      {/* Tabella Kg per Prodotto */}
+      <Typography variant="h6" gutterBottom mt={4}>Kg Prodotti - spediti</Typography>
+      <Paper sx={{ width: '100%', overflowX: 'auto', mb: 4, filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', padding: '1em', borderRadius: '32px' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>Prodotto</strong></TableCell>
+              <TableCell align="right"><strong>Kg Spediti</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {dataProd.map((row) => (
+              <TableRow key={row.name}>
+                <TableCell component="th" scope="row">{row.name}</TableCell>
+                <TableCell align="right">{row.kg}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+
       {/* Grafico 2: filtri */}
-      <Typography variant="h6" gutterBottom>Prodotti per Cliente</Typography>
+      <Typography variant="h6" gutterBottom mt={6}>Prodotti per Cliente</Typography>
       <Stack direction="row" spacing={2} mb={2} mt={4} flexWrap="wrap">
         <TextField className='input-tondi' select label="Cliente" value={selCliente} onChange={e => setSelCliente(e.target.value)} sx={{ minWidth: 200 }}>
           {clienti.map(c => (
@@ -184,17 +222,28 @@ export default function ReportPage() {
       </Stack>
       {/* Grafico 2 */}
       {selCliente && (
-        <Box height={250} mt={8}>
-          <ResponsiveContainer>
-            <BarChart data={dataClient} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="kg" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <>
+          {(() => {
+            const CLIENT_COLORS = ['#8884d8', '#82ca9d', '#FFBB28', '#FF8042', '#A28FD0'];
+            return (
+              <Box height={250} mt={8}>
+                <ResponsiveContainer>
+                  <BarChart data={dataClient} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="kg">
+                      {dataClient.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CLIENT_COLORS[index % CLIENT_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            );
+          })()}
+        </>
       )}
 
       {/* Grafico 3: filtri */}
