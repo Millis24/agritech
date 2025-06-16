@@ -70,7 +70,7 @@ export default function Login() {
 
         
       <div style={{position: 'relative'}}>
-        <Card sx={{ maxWidth: 600, width: '100%', mt: 10, zIndex: '1', padding: '1em' }} elevation={3}>
+        <Card sx={{ maxWidth: 600, width: '100%', mt: 10, zIndex: '1', padding: '1em', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', borderRadius: '32px' }} elevation={3}>
           <CardContent>
             <Stack spacing={2}>
               <Typography variant="h4" align="center" sx={{fontWeight: 'bold', paddingTop: '1em'}}>
@@ -147,7 +147,7 @@ export default function Login() {
             transform: 'translate(-40%, 50%)',
             backgroundColor: '#fff',
             borderRadius: '100%',
-            boxShadow: '0px 4px 10px 0px #00000045'
+            filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))',
 
           }}
         />
