@@ -258,6 +258,9 @@ export default function Bolle() {
             setRowSelectionModel(model);
           }}
           initialState={{
+            sorting: {
+              sortModel: [{ field: 'id', sort: 'asc' }],
+            },
             pagination: { paginationModel: { pageSize: 25, page: 0 } }
           }}
           pageSizeOptions={[25, 50, 100]}
