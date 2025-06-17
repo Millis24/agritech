@@ -408,8 +408,9 @@ useEffect(() => {
                   <TableBody>
                     {prodottiBolla.map((r, i) => (
                       <TableRow key={i}>
-                        <TableCell sx={{ width: 300 }}>
+                        <TableCell>
                           <Autocomplete
+                            sx={{ width: 175 }}
                             options={prodotti}
                             getOptionLabel={(p) => `${p.id} - ${p.nome}`}
                             value={prodotti.find(p => p.nome === r.nomeProdotto) || null}
@@ -433,11 +434,15 @@ useEffect(() => {
                           />
                         </TableCell>
                         <TableCell>
-                          <TextField fullWidth variant="standard" value={r.qualita} onChange={e => handleProdottoChange(i, 'qualita', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }} />
+                          <TextField
+                            sx={{ width: 175 }}
+                            label="Qualità"
+                            fullWidth variant="standard" value={r.qualita} onChange={e => handleProdottoChange(i, 'qualita', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }} />
                         </TableCell>
                         {/* Imballaggio Autocomplete */}
                         <TableCell>
                           <Autocomplete
+                            sx={{ width: 175 }}
                             open={openImballaggio}
                             onOpen={() => setOpenImballaggio(true)}
                             onClose={() => setOpenImballaggio(false)}
@@ -460,6 +465,7 @@ useEffect(() => {
                         {/* Prezzo Imballaggio */}
                         <TableCell>
                           <TextField
+                            sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
                             type="text"
@@ -470,60 +476,66 @@ useEffect(() => {
                         {/* Colli */}
                         <TableCell>
                           <TextField
+                            sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
                             type="number"
                             value={r.numeroColli}
                             onChange={e => handleProdottoChange(i, 'numeroColli', +e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
+                            inputProps={{ inputMode: 'numeric', step: '1', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                           />
                         </TableCell>
                         {/* Prezzo prodotto */}
                         <TableCell>
                           <TextField
+                            sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
                             type="number"
                             value={r.prezzo}
                             onChange={e => handleProdottoChange(i, 'prezzo', +e.target.value)}
                             InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
-                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
                         {/* Peso lordo */}
                         <TableCell>
                           <TextField
+                            sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
                             type="number"
                             value={r.pesoLordo}
                             onChange={e => handleProdottoChange(i, 'pesoLordo', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
                         {/* Peso netto */}
                         <TableCell>
                           <TextField
+                            sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
                             type="number"
                             value={r.pesoNetto}
                             onChange={e => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
                         {/* Tot Kg */}
                         <TableCell>
                           <TextField
+                            sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
                             type="number"
                             value={r.totKgSpediti}
                             onChange={e => handleProdottoChange(i, 'totKgSpediti', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddProdotto(); } }}
                           />
                         </TableCell>
