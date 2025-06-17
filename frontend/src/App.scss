@@ -19,6 +19,11 @@ main{
   fieldset {
     border: none;
   }
+
+  // Override MUI default label margin
+  & label + .MuiInputBase-root.MuiInput-root {
+    margin-top: 12px !important;
+  }
 }
 
 .custom-dialog .MuiPaper-root {
@@ -33,6 +38,11 @@ main{
 
   fieldset {
     border: none;
+  }
+
+  // Shift the floating label down to align with other inputs
+  .MuiInputLabel-root {
+    margin-top: 12px !important;
   }
 }
 

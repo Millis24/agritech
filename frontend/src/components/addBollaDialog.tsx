@@ -253,7 +253,7 @@ useEffect(() => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
+    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
       <DialogTitle>{bolla ? 'Modifica Bolla' : 'Nuova Bolla'}</DialogTitle>
       <DialogContent>
         <form onKeyDown={handleEnterKeyDown} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
@@ -476,6 +476,7 @@ useEffect(() => {
                         {/* Colli */}
                         <TableCell>
                           <TextField
+                            size="small"
                             sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
@@ -489,6 +490,7 @@ useEffect(() => {
                         {/* Prezzo prodotto */}
                         <TableCell>
                           <TextField
+                            size="small"
                             sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
@@ -503,6 +505,7 @@ useEffect(() => {
                         {/* Peso lordo */}
                         <TableCell>
                           <TextField
+                            size="small"
                             sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
@@ -516,6 +519,7 @@ useEffect(() => {
                         {/* Peso netto */}
                         <TableCell>
                           <TextField
+                            size="small"
                             sx={{ width: 75 }}
                             fullWidth
                             variant="standard"
@@ -529,6 +533,7 @@ useEffect(() => {
                         {/* Tot Kg */}
                         <TableCell>
                           <TextField
+                            size="small"
                             sx={{ width: 75 }}
                             fullWidth
                             variant="standard"

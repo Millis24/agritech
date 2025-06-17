@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography, IconButton, CircularProgress, TextField, Stack } from '@mui/material';
+import { Box, Button, Typography, IconButton, CircularProgress, TextField, Stack, Autocomplete } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -119,6 +119,7 @@ export default function Bolle() {
   // filtri per tabella bolle
   const [filterNumero, setFilterNumero] = useState<string>('');
   const [filterCliente, setFilterCliente] = useState<string>('');
+  const [openFilterCliente, setOpenFilterCliente] = useState(false);
   const [dateFrom, setDateFrom] = useState<string>(''); // ISO yyyy-MM-dd
   const [dateTo, setDateTo]   = useState<string>('');
   
@@ -160,7 +161,6 @@ export default function Bolle() {
       renderCell: params => (
         <>
           <IconButton onClick={() => { setEditing(params.row); setOpen(true); }}><EditIcon/></IconButton>
-          {/* <IconButton onClick={() => handleDelete(params.row.id)}><DeleteIcon/></IconButton> */}
           <IconButton onClick={() => {
             Swal.fire({
                 title: `Eliminare la bolla n. ${params.row.numeroBolla}?`,
@@ -187,13 +187,13 @@ export default function Bolle() {
             <DeleteIcon />
           </IconButton>
           <IconButton
-  onClick={(e) => {
-    e.stopPropagation();           // blocca la selezione della riga
-    handlePrint(params.row);       // esegue la stampa
-  }}
->
-  <PrintIcon />
-</IconButton>
+            onClick={(e) => {
+              e.stopPropagation();           // blocca la selezione della riga
+              handlePrint(params.row);       // esegue la stampa
+            }}
+          >
+            <PrintIcon />
+          </IconButton>
         </>
       )
     }
@@ -249,12 +249,40 @@ export default function Bolle() {
 
       {/* Filtri  */}
       <Box display="flex" alignItems="center" gap={2} mb={5} mt={5}>
-        <Button variant="contained" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} className='btn'> Tutti </Button>
+        <Button variant="contained" onClick={() => { setFilterNumero(''); setFilterCliente(''); setDateFrom(''); setDateTo(''); }} className='btn'> Tutti </Button>
         <TextField size="small" label="N. bolla" value={filterNumero} onChange={e => setFilterNumero(e.target.value)} className='input-tondi'/>
-        <TextField size="small" label="Nome Cliente" value={filterCliente} onChange={e => setFilterCliente(e.target.value)} className='input-tondi'/>
+        <Autocomplete
+          size="small"
+          sx={{ width: 200 }}
+          open={openFilterCliente}
+          onOpen={() => setOpenFilterCliente(true)}
+          onClose={() => setOpenFilterCliente(false)}
+          options={clienti}
+          getOptionLabel={c => `${c.id} - ${c.nomeCliente}`}
+          value={clienti.find(c => c.nomeCliente === filterCliente) || null}
+          onChange={(_, newValue) => setFilterCliente(newValue ? newValue.nomeCliente : '')}
+          autoHighlight
+          blurOnSelect
+          renderInput={params => (
+            <TextField
+              {...params}
+              size="small"
+              variant="standard"
+              label="Cliente"
+              className='input-tondi'
+              InputProps={{
+                ...params.InputProps,
+                disableUnderline: true,
+              }}
+              InputLabelProps={{
+                style: { marginTop: '12px !important' }
+              }}
+            />
+          )}
+        />
         <TextField size="small" label="Da" type="date" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} className='input-tondi'/>
         <TextField size="small" label="A" type="date" InputLabelProps={{ shrink: true }} value={dateTo} onChange={e => setDateTo(e.target.value)} className='input-tondi'/>
-        <Button color="error" onClick={() => { setFilterCliente(''); setDateFrom(''); setDateTo(''); }} > <DeleteForeverIcon/> </Button>
+        <Button color="error" onClick={() => { setFilterNumero(''); setFilterCliente(''); setDateFrom(''); setDateTo(''); }} > <DeleteForeverIcon/> </Button>
 
        
       </Box>
