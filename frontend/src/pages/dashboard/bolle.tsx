@@ -266,10 +266,10 @@ export default function Bolle() {
           renderInput={params => (
             <TextField
               {...params}
-              size="small"
+              className='input-tondi'
               variant="outlined"
               label="Cliente"
-              className='input-tondi'
+              size="small"
               InputProps={{
                 ...params.InputProps,
                 disableUnderline: true,

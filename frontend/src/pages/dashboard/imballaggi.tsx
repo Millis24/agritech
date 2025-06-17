@@ -11,6 +11,9 @@ import useImballaggiSync from '../../sync/useImballaggiSync';
 import { saveImballaggio, deleteImballaggio as deleteLocalImballaggio, getAllImballaggi, markImballaggiAsDeleted } from '../../storage/imballaggiDB';
 import Swal from 'sweetalert2';
 
+import Autocomplete from '@mui/material/Autocomplete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 interface Imballaggio {
   id: number;
   tipo: string;
@@ -182,8 +185,12 @@ export default function Imballaggi() {
     .slice()
     .sort((a, b) => a.id - b.id)
             .filter(i => {
-    const matchesText = i.tipo.toLowerCase().includes(query.toLowerCase())
-      || i.dimensioni.toLowerCase().includes(query.toLowerCase());
+    const lower = query.toLowerCase();
+    const matchesText =
+      i.tipo.toLowerCase().includes(lower)
+      || i.dimensioni.toLowerCase().includes(lower)
+      || i.id.toString().includes(lower)
+      || (`${i.id} - ${i.tipo}`).toLowerCase().includes(lower);
     if (!matchesText) return false;
     const created = new Date(i.createdAt ?? '');
         if (filterFrom && created < new Date(filterFrom)) return false;
@@ -241,10 +248,32 @@ export default function Imballaggi() {
 
       {/* Ricerca Imballaggio */}
       <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <TextField className='input-tondi' label="Cerca imballaggio" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
-        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" />
-        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" />
-        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} >
+        <Autocomplete
+          size="small"
+          freeSolo
+          //disableClearable
+          popupIcon={<ExpandMoreIcon />}
+          options={imballaggi.map(i => `${i.id} - ${i.tipo}`)}
+          inputValue={query}
+          value={query}
+          onInputChange={(_, newInput) => setQuery(newInput)}
+          onChange={(_, newValue) => setQuery(newValue || '')}
+          blurOnSelect
+          autoHighlight
+          renderInput={params => (
+            <TextField
+              {...params}
+              className='input-tondi'
+              variant="outlined"
+              label="Cerca imballaggio"
+              size="small"
+            />
+          )}
+          sx={{ mb: 3, mt: 2, width: 200, padding: '8.5px 0' }}
+        />
+        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" sx={{ mb: 3, mt: 2, width: 200 }} />
+        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" sx={{ mb: 3, mt: 2, width: 200 }} />
+        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} sx={{ mb: 3, mt: 2, width: 200 }} >
           <DeleteForeverIcon />
         </Button>
       </Box>

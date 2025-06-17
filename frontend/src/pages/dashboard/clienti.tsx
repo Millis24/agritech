@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, Typography, IconButton, TextField, Stack, Autocomplete } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -307,6 +308,9 @@ export default function Clienti() {
         <Autocomplete
           size="small"
           freeSolo
+          //disableClearable
+          blurOnSelect
+          popupIcon={<ExpandMoreIcon />}
           open={openFilterCliente}
           onOpen={() => setOpenFilterCliente(true)}
           onClose={() => setOpenFilterCliente(false)}
@@ -323,6 +327,13 @@ export default function Clienti() {
               setQuery('');
             }
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              // commit the highlighted option if any
+              e.preventDefault();
+              setOpenFilterCliente(false);
+            }
+          }}
           renderInput={params => (
             <TextField
               {...params}
@@ -330,6 +341,10 @@ export default function Clienti() {
               variant="outlined"
               label="Cliente"
               size="small"
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: params.InputProps.endAdornment,
+              }}
             />
           )}
           sx={{ mb: 3, mt: 2, width: 200, padding: '8.5px 0' }}

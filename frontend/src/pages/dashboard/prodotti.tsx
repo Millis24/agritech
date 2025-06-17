@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -195,8 +197,14 @@ export default function Prodotti() {
     .slice()
     .sort((a, b) => a.id - b.id)
             .filter(p => {
-    const matchesText = p.nome.toLowerCase().includes(query.toLowerCase())
-      || p.varieta.toLowerCase().includes(query.toLowerCase()) || p.calibro.toLowerCase().includes(query.toLowerCase());
+    const lower = query.toLowerCase();
+    // match by name, variety, calibre, id, or "id - name"
+    const matchesText =
+      p.nome.toLowerCase().includes(lower)
+      || p.varieta.toLowerCase().includes(lower)
+      || p.calibro.toLowerCase().includes(lower)
+      || p.id.toString().includes(lower)
+      || (`${p.id} - ${p.nome}`).toLowerCase().includes(lower);
     if (!matchesText) return false;
     const created = new Date(p.createdAt ?? '');
         if (filterFrom && created < new Date(filterFrom)) return false;
@@ -253,10 +261,32 @@ export default function Prodotti() {
 
       {/* Ricerca Prodotto */}
       <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <TextField className='input-tondi' label="Cerca prodotto" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
-        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" />
-        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" />
-        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} >
+        <Autocomplete
+          size="small"
+          freeSolo
+          //disableClearable
+          popupIcon={<ExpandMoreIcon />}
+          options={prodotti.map(p => `${p.id} - ${p.nome}`)}
+          inputValue={query}
+          value={query}
+          onInputChange={(_, newInput) => setQuery(newInput)}
+          onChange={(_, newValue) => setQuery(newValue || '')}
+          blurOnSelect
+          autoHighlight
+          renderInput={params => (
+            <TextField
+              {...params}
+              className='input-tondi'
+              variant="outlined"
+              label="Cerca prodotto"
+              size="small"
+            />
+          )}
+          sx={{ mb: 3, mt: 2, width: 200, padding: '8.5px 0' }}
+        />
+        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" sx={{ mb: 3, mt: 2, width: 200 }} />
+        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" sx={{ mb: 3, mt: 2, width: 200 }} />
+        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} sx={{ mb: 3, mt: 2, width: 200 }} >
           <DeleteForeverIcon />
         </Button>
       </Box>
