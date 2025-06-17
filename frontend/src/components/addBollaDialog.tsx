@@ -4,7 +4,6 @@ import {
   TextField, Button, Typography, Grid,
   InputAdornment, IconButton
 } from '@mui/material';
-import { Tabs, Tab, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Cliente } from '../storage/clientiDB';
 import type { Prodotto } from './addProdottoDialog';
@@ -51,42 +50,12 @@ export default function AddBollaDialog({
 
   const selectedClienteObj = clienti.find(c => c.id === selectedClienteId);
 
-  // const [tabProdotto, setTabProdotto] = useState(0);
-  // const [selectedProdottoId, setSelectedProdottoId] = useState<number | ''>('');
   const prezzoRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-
-
-  // Tab section for Prodotti/Imballaggi
-  const [tabSection, setTabSection] = useState(0);
-  const [imballaggiBolla, setImballaggiBolla] = useState<any[]>([]);
-
-  // State for Autocomplete Causale open/close
+  // autocompletamenti causale open/close
   const [openCausale, setOpenCausale] = useState(false);
   const [openCliente, setOpenCliente] = useState(false);
-  // State for tracking which product row dropdown is open
-  // const [openProdottoIndex, setOpenProdottoIndex] = useState<number | null>(null);
-
-
-  const handleAddImballaggio = () => {
-    setImballaggiBolla([...imballaggiBolla, { nomeImballaggio: '', prezzo: 0, numeroColli: 0 }]);
-  };
-
-  const handleImballaggioChange = (index: number, field: string, value: any) => {
-    const nuovi = [...imballaggiBolla];
-    nuovi[index][field] = value;
-    if (field === 'nomeImballaggio') {
-      const im = imballaggi.find(i => i.tipo === value);
-      if (im) nuovi[index].prezzo = im.prezzo;
-    }
-    setImballaggiBolla(nuovi);
-  };
-
-  const handleRemoveImballaggio = (index: number) => {
-    const nuovi = [...imballaggiBolla];
-    nuovi.splice(index, 1);
-    setImballaggiBolla(nuovi);
-  };
+  const [openImballaggio, setOpenImballaggio] = useState(false);
 
   // Move focus to next input on Enter
   const handleEnterKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -100,28 +69,6 @@ export default function AddBollaDialog({
       next.focus();
     }
   };
-
-  function a11yProps(index: number) {
-    return {
-      id: `tab-${index}`,
-      'aria-controls': `tabpanel-${index}`,
-    };
-  }
-
-  function TabPanel(props: { children?: React.ReactNode; index: number; value: number }) {
-    const { children, value, index, ...other } = props;
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`tabpanel-${index}`}
-        aria-labelledby={`tab-${index}`}
-        {...other}
-      >
-        {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (selectedClienteId !== '') {
@@ -210,12 +157,11 @@ useEffect(() => {
     const nuovi = [...prodottiBolla];
     nuovi[index][field] = value;
 
-    // aggiorna automaticamente qualità e prezzo del prodotto
+    // aggiorna automaticamente qualità
     if (field === 'nomeProdotto') {
       const prodottoSelezionato = prodotti.find(p => p.nome === value);
       if (prodottoSelezionato) {
         nuovi[index].qualita = prodottoSelezionato.calibro;
-        //nuovi[index].prezzo = prodottoSelezionato.prezzo;
       }
     }
 
@@ -443,17 +389,15 @@ useEffect(() => {
         {/* --- FINE BLOCCO DATI CLIENTE/DESTINATARIO --- */}
         <Grid container spacing={4} sx={{ mt: 2 }}>
           <Grid size={12}>
-            <Tabs value={tabSection} onChange={(_, v) => setTabSection(v)} variant="fullWidth">
-              <Tab label="Prodotti" {...a11yProps(0)} />
-              <Tab label="Imballaggi" {...a11yProps(1)} />
-            </Tabs>
-            <TabPanel value={tabSection} index={0}>
               <TableContainer sx={{ mt: 2, width: '100%', overflowX: 'auto' }}>
                 <Table sx={{ minWidth: 900, whiteSpace: 'nowrap' }}>
                   <TableHead>
                     <TableRow>
                       <TableCell>Prodotto</TableCell>
                       <TableCell>Qualità</TableCell>
+                      <TableCell>Imballaggio</TableCell>
+                      <TableCell>Prezzo</TableCell>
+                      <TableCell>Colli</TableCell>
                       <TableCell>Prezzo</TableCell>
                       <TableCell>Peso lordo</TableCell>
                       <TableCell>Peso netto</TableCell>
@@ -467,80 +411,120 @@ useEffect(() => {
                         <TableCell sx={{ width: 300 }}>
                           <Autocomplete
                             options={prodotti}
-                            getOptionLabel={p => `${p.id} - ${p.nome}`}
+                            getOptionLabel={(p) => `${p.id} - ${p.nome}`}
                             value={prodotti.find(p => p.nome === r.nomeProdotto) || null}
-                            onChange={(event, newValue, reason) => {
-                              handleProdottoChange(i, 'nomeProdotto', newValue ? newValue.nome : '');
+                            onChange={(_, newValue) => handleProdottoChange(i, 'nomeProdotto', newValue ? newValue.nome : '')}
+                            blurOnSelect
+                            onClose={(_, reason) => {
                               if (reason === 'selectOption') {
+                                // dopo chiusura dropdown per selezione, focus sul campo Prezzo
                                 prezzoRefs.current[i]?.focus();
                               }
                             }}
                             autoHighlight
                             renderInput={(params) => (
-                              <TextField {...params} fullWidth variant="standard" label="Prodotto" />
+                              <TextField
+                                {...params}
+                                fullWidth
+                                variant="standard"
+                                label="Prodotto"
+                              />
                             )}
                           />
                         </TableCell>
                         <TableCell>
-                          <TextField
-                            fullWidth
-                            variant="standard"
-                            value={r.qualita}
-                            onChange={(e) => handleProdottoChange(i, 'qualita', e.target.value)}
+                          <TextField fullWidth variant="standard" value={r.qualita} onChange={e => handleProdottoChange(i, 'qualita', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }} />
+                        </TableCell>
+                        {/* Imballaggio Autocomplete */}
+                        <TableCell>
+                          <Autocomplete
+                            open={openImballaggio}
+                            onOpen={() => setOpenImballaggio(true)}
+                            onClose={() => setOpenImballaggio(false)}
+                            autoHighlight
+                            options={imballaggi}
+                            getOptionLabel={im => `${im.id} - ${im.tipo}`}
+                            value={imballaggi.find(im => im.tipo === r.nomeImballaggio) || null}
+                            onChange={(_, newValue) => handleProdottoChange(i, 'nomeImballaggio', newValue ? newValue.tipo : '')}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !openImballaggio) {
+                                e.preventDefault();
+                                handleEnterKeyDown(e);
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField {...params} fullWidth variant="standard" label="Imballaggio" />
+                            )}
                           />
                         </TableCell>
+                        {/* Prezzo Imballaggio */}
                         <TableCell>
                           <TextField
-                            inputRef={el => prezzoRefs.current[i] = el}
                             fullWidth
                             variant="standard"
                             type="text"
+                            value={r.prezzoImballaggio}
+                            InputProps={{ readOnly: true, startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
+                          />
+                        </TableCell>
+                        {/* Colli */}
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.numeroColli}
+                            onChange={e => handleProdottoChange(i, 'numeroColli', +e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
+                          />
+                        </TableCell>
+                        {/* Prezzo prodotto */}
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
                             value={r.prezzo}
                             onChange={e => handleProdottoChange(i, 'prezzo', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal' }}
                             InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddProdotto();
-                              }
-                            }}
+                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
+                        {/* Peso lordo */}
                         <TableCell>
                           <TextField
                             fullWidth
                             variant="standard"
-                            type="text"
+                            type="number"
                             value={r.pesoLordo}
-                            onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal' }}
+                            onChange={e => handleProdottoChange(i, 'pesoLordo', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
+                        {/* Peso netto */}
                         <TableCell>
                           <TextField
                             fullWidth
                             variant="standard"
-                            type="text"
+                            type="number"
                             value={r.pesoNetto}
-                            onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal' }}
+                            onChange={e => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
+                        {/* Tot Kg */}
                         <TableCell>
                           <TextField
                             fullWidth
                             variant="standard"
-                            type="text"
+                            type="number"
                             value={r.totKgSpediti}
-                            onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)}
-                            inputProps={{ inputMode: 'decimal' }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddProdotto();
-                              }
-                            }}
+                            onChange={e => handleProdottoChange(i, 'totKgSpediti', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal', step: 'any' }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddProdotto(); } }}
                           />
                         </TableCell>
                         <TableCell>
@@ -553,67 +537,13 @@ useEffect(() => {
                   </TableBody>
                 </Table>
               </TableContainer>
-            </TabPanel>
-            <TabPanel value={tabSection} index={1}>
-              <Button variant="outlined" onClick={handleAddImballaggio} className='btn-neg'>+ Aggiungi Imballaggio</Button>
-              <TableContainer sx={{ mt: 2, width: '100%', overflowX: 'auto' }}>
-                <Table sx={{ minWidth: 900, whiteSpace: 'nowrap' }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Imballaggio</TableCell>
-                      <TableCell>Prezzo</TableCell>
-                      <TableCell>Colli</TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {imballaggiBolla.map((r, i) => (
-                      <TableRow key={i}>
-                        <TableCell>
-                          <Autocomplete
-                            options={imballaggi}
-                            getOptionLabel={im => `${im.id} - ${im.tipo}`}
-                            value={imballaggi.find(im => im.tipo === r.nomeImballaggio) || null}
-                            onChange={(_, v) => handleImballaggioChange(i, 'nomeImballaggio', v ? v.tipo : '')}
-                            renderInput={params => <TextField {...params} fullWidth variant="standard" />}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            fullWidth
-                            variant="standard"
-                            type="number"
-                            value={r.prezzo}
-                            InputProps={{ readOnly: true, startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            fullWidth
-                            variant="standard"
-                            type="number"
-                            value={r.numeroColli}
-                            onChange={e => handleImballaggioChange(i, 'numeroColli', +e.target.value)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton onClick={() => handleRemoveImballaggio(i)} size="small">
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </TabPanel>
           </Grid>
         </Grid>
         </form>
       </DialogContent>
       <DialogActions>
         <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>
-        <Button type="submit" variant="contained" className='btn'>Salva</Button>
+        <Button type="submit" variant="contained" className='btn' onClick={handleSubmit}>Salva</Button>
       </DialogActions>
     </Dialog>
   );
