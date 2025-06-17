@@ -60,13 +60,16 @@ export default function AddBollaDialog({
   const [openCliente, setOpenCliente] = useState(false);
   const [openImballaggioIndex, setOpenImballaggioIndex] = useState<number | null>(null);
 
-  // Move focus to next input on Enter
+  // Move focus to next input on Enter, including combobox elements (for Autocomplete)
   const handleEnterKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const form = e.currentTarget;
-      const focusable = Array.from(form.querySelectorAll<HTMLElement>('input, textarea, select, button'))
-        .filter(el => !el.hasAttribute('disabled') && el.tabIndex >= 0);
+      const focusable = Array.from(
+        form.querySelectorAll<HTMLElement>(
+          'input, textarea, select, button, [role="combobox"]'
+        )
+      ).filter(el => !el.hasAttribute('disabled') && el.tabIndex >= 0);
       const index = focusable.indexOf(e.target as HTMLElement);
       const next = focusable[index + 1] || focusable[0];
       next.focus();
@@ -94,17 +97,24 @@ export default function AddBollaDialog({
 
 useEffect(() => {
   if (bolla) {
-    setDestinatario({
-      nome: bolla.destinatarioNome,
-      cognome: bolla.destinatarioCognome || '',
-      via: bolla.destinatarioVia || '',
-      numeroCivico: bolla.destinatarioNumeroCivico || '',
-      email: bolla.destinatarioEmail,
-      telefonoFisso: bolla.destinatarioTelefonoFisso || '',
-      telefonoCell: bolla.destinatarioTelefonoCell || '',
-      partitaIva: bolla.destinatarioPartitaIva,
-      codiceSDI: bolla.destinatarioCodiceSDI
-    });
+    // restore selected cliente by matching name
+    if (bolla.destinatarioNome) {
+      const cli = clienti.find(c => c.nomeCliente === bolla.destinatarioNome);
+      if (cli) {
+        setSelectedClienteId(cli.id);
+        setDestinatario({
+          nome: cli.nomeCliente,
+          cognome: cli.cognomeCliente || '',
+          via: cli.via,
+          numeroCivico: cli.numeroCivico,
+          email: cli.email,
+          telefonoFisso: cli.telefonoFisso,
+          telefonoCell: cli.telefonoCell,
+          partitaIva: cli.partitaIva,
+          codiceSDI: cli.codiceSDI
+        });
+      }
+    }
     setDataOra(bolla.dataOra.slice(0, 16));
     setDestTipo('sede');
     setIndirizzoDestinazione(bolla.indirizzoDestinazione);
@@ -129,6 +139,7 @@ useEffect(() => {
       partitaIva: '',
       codiceSDI: ''
     });
+    setSelectedClienteId('');
     setDataOra(new Date().toISOString().slice(0, 16));
     setDestTipo('sede');
     setIndirizzoDestinazione('');
@@ -269,10 +280,10 @@ useEffect(() => {
         <form onKeyDown={handleEnterKeyDown} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <Grid container spacing={4}>
           <Grid size={6}>
-            <Typography variant="h6">Dati Bolla</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold'}} >Dati Bolla</Typography>
             <Grid container spacing={2}>
               {/* Causale */}
-              <Grid size={12}>
+              <Grid size={8}>
                 <Autocomplete
                   open={openCausale}
                   onOpen={() => setOpenCausale(true)}
@@ -299,7 +310,7 @@ useEffect(() => {
                 />
               </Grid>
               {/* Numero Bolla */}
-              <Grid size={12}>
+              <Grid size={4}>
                 <TextField
                   className='input-tondi'
                   fullWidth
@@ -341,61 +352,183 @@ useEffect(() => {
                   )}
                 />
               </Grid>
-              {/* Partita IVA */}
+              {/* Consegna a carico */}
               <Grid size={12}>
-                <TextField
-                  className='input-tondi'
-                  fullWidth
-                  label="Partita IVA"
-                  value={selectedClienteObj?.partitaIva || ''}
-                  InputProps={{ readOnly: true }}
+                <Autocomplete
+                  size="small"
+                  options={[ 'Destinatario', 'Mittente' ]}
+                  getOptionLabel={opt => opt}
+                  value={consegnaACarico}
+                  onChange={(_, v) => setConsegnaACarico(v || '')}
+                  autoHighlight
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      margin="dense"
+                      fullWidth
+                      variant="standard"
+                      label="Consegna a carico"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleEnterKeyDown(e);
+                        }
+                      }}
+                    />
+                  )}
                 />
               </Grid>
-              {/* Telefono */}
+              {/* Vettore */}
               <Grid size={12}>
-                <TextField
-                  className='input-tondi'
-                  fullWidth
-                  label="Telefono"
-                  value={selectedClienteObj?.telefonoCell || selectedClienteObj?.telefonoFisso || ''}
-                  InputProps={{ readOnly: true }}
+                <Autocomplete
+                  freeSolo
+                  size="small"
+                  options={[ 'Corriere 1', 'Corriere 2', 'Altro' ]}
+                  value={vettore}
+                  onChange={(_, newValue) => setVettore(newValue || '')}
+                  onInputChange={(_, newInput) => setVettore(newInput)}
+                  autoHighlight
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      margin="dense"
+                      fullWidth
+                      variant="standard"
+                      label="Vettore"
+                    />
+                  )}
                 />
               </Grid>
             </Grid>
           </Grid>
           <Grid size={6}>
-            <Typography variant="h6">Info Cliente</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold'}} >Info Cliente</Typography>
             <Grid container spacing={2}>
+              {/* Nome */}
               <Grid size={6}>
-                <TextField fullWidth label="Nome" value={destinatario.nome} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Nome"
+                  value={destinatario.nome}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
+              {/* Cognome */}
               <Grid size={6}>
-                <TextField fullWidth label="Cognome" value={destinatario.cognome} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Cognome"
+                  value={destinatario.cognome}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
+              {/* Ragione Sociale */}
               <Grid size={12}>
                 <TextField
+                  className='input-tondi'
                   fullWidth
                   label="Ragione Sociale"
                   value={selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || ''}
-                  InputProps={{ readOnly: true }}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
                 />
               </Grid>
+              {/* Via */}
               <Grid size={6}>
-                <TextField fullWidth label="Via" value={destinatario.via} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Via"
+                  value={destinatario.via}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
+              {/* Numero civico */}
               <Grid size={6}>
-                <TextField fullWidth label="Numero" value={destinatario.numeroCivico} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Numero"
+                  value={destinatario.numeroCivico}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
+              {/* CAP */}
               <Grid size={4}>
-                <TextField fullWidth label="CAP" value={selectedClienteObj?.cap || ''} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="CAP"
+                  value={selectedClienteObj?.cap || ''}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
+              {/* Paese */}
               <Grid size={4}>
-                <TextField fullWidth label="Paese" value={selectedClienteObj?.paese || ''} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Paese"
+                  value={selectedClienteObj?.paese || ''}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
+              {/* Provincia */}
               <Grid size={4}>
-                <TextField fullWidth label="Provincia" value={selectedClienteObj?.provincia || ''} InputProps={{ readOnly: true }} />
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Provincia"
+                  value={selectedClienteObj?.provincia || ''}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
               </Grid>
-            </Grid>
+              {/* Partita IVA */}
+              <Grid size={6}>
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Partita IVA"
+                  value={selectedClienteObj?.partitaIva || ''}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
+              </Grid>
+              {/* Telefono */}
+              <Grid size={6}>
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Telefono"
+                  value={selectedClienteObj?.telefonoCell || selectedClienteObj?.telefonoFisso || ''}
+                  variant="filled"
+                  InputProps={{ readOnly: true, disableUnderline: true }}
+                  inputProps={{ tabIndex: -1 }}
+                />
+              </Grid>
+               
+              </Grid>
+              
           </Grid>
         </Grid>
         {/* --- FINE BLOCCO DATI CLIENTE/DESTINATARIO --- */}
@@ -405,16 +538,16 @@ useEffect(() => {
                 <Table sx={{ minWidth: 900, whiteSpace: 'nowrap' }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Prodotto</TableCell>
-                      <TableCell>Qualità</TableCell>
-                      <TableCell>Imballaggio</TableCell>
-                      <TableCell>Prezzo</TableCell>
-                      <TableCell>Colli</TableCell>
-                      <TableCell>Prezzo</TableCell>
-                      <TableCell>Peso lordo</TableCell>
-                      <TableCell>Peso netto</TableCell>
-                      <TableCell>Tot Kg</TableCell>
-                      <TableCell></TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Prodotto</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Qualità</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Imballaggio</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Prezzo Imballaggio</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Colli</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Prezzo Prodotto</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Peso lordo</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Peso netto</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Tot Kg</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} ></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -455,6 +588,7 @@ useEffect(() => {
                         <TableCell>
                           <Autocomplete
                             sx={{ width: 175 }}
+                            size="small"
                             open={openImballaggioIndex === i}
                             onOpen={() => setOpenImballaggioIndex(i)}
                             onClose={() => setOpenImballaggioIndex(null)}
@@ -470,14 +604,21 @@ useEffect(() => {
                               }
                             }}
                             renderInput={(params) => (
-                              <TextField {...params} fullWidth variant="standard" label="Imballaggio" />
+                              <TextField
+                                {...params}
+                                size="small"
+                                margin="dense"
+                                fullWidth
+                                variant="standard"
+                                label="Imballaggio"
+                              />
                             )}
                           />
                         </TableCell>
                         {/* Prezzo Imballaggio */}
                         <TableCell>
                           <TextField
-                            sx={{ width: 75 }}
+                            sx={{ width: 75, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="text"
@@ -489,7 +630,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75 }}
+                            sx={{ width: 75, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -503,7 +644,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75 }}
+                            sx={{ width: 75, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -518,7 +659,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75 }}
+                            sx={{ width: 75, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -532,7 +673,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75 }}
+                            sx={{ width: 75, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -546,7 +687,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75 }}
+                            sx={{ width: 75, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
