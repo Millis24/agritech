@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, MenuItem, Typography, Grid,
+  TextField, Button, Typography, Grid,
   InputAdornment, IconButton
 } from '@mui/material';
 import { Tabs, Tab, Box } from '@mui/material';
@@ -12,7 +12,6 @@ import type { Imballaggio } from './addImballaggioDialog';
 import type { Bolla } from '../storage/bolleDB';
 import Swal from 'sweetalert2';
 import { Autocomplete, Table, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
-import type { AutocompleteChangeReason } from '@mui/material';
 
 interface BollaDialogProps {
   open: boolean;
@@ -52,11 +51,23 @@ export default function AddBollaDialog({
 
   const selectedClienteObj = clienti.find(c => c.id === selectedClienteId);
 
-  const [tabProdotto, setTabProdotto] = useState(0);
+  // const [tabProdotto, setTabProdotto] = useState(0);
+  // const [selectedProdottoId, setSelectedProdottoId] = useState<number | ''>('');
+  const prezzoRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+
 
   // Tab section for Prodotti/Imballaggi
   const [tabSection, setTabSection] = useState(0);
   const [imballaggiBolla, setImballaggiBolla] = useState<any[]>([]);
+
+  // State for Autocomplete Causale open/close
+  const [openCausale, setOpenCausale] = useState(false);
+  const [openCliente, setOpenCliente] = useState(false);
+  const [openProdotto, setOpenProdotto] = useState(false);
+  // State for tracking which product row dropdown is open
+  // const [openProdottoIndex, setOpenProdottoIndex] = useState<number | null>(null);
+
 
   const handleAddImballaggio = () => {
     setImballaggiBolla([...imballaggiBolla, { nomeImballaggio: '', prezzo: 0, numeroColli: 0 }]);
@@ -306,18 +317,29 @@ useEffect(() => {
             <Grid container spacing={2}>
               {/* Causale */}
               <Grid size={12}>
-                <TextField
-                  className='input-tondi'
-                  select
-                  fullWidth
-                  label="Causale di trasporto"
+                <Autocomplete
+                  open={openCausale}
+                  onOpen={() => setOpenCausale(true)}
+                  onClose={() => setOpenCausale(false)}
+                  autoHighlight
+                  options={['Vendita', 'Conto visione', 'Reso']}
                   value={causale}
-                  onChange={(e) => setCausale(e.target.value)}
-                >
-                  <MenuItem value="Vendita">Vendita</MenuItem>
-                  <MenuItem value="Conto visione">Conto visione</MenuItem>
-                  <MenuItem value="Reso">Reso</MenuItem>
-                </TextField>
+                  onChange={(_, v) => setCausale(v || '')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !openCausale) {
+                      e.preventDefault();
+                      handleEnterKeyDown(e);
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      fullWidth
+                      variant="standard"
+                      label="Causale di trasporto"
+                    />
+                  )}
+                />
               </Grid>
               {/* Numero Bolla */}
               <Grid size={12}>
@@ -347,8 +369,18 @@ useEffect(() => {
                   getOptionLabel={(option) => `${option.id} - ${option.nomeCliente}`}
                   value={clienti.find(c => c.id === selectedClienteId) || null}
                   onChange={(_, newValue) => setSelectedClienteId(newValue ? newValue.id : '')}
+                  open={openCliente}
+                  onOpen={() => setOpenCliente(true)}
+                  onClose={() => setOpenCliente(false)}
+                  autoHighlight
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !openCliente) {
+                      e.preventDefault();
+                      handleEnterKeyDown(e);
+                    }
+                  }}
                   renderInput={(params) => (
-                    <TextField {...params} className='input-tondi' fullWidth label="Cliente" />
+                    <TextField {...params} fullWidth variant="standard" label="Cliente" />
                   )}
                 />
               </Grid>
@@ -436,21 +468,17 @@ useEffect(() => {
                         <TableCell sx={{ width: 300 }}>
                           <Autocomplete
                             options={prodotti}
-                            getOptionLabel={(p) => `${p.id} - ${p.nome}`}
+                            getOptionLabel={p => `${p.id} - ${p.nome}`}
                             value={prodotti.find(p => p.nome === r.nomeProdotto) || null}
-                            onChange={(event, v, reason) => {
-                              handleProdottoChange(i, 'nomeProdotto', v ? v.nome : '');
+                            onChange={(event, newValue, reason) => {
+                              handleProdottoChange(i, 'nomeProdotto', newValue ? newValue.nome : '');
                               if (reason === 'selectOption') {
-                                handleEnterKeyDown(event as React.KeyboardEvent<HTMLElement>);
+                                prezzoRefs.current[i]?.focus();
                               }
                             }}
-                            onKeyDown={handleEnterKeyDown}
+                            autoHighlight
                             renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                fullWidth
-                                variant="standard"
-                              />
+                              <TextField {...params} fullWidth variant="standard" label="Prodotto" />
                             )}
                           />
                         </TableCell>
@@ -464,39 +492,50 @@ useEffect(() => {
                         </TableCell>
                         <TableCell>
                           <TextField
+                            inputRef={el => prezzoRefs.current[i] = el}
                             fullWidth
                             variant="standard"
-                            type="number"
+                            type="text"
                             value={r.prezzo}
-                            onChange={(e) => handleProdottoChange(i, 'prezzo', +e.target.value)}
+                            onChange={e => handleProdottoChange(i, 'prezzo', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal' }}
                             InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddProdotto();
+                              }
+                            }}
                           />
                         </TableCell>
                         <TableCell>
                           <TextField
                             fullWidth
                             variant="standard"
-                            type="number"
+                            type="text"
                             value={r.pesoLordo}
                             onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal' }}
                           />
                         </TableCell>
                         <TableCell>
                           <TextField
                             fullWidth
                             variant="standard"
-                            type="number"
+                            type="text"
                             value={r.pesoNetto}
                             onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal' }}
                           />
                         </TableCell>
                         <TableCell>
                           <TextField
                             fullWidth
                             variant="standard"
-                            type="number"
+                            type="text"
                             value={r.totKgSpediti}
                             onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal' }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault();
