@@ -10,7 +10,8 @@
     "migrate": "prisma migrate dev --name init",
     "generate": "prisma generate",
     "studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "gen-icons": "node ../scripts/gen-icons.js"
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",
@@ -30,6 +31,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.0.0",
     "prisma": "^5.12.1",
+    "sharp": "^0.34.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.0"
   }

@@ -4,12 +4,15 @@ import {
   TextField, Button, MenuItem, Typography, Grid,
   InputAdornment, IconButton
 } from '@mui/material';
+import { Tabs, Tab, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Cliente } from '../storage/clientiDB';
 import type { Prodotto } from './addProdottoDialog';
 import type { Imballaggio } from './addImballaggioDialog';
 import type { Bolla } from '../storage/bolleDB';
 import Swal from 'sweetalert2';
+import { Autocomplete, Table, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import type { AutocompleteChangeReason } from '@mui/material';
 
 interface BollaDialogProps {
   open: boolean;
@@ -32,10 +35,83 @@ export default function AddBollaDialog({
   const [indirizzoDestinazione, setIndirizzoDestinazione] = useState('');
   const [causale, setCausale] = useState('');
   const [dataOra, setDataOra] = useState(() => new Date().toISOString().slice(0, 16));
-  const [prodottiBolla, setProdottiBolla] = useState<any[]>([]);
+  const [prodottiBolla, setProdottiBolla] = useState<any[]>([{
+    nomeProdotto: '',
+    qualita: '',
+    prezzo: 0,
+    nomeImballaggio: '',
+    prezzoImballaggio: '',
+    numeroColli: 0,
+    pesoLordo: 0,
+    pesoNetto: 0,
+    totKgSpediti: 0,
+  }]);
   const [consegnaACarico, setConsegnaACarico] = useState('');
   const [vettore, setVettore] = useState('');
   const [destTipo, setDestTipo] = useState<'sede'|'altra'>('sede');
+
+  const selectedClienteObj = clienti.find(c => c.id === selectedClienteId);
+
+  const [tabProdotto, setTabProdotto] = useState(0);
+
+  // Tab section for Prodotti/Imballaggi
+  const [tabSection, setTabSection] = useState(0);
+  const [imballaggiBolla, setImballaggiBolla] = useState<any[]>([]);
+
+  const handleAddImballaggio = () => {
+    setImballaggiBolla([...imballaggiBolla, { nomeImballaggio: '', prezzo: 0, numeroColli: 0 }]);
+  };
+
+  const handleImballaggioChange = (index: number, field: string, value: any) => {
+    const nuovi = [...imballaggiBolla];
+    nuovi[index][field] = value;
+    if (field === 'nomeImballaggio') {
+      const im = imballaggi.find(i => i.tipo === value);
+      if (im) nuovi[index].prezzo = im.prezzo;
+    }
+    setImballaggiBolla(nuovi);
+  };
+
+  const handleRemoveImballaggio = (index: number) => {
+    const nuovi = [...imballaggiBolla];
+    nuovi.splice(index, 1);
+    setImballaggiBolla(nuovi);
+  };
+
+  // Move focus to next input on Enter
+  const handleEnterKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const focusable = Array.from(form.querySelectorAll<HTMLElement>('input, textarea, select, button'))
+        .filter(el => !el.hasAttribute('disabled') && el.tabIndex >= 0);
+      const index = focusable.indexOf(e.target as HTMLElement);
+      const next = focusable[index + 1] || focusable[0];
+      next.focus();
+    }
+  };
+
+  function a11yProps(index: number) {
+    return {
+      id: `tab-${index}`,
+      'aria-controls': `tabpanel-${index}`,
+    };
+  }
+
+  function TabPanel(props: { children?: React.ReactNode; index: number; value: number }) {
+    const { children, value, index, ...other } = props;
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`tabpanel-${index}`}
+        aria-labelledby={`tab-${index}`}
+        {...other}
+      >
+        {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (selectedClienteId !== '') {
@@ -97,7 +173,17 @@ useEffect(() => {
     setDestTipo('sede');
     setIndirizzoDestinazione('');
     setCausale('');
-    setProdottiBolla([]);
+    setProdottiBolla([{
+      nomeProdotto: '',
+      qualita: '',
+      prezzo: 0,
+      nomeImballaggio: '',
+      prezzoImballaggio: '',
+      numeroColli: 0,
+      pesoLordo: 0,
+      pesoNetto: 0,
+      totKgSpediti: 0,
+    }]);
     setConsegnaACarico('');
     setVettore('');
   }
@@ -214,125 +300,282 @@ useEffect(() => {
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
       <DialogTitle>{bolla ? 'Modifica Bolla' : 'Nuova Bolla'}</DialogTitle>
       <DialogContent>
+        <form onKeyDown={handleEnterKeyDown} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <Grid container spacing={4}>
-          {/* Select Cliente */}
-          <Grid size={12}>
-            <TextField className='input-tondi' select fullWidth label="Cliente" value={selectedClienteId} onChange={(e) => setSelectedClienteId(Number(e.target.value))} >
-              {clienti.map(c => (
-                <MenuItem key={c.id} value={c.id}>{c.nomeCliente}</MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          {/*  */}
-          {Object.entries(destinatario).map(([field, val]) => (
-            <Grid size={6} key={field}>
-              <TextField className='input-tondi' fullWidth label={field} value={val} onChange={(e) => setDestinatario({ ...destinatario, [field]: e.target.value })} />
-            </Grid>
-          ))}
-          {/* Data e ora */}
           <Grid size={6}>
-            <TextField className='input-tondi' fullWidth label="Data e ora" type="datetime-local" value={dataOra} onChange={(e) => setDataOra(e.target.value)} />
-          </Grid>
-          
-
-          <Grid size={6}>
-            <TextField className='input-tondi' select fullWidth label="Indirizzo destinazione" value={destTipo} onChange={e => setDestTipo(e.target.value as 'sede' | 'altra')}>
-              <MenuItem value="sede">Sede azienda destinataria</MenuItem>
-              <MenuItem value="altra">Altra sede</MenuItem>
-            </TextField>          
-          </Grid>
-          {destTipo === 'altra' ? (
-            <Grid size={6}>
-              <TextField
-                className='input-tondi'
-                fullWidth
-                label="Inserisci indirizzo"
-                value={indirizzoDestinazione}
-                onChange={e => setIndirizzoDestinazione(e.target.value)}
-              />
-            </Grid>
-          ) : (
-             <Grid size={6}>
+            <Grid container spacing={2}>
+              {/* Causale */}
+              <Grid size={12}>
+                <TextField
+                  className='input-tondi'
+                  select
+                  fullWidth
+                  label="Causale di trasporto"
+                  value={causale}
+                  onChange={(e) => setCausale(e.target.value)}
+                >
+                  <MenuItem value="Vendita">Vendita</MenuItem>
+                  <MenuItem value="Conto visione">Conto visione</MenuItem>
+                  <MenuItem value="Reso">Reso</MenuItem>
+                </TextField>
+              </Grid>
+              {/* Numero Bolla */}
+              <Grid size={12}>
                 <TextField
                   className='input-tondi'
                   fullWidth
-                  label="Sede destinataria"
-                  value={`${destinatario.via} ${destinatario.numeroCivico}`}
+                  label="N. DDT"
+                  value={bolla ? bolla.numeroBolla : numeroBolla}
                   InputProps={{ readOnly: true }}
                 />
               </Grid>
-          )}
-          <Grid size={6}>
-            <TextField className='input-tondi' select fullWidth label="Causale di trasporto" value={causale} onChange={(e) => setCausale(e.target.value)}>
-              <MenuItem value="Vendita">Vendita</MenuItem>
-              <MenuItem value="Conto visione">Conto visione</MenuItem>
-              <MenuItem value="Reso">Reso</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid size={6}>
-            <TextField className='input-tondi' select fullWidth label="Consegna a carico del" value={consegnaACarico} onChange={(e) => setConsegnaACarico(e.target.value)}>
-              <MenuItem value="Destinatario">Destinatario</MenuItem>
-              <MenuItem value="Mittente">Mittente</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid size={6}>
-            <TextField className='input-tondi' select fullWidth label="Vettore" value={vettore} onChange={(e) => setVettore(e.target.value)}>
-              <MenuItem value="Corriere A">Corriere A</MenuItem>
-              <MenuItem value="Corriere B">Corriere B</MenuItem>
-              <MenuItem value="Altro">Altro</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid size={12}>
-            <Typography variant="h6">Prodotti</Typography>
-            <Button variant="outlined" onClick={handleAddProdotto} className='btn-neg'>+ Aggiungi Prodotto</Button>
-            {prodottiBolla.map((r, i) => (
-              <Grid container spacing={4} key={i} sx={{ mt: 2 }}>
-                <Grid size={3}>
-                  <TextField
-                    className='input-tondi'
-                    select fullWidth label="Prodotto"
-                    value={r.nomeProdotto}
-                    onChange={(e) => handleProdottoChange(i, 'nomeProdotto', e.target.value)}
-                  >
-                    {prodotti.map(p => (
-                      <MenuItem key={p.id} value={p.nome}>{p.nome}</MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid size={3}><TextField className='input-tondi' fullWidth label="Qualità" value={r.qualita} onChange={(e) => handleProdottoChange(i, 'qualita', e.target.value)} /></Grid>
-                <Grid size={2}>
-                    <TextField className='input-tondi' fullWidth type="number" label="Prezzo" value={r.prezzo} onChange={(e) => handleProdottoChange(i, 'prezzo', +e.target.value)} InputProps={{ startAdornment: ( <InputAdornment position="start">€</InputAdornment> ), }} />                    
-                  </Grid>
-                <Grid size={2}>
-                  <TextField className='input-tondi' select fullWidth label="Imballaggio" value={r.nomeImballaggio} onChange={(e) => handleProdottoChange(i, 'nomeImballaggio', e.target.value)}>
-                    {imballaggi.map(im => (
-                      <MenuItem key={im.id} value={im.tipo}>{im.tipo}</MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid size={2}>
-                  <TextField className='input-tondi' fullWidth type="number" label="Prezzo Imballaggio" value={r.prezzoImballaggio ?? ''} InputProps={{ readOnly: true, startAdornment: ( <InputAdornment position="start">€</InputAdornment> ), }} />
-                </Grid>
-                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Colli" value={r.numeroColli} onChange={(e) => handleProdottoChange(i, 'numeroColli', +e.target.value)} /></Grid>
-                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Peso lordo" value={r.pesoLordo} onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)} /></Grid>
-                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Peso netto" value={r.pesoNetto} onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)} /></Grid>
-                <Grid size={2}><TextField className='input-tondi' fullWidth type="number" label="Tot Kg" value={r.totKgSpediti} onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)} /></Grid>
-                <Grid size={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <IconButton onClick={() => handleRemoveProdotto(i)} size="small">
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Grid>
+              {/* Data e ora */}
+              <Grid size={12}>
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Data e ora"
+                  type="datetime-local"
+                  value={dataOra}
+                  onChange={(e) => setDataOra(e.target.value)}
+                />
               </Grid>
-            ))}
+              {/* Cliente */}
+              <Grid size={12}>
+                <Autocomplete
+                  options={clienti}
+                  getOptionLabel={(option) => `${option.id} - ${option.nomeCliente}`}
+                  value={clienti.find(c => c.id === selectedClienteId) || null}
+                  onChange={(_, newValue) => setSelectedClienteId(newValue ? newValue.id : '')}
+                  renderInput={(params) => (
+                    <TextField {...params} className='input-tondi' fullWidth label="Cliente" />
+                  )}
+                />
+              </Grid>
+              {/* Partita IVA */}
+              <Grid size={12}>
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Partita IVA"
+                  value={selectedClienteObj?.partitaIva || ''}
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+              {/* Telefono */}
+              <Grid size={12}>
+                <TextField
+                  className='input-tondi'
+                  fullWidth
+                  label="Telefono"
+                  value={selectedClienteObj?.telefonoCell || selectedClienteObj?.telefonoFisso || ''}
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid size={6}>
+            <Typography variant="h6">Info Cliente</Typography>
+            <Grid container spacing={2}>
+              <Grid size={6}>
+                <TextField fullWidth label="Nome" value={destinatario.nome} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid size={6}>
+                <TextField fullWidth label="Cognome" value={destinatario.cognome} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid size={12}>
+                <TextField
+                  fullWidth
+                  label="Ragione Sociale"
+                  value={selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || ''}
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+              <Grid size={6}>
+                <TextField fullWidth label="Via" value={destinatario.via} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid size={6}>
+                <TextField fullWidth label="Numero" value={destinatario.numeroCivico} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid size={4}>
+                <TextField fullWidth label="CAP" value={selectedClienteObj?.cap || ''} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid size={4}>
+                <TextField fullWidth label="Paese" value={selectedClienteObj?.paese || ''} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid size={4}>
+                <TextField fullWidth label="Provincia" value={selectedClienteObj?.provincia || ''} InputProps={{ readOnly: true }} />
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
+        {/* --- FINE BLOCCO DATI CLIENTE/DESTINATARIO --- */}
+        <Grid container spacing={4} sx={{ mt: 2 }}>
+          <Grid size={12}>
+            <Tabs value={tabSection} onChange={(_, v) => setTabSection(v)} variant="fullWidth">
+              <Tab label="Prodotti" {...a11yProps(0)} />
+              <Tab label="Imballaggi" {...a11yProps(1)} />
+            </Tabs>
+            <TabPanel value={tabSection} index={0}>
+              <TableContainer sx={{ mt: 2, width: '100%', overflowX: 'auto' }}>
+                <Table sx={{ minWidth: 900, whiteSpace: 'nowrap' }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Prodotto</TableCell>
+                      <TableCell>Qualità</TableCell>
+                      <TableCell>Prezzo</TableCell>
+                      <TableCell>Peso lordo</TableCell>
+                      <TableCell>Peso netto</TableCell>
+                      <TableCell>Tot Kg</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {prodottiBolla.map((r, i) => (
+                      <TableRow key={i}>
+                        <TableCell sx={{ width: 300 }}>
+                          <Autocomplete
+                            options={prodotti}
+                            getOptionLabel={(p) => `${p.id} - ${p.nome}`}
+                            value={prodotti.find(p => p.nome === r.nomeProdotto) || null}
+                            onChange={(event, v, reason) => {
+                              handleProdottoChange(i, 'nomeProdotto', v ? v.nome : '');
+                              if (reason === 'selectOption') {
+                                handleEnterKeyDown(event as React.KeyboardEvent<HTMLElement>);
+                              }
+                            }}
+                            onKeyDown={handleEnterKeyDown}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                fullWidth
+                                variant="standard"
+                              />
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            value={r.qualita}
+                            onChange={(e) => handleProdottoChange(i, 'qualita', e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.prezzo}
+                            onChange={(e) => handleProdottoChange(i, 'prezzo', +e.target.value)}
+                            InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.pesoLordo}
+                            onChange={(e) => handleProdottoChange(i, 'pesoLordo', +e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.pesoNetto}
+                            onChange={(e) => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.totKgSpediti}
+                            onChange={(e) => handleProdottoChange(i, 'totKgSpediti', +e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddProdotto();
+                              }
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <IconButton onClick={() => handleRemoveProdotto(i)} size="small">
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </TabPanel>
+            <TabPanel value={tabSection} index={1}>
+              <Button variant="outlined" onClick={handleAddImballaggio} className='btn-neg'>+ Aggiungi Imballaggio</Button>
+              <TableContainer sx={{ mt: 2, width: '100%', overflowX: 'auto' }}>
+                <Table sx={{ minWidth: 900, whiteSpace: 'nowrap' }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Imballaggio</TableCell>
+                      <TableCell>Prezzo</TableCell>
+                      <TableCell>Colli</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {imballaggiBolla.map((r, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Autocomplete
+                            options={imballaggi}
+                            getOptionLabel={im => `${im.id} - ${im.tipo}`}
+                            value={imballaggi.find(im => im.tipo === r.nomeImballaggio) || null}
+                            onChange={(_, v) => handleImballaggioChange(i, 'nomeImballaggio', v ? v.tipo : '')}
+                            renderInput={params => <TextField {...params} fullWidth variant="standard" />}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.prezzo}
+                            InputProps={{ readOnly: true, startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TextField
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.numeroColli}
+                            onChange={e => handleImballaggioChange(i, 'numeroColli', +e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <IconButton onClick={() => handleRemoveImballaggio(i)} size="small">
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </TabPanel>
+          </Grid>
+        </Grid>
+        </form>
       </DialogContent>
       <DialogActions>
         <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>
-        <Button type="submit" variant="contained" onClick={handleSubmit} className='btn'>Salva</Button>
+        <Button type="submit" variant="contained" className='btn'>Salva</Button>
       </DialogActions>
     </Dialog>
   );
