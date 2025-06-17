@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack, Box } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 
 export interface Cliente {
@@ -47,6 +47,7 @@ type Props = {
 export default function AddClienteDialog({ open, onClose, onSave, cliente }: Props) {
   const clienteVuoto = { nomeCliente: '', cognomeCliente: '', ragioneSociale: '', partitaIva: '', telefonoFisso: '', telefonoCell: '', email: '',  via: '', numeroCivico: '', cap: '', paese: '', provincia: '', codiceSDI: ''};
   const [data, setData] = useState(clienteVuoto);
+  const fieldRefs = useRef<Array<HTMLElement | null>>([]);
 
   useEffect(() => {
     if (cliente) {
@@ -59,6 +60,15 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
       setData(clienteVuoto);
     }
   }, [cliente, open]);
+
+  useEffect(() => {
+    if (open) {
+      // focus on the first field (Nome) when dialog opens
+      setTimeout(() => {
+        fieldRefs.current[0]?.focus();
+      }, 0);
+    }
+  }, [open]);
 
   const handleChange = (field: keyof typeof data, value: string | number) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -106,42 +116,151 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
     });
   };
 
+  const handleEnterKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    // find the containing form element from the current target
+    const form = (e.currentTarget as HTMLElement).closest('form') as HTMLFormElement | null;
+    if (!form) return;
+    e.preventDefault();
+    // Collect focusable elements in ordering of appearance
+    const focusable = Array.from(
+      form.querySelectorAll('input, textarea, button, [role="combobox"]')
+    ) as HTMLElement[];
+    const index = focusable.indexOf(e.target as HTMLElement);
+    if (index > -1 && index < focusable.length - 1) {
+      focusable[index + 1].focus();
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
       <DialogTitle>{cliente ? 'Modifica Cliente' : 'Aggiungi Cliente'}</DialogTitle>
       <DialogContent>
-        <Stack spacing={4} mt={1}>
-          {/* Nome e Cognome */}
-          <Box display="flex" gap={2}>
-            <TextField className='input-tondi' label="Nome" value={data.nomeCliente} onChange={(e) => handleChange('nomeCliente', e.target.value)} fullWidth />
-            <TextField className='input-tondi' label="Cognome" value={data.cognomeCliente} onChange={(e) => handleChange('cognomeCliente', e.target.value)} fullWidth />
-          </Box>
-          {/* Ragione Sociale */}
-          <TextField className='input-tondi' label="Ragione Sociale" value={data.ragioneSociale} onChange={(e) => handleChange('ragioneSociale', e.target.value)} fullWidth />
-          {/* Indirizzo: Via e Numero */}
-          <Box display="flex" gap={2}>
-            <TextField className='input-tondi' label="Via" value={data.via} onChange={e => handleChange('via', e.target.value)} fullWidth />
-            <TextField className='input-tondi' label="Numero civico" value={data.numeroCivico} onChange={e => handleChange('numeroCivico', e.target.value)} fullWidth />
-          </Box>
-          {/* Indirizzo: CAP, Paese e Provincia */}
-          <Box display="flex" gap={2}>
-            <TextField className='input-tondi' label="CAP" value={data.cap} onChange={e => handleChange('cap', e.target.value)} fullWidth />
-            <TextField className='input-tondi' label="Paese" value={data.paese} onChange={e => handleChange('paese', e.target.value)} fullWidth />
-            <TextField className='input-tondi' label="Provincia" value={data.provincia} onChange={e => handleChange('provincia', e.target.value)} fullWidth />          
-          </Box>    
-          {/* P.iva e SDI */}
-          <Box display="flex" gap={2}>
-            <TextField className='input-tondi' label="Partita IVA" value={data.partitaIva} onChange={(e) => handleChange('partitaIva', e.target.value)} fullWidth />
-            <TextField className='input-tondi' label="Codice SDI" value={data.codiceSDI} onChange={e => handleChange('codiceSDI', e.target.value)} fullWidth/>
-          </Box>
-          {/* Recapiti telefonici */}
-           <Box display="flex" gap={2}>
-            <TextField className='input-tondi' label="Telefono fisso" value={data.telefonoFisso} onChange={e => handleChange('telefonoFisso', e.target.value)} fullWidth />
-            <TextField className='input-tondi' label="Cellulare" value={data.telefonoCell} onChange={e => handleChange('telefonoCell', e.target.value)} fullWidth />
-          </Box>    
-           {/* Email */}
-          <TextField className='input-tondi' label="Email" value={data.email} onChange={(e) => handleChange('email', e.target.value)} fullWidth />
-        </Stack>
+        <form onKeyDownCapture={handleEnterKeyDown}>
+          <Stack spacing={4} mt={1}>
+            {/* Nome e Cognome */}
+            <Box display="flex" gap={2}>
+              <TextField
+                className='input-tondi'
+                label="Nome"
+                value={data.nomeCliente}
+                onChange={(e) => handleChange('nomeCliente', e.target.value)}
+                inputRef={el => fieldRefs.current[0] = el}
+                fullWidth
+              />
+              <TextField
+                className='input-tondi'
+                label="Cognome"
+                value={data.cognomeCliente}
+                onChange={(e) => handleChange('cognomeCliente', e.target.value)}
+                inputRef={el => fieldRefs.current[1] = el}
+                fullWidth
+              />
+            </Box>
+            {/* Ragione Sociale */}
+            <TextField
+              className='input-tondi'
+              label="Ragione Sociale"
+              value={data.ragioneSociale}
+              onChange={(e) => handleChange('ragioneSociale', e.target.value)}
+              inputRef={el => fieldRefs.current[2] = el}
+              fullWidth
+            />
+            {/* Indirizzo: Via e Numero */}
+            <Box display="flex" gap={2}>
+              <TextField
+                className='input-tondi'
+                label="Via"
+                value={data.via}
+                onChange={e => handleChange('via', e.target.value)}
+                inputRef={el => fieldRefs.current[3] = el}
+                fullWidth
+              />
+              <TextField
+                className='input-tondi'
+                label="Numero civico"
+                value={data.numeroCivico}
+                onChange={e => handleChange('numeroCivico', e.target.value)}
+                inputRef={el => fieldRefs.current[4] = el}
+                fullWidth
+              />
+            </Box>
+            {/* Indirizzo: CAP, Paese e Provincia */}
+            <Box display="flex" gap={2}>
+              <TextField
+                className='input-tondi'
+                label="CAP"
+                value={data.cap}
+                onChange={e => handleChange('cap', e.target.value)}
+                inputRef={el => fieldRefs.current[5] = el}
+                fullWidth
+              />
+              <TextField
+                className='input-tondi'
+                label="Paese"
+                value={data.paese}
+                onChange={e => handleChange('paese', e.target.value)}
+                inputRef={el => fieldRefs.current[6] = el}
+                fullWidth
+              />
+              <TextField
+                className='input-tondi'
+                label="Provincia"
+                value={data.provincia}
+                onChange={e => handleChange('provincia', e.target.value)}
+                inputRef={el => fieldRefs.current[7] = el}
+                fullWidth
+              />          
+            </Box>    
+            {/* P.iva e SDI */}
+            <Box display="flex" gap={2}>
+              <TextField
+                className='input-tondi'
+                label="Partita IVA"
+                value={data.partitaIva}
+                onChange={(e) => handleChange('partitaIva', e.target.value)}
+                inputRef={el => fieldRefs.current[8] = el}
+                fullWidth
+              />
+              <TextField
+                className='input-tondi'
+                label="Codice SDI"
+                value={data.codiceSDI}
+                onChange={e => handleChange('codiceSDI', e.target.value)}
+                inputRef={el => fieldRefs.current[9] = el}
+                fullWidth
+              />
+            </Box>
+            {/* Recapiti telefonici */}
+            <Box display="flex" gap={2}>
+              <TextField
+                className='input-tondi'
+                label="Telefono fisso"
+                value={data.telefonoFisso}
+                onChange={e => handleChange('telefonoFisso', e.target.value)}
+                inputRef={el => fieldRefs.current[10] = el}
+                fullWidth
+              />
+              <TextField
+                className='input-tondi'
+                label="Cellulare"
+                value={data.telefonoCell}
+                onChange={e => handleChange('telefonoCell', e.target.value)}
+                inputRef={el => fieldRefs.current[11] = el}
+                fullWidth
+              />
+            </Box>    
+            {/* Email */}
+            <TextField
+              className='input-tondi'
+              label="Email"
+              value={data.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              inputRef={el => fieldRefs.current[12] = el}
+              fullWidth
+            />
+          </Stack>
+        </form>
       </DialogContent>
       <DialogActions>
         <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>
