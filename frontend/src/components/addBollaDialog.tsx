@@ -52,10 +52,13 @@ export default function AddBollaDialog({
 
   const prezzoRefs = useRef<Array<HTMLInputElement | null>>([]);
 
+  // ref for causale input
+  const causaleRef = useRef<HTMLInputElement | null>(null);
+
   // autocompletamenti causale open/close
   const [openCausale, setOpenCausale] = useState(false);
   const [openCliente, setOpenCliente] = useState(false);
-  const [openImballaggio, setOpenImballaggio] = useState(false);
+  const [openImballaggioIndex, setOpenImballaggioIndex] = useState<number | null>(null);
 
   // Move focus to next input on Enter
   const handleEnterKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -145,6 +148,13 @@ useEffect(() => {
     setVettore('');
   }
 }, [open, bolla]);
+
+  useEffect(() => {
+    if (open) {
+      // focus on causale field when dialog opens
+      setTimeout(() => { causaleRef.current?.focus(); }, 0);
+    }
+  }, [open]);
 
   const handleAddProdotto = () => {
     setProdottiBolla([...prodottiBolla, {
@@ -259,6 +269,7 @@ useEffect(() => {
         <form onKeyDown={handleEnterKeyDown} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <Grid container spacing={4}>
           <Grid size={6}>
+            <Typography variant="h6">Dati Bolla</Typography>
             <Grid container spacing={2}>
               {/* Causale */}
               <Grid size={12}>
@@ -279,6 +290,7 @@ useEffect(() => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
+                      inputRef={(el: HTMLInputElement | null) => { causaleRef.current = el; }}
                       fullWidth
                       variant="standard"
                       label="Causale di trasporto"
@@ -443,16 +455,16 @@ useEffect(() => {
                         <TableCell>
                           <Autocomplete
                             sx={{ width: 175 }}
-                            open={openImballaggio}
-                            onOpen={() => setOpenImballaggio(true)}
-                            onClose={() => setOpenImballaggio(false)}
+                            open={openImballaggioIndex === i}
+                            onOpen={() => setOpenImballaggioIndex(i)}
+                            onClose={() => setOpenImballaggioIndex(null)}
                             autoHighlight
                             options={imballaggi}
                             getOptionLabel={im => `${im.id} - ${im.tipo}`}
                             value={imballaggi.find(im => im.tipo === r.nomeImballaggio) || null}
                             onChange={(_, newValue) => handleProdottoChange(i, 'nomeImballaggio', newValue ? newValue.tipo : '')}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !openImballaggio) {
+                              if (e.key === 'Enter' && openImballaggioIndex !== i) {
                                 e.preventDefault();
                                 handleEnterKeyDown(e);
                               }
