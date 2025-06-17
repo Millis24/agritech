@@ -332,10 +332,16 @@ export default function Prodotti() {
             sorting: {
               sortModel: [{ field: 'id', sort: 'asc' }],
             },
-            pagination: { paginationModel: { pageSize: 25, page: 0 } }
+            pagination: { paginationModel: { pageSize: 10, page: 0 } }
           }}
-          pageSizeOptions={[25, 50, 100]}
-          sx={{borderRadius: '32px', padding: '1em'}}
+          pageSizeOptions={[10, 25, 100]}
+          sx={{
+            borderRadius: '32px',
+            padding: '1em',
+            '& .MuiDataGrid-columnHeaderTitle': {
+              fontWeight: 'bold',
+            },
+          }}
         />
       </div>
 
