@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Typography, IconButton, TextField, Stack } from '@mui/material';
+import { Box, Button, Typography, IconButton, TextField, Stack, Autocomplete } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,6 +24,7 @@ export default function Clienti() {
   });
   
   const [query, setQuery] = useState('');
+  const [openFilterCliente, setOpenFilterCliente] = useState(false);
   const [filterFrom, setFilterFrom] = useState<string>('');
   const [filterTo, setFilterTo] = useState<string>('');
   const [clienti, setClienti] = useState<Cliente[]>([]);
@@ -216,10 +217,15 @@ export default function Clienti() {
     clienti
       .slice()                  // clona, per non mutare lo stato originale
       .sort((a, b) => a.id - b.id)
-            .filter(c => {
+      .filter(c => {
         // text search
-        const matchesText = c.nomeCliente.toLowerCase().includes(query.toLowerCase())
-          || c.ragioneSociale.toLowerCase().includes(query.toLowerCase());
+        const lower = query.toLowerCase();
+        // check by name, ragione sociale, id, or full "id - nome"
+        const matchesText = 
+          c.nomeCliente.toLowerCase().includes(lower)
+          || c.ragioneSociale.toLowerCase().includes(lower)
+          || c.id.toString().includes(lower)
+          || (`${c.id} - ${c.nomeCliente}`).toLowerCase().includes(lower);
         if (!matchesText) return false;
         // date filter on createdAt (if field exists)
         const created = new Date(c.createdAt ?? '');
@@ -298,10 +304,39 @@ export default function Clienti() {
 
       {/* Ricerca Cliente */}
       <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <TextField className='input-tondi' label="Cerca cliente" variant="outlined" size="small" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ mb: 3, mt: 2 }} />
-        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" />
-        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" />
-        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} >
+        <Autocomplete
+          size="small"
+          freeSolo
+          open={openFilterCliente}
+          onOpen={() => setOpenFilterCliente(true)}
+          onClose={() => setOpenFilterCliente(false)}
+          options={clienti.map(c => `${c.id} - ${c.nomeCliente}`)}
+          inputValue={query}
+          value={query}
+          onInputChange={(_, newInput) => setQuery(newInput)}
+          onChange={(_, newValue) => {
+            if (newValue) {
+              // extract the name part after ' - '
+              const parts = newValue.split(' - ');
+              setQuery(parts.slice(1).join(' - '));
+            } else {
+              setQuery('');
+            }
+          }}
+          renderInput={params => (
+            <TextField
+              {...params}
+              className='input-tondi'
+              variant="outlined"
+              label="Cliente"
+              size="small"
+            />
+          )}
+          sx={{ mb: 3, mt: 2, width: 200, padding: '8.5px 0' }}
+        />
+        <TextField className='input-tondi' label="Da" type="date" InputLabelProps={{ shrink: true }} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} size="small" sx={{ mb: 3, mt: 2, width: 200 }} />
+        <TextField className='input-tondi' label="A" type="date" InputLabelProps={{ shrink: true }} value={filterTo} onChange={e => setFilterTo(e.target.value)} size="small" sx={{ mb: 3, mt: 2, width: 200 }} />
+        <Button color="error" size="small" onClick={() => { setQuery(''); setFilterFrom(''); setFilterTo(''); }} sx={{ mb: 3, mt: 2, width: 200 }} >
           <DeleteForeverIcon />
         </Button>
       </Box>

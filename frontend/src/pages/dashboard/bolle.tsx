@@ -253,7 +253,7 @@ export default function Bolle() {
         <TextField size="small" label="N. bolla" value={filterNumero} onChange={e => setFilterNumero(e.target.value)} className='input-tondi'/>
         <Autocomplete
           size="small"
-          sx={{ width: 200 }}
+          sx={{  mb: 2, mt: 2, width: 200, padding: '0'  }}
           open={openFilterCliente}
           onOpen={() => setOpenFilterCliente(true)}
           onClose={() => setOpenFilterCliente(false)}
@@ -267,15 +267,12 @@ export default function Bolle() {
             <TextField
               {...params}
               size="small"
-              variant="standard"
+              variant="outlined"
               label="Cliente"
               className='input-tondi'
               InputProps={{
                 ...params.InputProps,
                 disableUnderline: true,
-              }}
-              InputLabelProps={{
-                style: { marginTop: '12px !important' }
               }}
             />
           )}
