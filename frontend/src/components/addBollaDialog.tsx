@@ -64,7 +64,6 @@ export default function AddBollaDialog({
   // State for Autocomplete Causale open/close
   const [openCausale, setOpenCausale] = useState(false);
   const [openCliente, setOpenCliente] = useState(false);
-  const [openProdotto, setOpenProdotto] = useState(false);
   // State for tracking which product row dropdown is open
   // const [openProdottoIndex, setOpenProdottoIndex] = useState<number | null>(null);
 
