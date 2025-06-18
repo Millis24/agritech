@@ -213,7 +213,22 @@ export default function AddImballaggioDialog({
         </form>
       </DialogContent>
       <DialogActions>
-        <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>
+        <Button
+          type="button"
+          onClick={async () => {
+            const result = await Swal.fire({
+              title: 'Sei sicuro di voler annullare?',
+              text: 'Le modifiche non salvate andranno perse.',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, annulla',
+              cancelButtonText: 'No, torna indietro',
+              reverseButtons: true,
+            });
+            if (result.isConfirmed) onClose();
+          }}
+          className='btn-neg'
+        >Annulla</Button>
         <Button type="submit" variant="contained" onClick={handleSubmit} className='btn'>Salva</Button>
       </DialogActions>
     </Dialog>

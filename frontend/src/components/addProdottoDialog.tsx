@@ -167,7 +167,22 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
         </form>
       </DialogContent>
       <DialogActions>
-        <Button type="button" onClick={onClose} className='btn-neg'>Annulla</Button>
+        <Button
+          type="button"
+          onClick={async () => {
+            const result = await Swal.fire({
+              title: 'Sei sicuro di voler annullare?',
+              text: 'Le modifiche non salvate andranno perse.',
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Sì, annulla',
+              cancelButtonText: 'No, torna indietro',
+              reverseButtons: true,
+            });
+            if (result.isConfirmed) onClose();
+          }}
+          className='btn-neg'
+        >Annulla</Button>
         <Button type="submit" onClick={handleSubmit} variant="contained" className='btn'>Salva</Button>
       </DialogActions>
     </Dialog>
