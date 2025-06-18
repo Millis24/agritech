@@ -102,7 +102,7 @@ export default function Clienti() {
     setClienti(locali);
   };
 
-  const handleSave = async (cliente: Partial<Cliente>) => {
+  const handleSave = async (cliente: Partial<Cliente>): Promise<Cliente> => {
     const isModifica = !!editing;
     const { id, createdAt, synced, ...dataToSend } = cliente;
 
@@ -172,6 +172,8 @@ export default function Clienti() {
 
     const locali = await getAllClienti();
     setClienti(locali);
+    // Restituisci il cliente come Cliente prima di chiudere il dialog/modifica
+    return cliente as Cliente;
     setEditing(null);
     setOpen(false);
   };

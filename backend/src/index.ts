@@ -107,6 +107,7 @@ app.get('/api/clienti', async (req, res) => {
     const clienti = await prisma.cliente.findMany();
     res.json(clienti);
   } catch (error) {
+    console.error('❌ Errore nella route /api/clienti:', error);
     res.status(500).json({ error: 'Errore nel caricamento dei clienti' });
   }
 });
