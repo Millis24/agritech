@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, InputAdornment, Box, Stack } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, InputAdornment, Box, Stack, Typography } from '@mui/material';
 import Swal from 'sweetalert2';
 
 interface AddImballaggioDialogProps {
@@ -155,19 +155,60 @@ export default function AddImballaggioDialog({
       <DialogTitle>{imballaggio ? 'Modifica Imballaggio' : 'Nuovo Imballaggio'}</DialogTitle>
       <DialogContent>
         <form onKeyDownCapture={handleEnterKeyDown}>
-          <Stack spacing={4} mt={1}>
+          <Stack spacing={1} mt={1}>
             {/* Tipo e prezzo */}
+            <Typography>Tipo e prezzo</Typography>
             <Box display="flex" gap={2}>
-              <TextField className='input-tondi' fullWidth label="Tipo" value={formData.tipo} onChange={(e) => handleChange('tipo', e.target.value)} inputRef={el => fieldRefs.current[0] = el} />
-              <TextField className='input-tondi' fullWidth type="number" label="Prezzo" value={formData.prezzo} onChange={(e) => handleChange('prezzo', parseFloat(e.target.value))} InputProps={{ startAdornment: ( <InputAdornment position="start"> € </InputAdornment> ), }} inputRef={el => fieldRefs.current[1] = el} />
+              <TextField 
+                // className='input-tondi' 
+                fullWidth label="Tipo" 
+                value={formData.tipo} 
+                onChange={(e) => handleChange('tipo', e.target.value)} 
+                inputRef={el => fieldRefs.current[0] = el} 
+                variant="standard" 
+              />
+              <TextField 
+                // className='input-tondi' 
+                fullWidth type="number" 
+                label="Prezzo" 
+                value={formData.prezzo} 
+                onChange={(e) => handleChange('prezzo', parseFloat(e.target.value))} 
+                InputProps={{ startAdornment: ( <InputAdornment position="start"> € </InputAdornment> ), }} 
+                inputRef={el => fieldRefs.current[1] = el} 
+                variant="standard" 
+              />
             </Box>
             {/* Dimensioni e Capacità */}
+            <Typography sx={{marginTop: '3em !important'}}>Dimensioni e Capacità</Typography>
             <Box display="flex" gap={2}>
-              <TextField className='input-tondi' fullWidth label="Dimensioni" value={formData.dimensioni} onChange={(e) => handleChange('dimensioni', e.target.value)} inputRef={el => fieldRefs.current[2] = el} />
-              <TextField className='input-tondi' fullWidth type="number" label="Capacità (Kg)" value={formData.capacitaKg} onChange={(e) => handleChange('capacitaKg', parseFloat(e.target.value))} inputRef={el => fieldRefs.current[3] = el} />
+              <TextField 
+                // className='input-tondi' 
+                fullWidth 
+                label="Dimensioni" 
+                value={formData.dimensioni} 
+                onChange={(e) => handleChange('dimensioni', e.target.value)} 
+                inputRef={el => fieldRefs.current[2] = el} 
+                variant="standard" 
+              />
+              <TextField 
+                // className='input-tondi' 
+                fullWidth type="number" 
+                label="Capacità (Kg)" 
+                value={formData.capacitaKg} 
+                onChange={(e) => handleChange('capacitaKg', parseFloat(e.target.value))} 
+                inputRef={el => fieldRefs.current[3] = el} 
+                variant="standard" 
+              />
             </Box>
             {/* Note */}
-            <TextField className='input-tondi' fullWidth label="Note" value={formData.note} onChange={(e) => handleChange('note', e.target.value)} inputRef={el => fieldRefs.current[4] = el} />
+            <Typography sx={{marginTop: '3em !important'}}>Note</Typography>
+            <TextField 
+              // className='input-tondi' 
+              fullWidth label="Note" 
+              value={formData.note} onChange={(e) => handleChange('note', e.target.value)} 
+              inputRef={el => fieldRefs.current[4] = el} 
+              variant="standard" 
+            />
           </Stack>
         </form>
       </DialogContent>

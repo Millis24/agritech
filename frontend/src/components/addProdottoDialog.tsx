@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack, Box, Typography } from '@mui/material';
 import { useEffect, useState, useRef } from 'react';
 import Swal from 'sweetalert2';
 
@@ -118,43 +118,49 @@ export default function AddProdottoDialog({ open, onClose, onSave, prodotto }: P
       <DialogTitle>{prodotto ? 'Modifica Prodotto' : 'Aggiungi Prodotto'}</DialogTitle>
       <DialogContent>
         <form onKeyDownCapture={handleEnterKeyDown}>
-          <Stack spacing={4} mt={1}>
+          <Stack spacing={1} mt={1}>
             {/* Nome e Varietà */}
+            <Typography>Nome e varietà</Typography>
             <Box display="flex" gap={2}>
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Nome"
                 value={data.nome}
                 onChange={(e) => handleChange('nome', e.target.value)}
                 fullWidth
                 inputRef={el => fieldRefs.current[0] = el}
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Varietà"
                 value={data.varieta}
                 onChange={(e) => handleChange('varieta', e.target.value)}
                 fullWidth
                 inputRef={el => fieldRefs.current[1] = el}
+                variant="standard" 
               />
             </Box>
             {/* Calibro e Colore */}
+            <Typography sx={{marginTop: '3em !important'}}>Calibro e Colore</Typography>
             <Box display="flex" gap={2}>
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Calibro"
                 value={data.calibro}
                 onChange={(e) => handleChange('calibro', e.target.value)}
                 fullWidth
                 inputRef={el => fieldRefs.current[2] = el}
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Colore"
                 value={data.colore}
                 onChange={(e) => handleChange('colore', e.target.value)}
                 fullWidth
                 inputRef={el => fieldRefs.current[3] = el}
+                variant="standard" 
               />
             </Box>
           </Stack>

@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack, Box, Typography } from '@mui/material';
 import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 
@@ -40,26 +40,23 @@ export const imballaggioVuoto = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSave: (cliente: Partial<Cliente>) => void;
+  onSave: (cliente: Partial<Cliente>) => Promise<Cliente>;
   cliente?: Cliente | null;
 };
 
 export default function AddClienteDialog({ open, onClose, onSave, cliente }: Props) {
-  const clienteVuoto = { nomeCliente: '', cognomeCliente: '', ragioneSociale: '', partitaIva: '', telefonoFisso: '', telefonoCell: '', email: '',  via: '', numeroCivico: '', cap: '', paese: '', provincia: '', codiceSDI: ''};
+  const clienteVuoto = { nomeCliente: '', cognomeCliente: '', ragioneSociale: '', partitaIva: '', telefonoFisso: '', telefonoCell: '', email: '', via: '', numeroCivico: '', cap: '', paese: '', provincia: '', codiceSDI: '' };
   const [data, setData] = useState(clienteVuoto);
   const fieldRefs = useRef<Array<HTMLElement | null>>([]);
 
   useEffect(() => {
     if (cliente) {
       const { id, createdAt, synced, ...rest } = cliente;
-      setData({
-        ...clienteVuoto,
-        ...rest
-      });
+      setData({ ...clienteVuoto, ...rest });
     } else {
       setData(clienteVuoto);
     }
-  }, [cliente, open]);
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -75,7 +72,6 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
   };
 
   const handleSubmit = async () => {
-    // 1) chiedi conferma
     const isEdit = Boolean(cliente);
     const result = await Swal.fire({
       title: isEdit
@@ -89,31 +85,26 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
       confirmButtonText: isEdit ? 'Sì, modifica' : 'Sì, crea',
       cancelButtonText: 'No, annulla',
       reverseButtons: true,
-      focusConfirm: false,   // non mettere subito a fuoco il Confirm
-      focusCancel: true,     // metti a fuoco prima il Cancel
-      allowEnterKey: true,   // abilita Enter per confermare
+      focusConfirm: false,
+      focusCancel: true,
+      allowEnterKey: true,
     });
-    if (!result.isConfirmed) {
-      return; // l'utente ha annullato
-    }
+    if (!result.isConfirmed) return;
 
-    // 2) esegui POST o PUT
-    if (cliente) {
-      onSave({ ...cliente, ...data });
-    } else {
-      onSave(data);
-    }
-    onClose();
+    await onSave(data);
 
-    // 3) toast di successo
+    setData({ ...data });
+
     await Swal.fire({
       icon: 'success',
-      title: isEdit
-        ? 'Cliente modificato!'
-        : 'Cliente creato!',
+      title: isEdit ? 'Cliente modificato!' : 'Cliente creato!',
       showConfirmButton: false,
       timer: 1400
     });
+
+    setTimeout(() => {
+      onClose();
+    }, 300);
   };
 
   const handleEnterKeyDown = (e: React.KeyboardEvent) => {
@@ -137,127 +128,144 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
       <DialogTitle>{cliente ? 'Modifica Cliente' : 'Aggiungi Cliente'}</DialogTitle>
       <DialogContent>
         <form onKeyDownCapture={handleEnterKeyDown}>
-          <Stack spacing={4} mt={1}>
+          <Stack spacing={1} mt={1}>
             {/* Nome e Cognome */}
+            <Typography>Nome e Cognome</Typography>
             <Box display="flex" gap={2}>
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Nome"
                 value={data.nomeCliente}
                 onChange={(e) => handleChange('nomeCliente', e.target.value)}
                 inputRef={el => fieldRefs.current[0] = el}
                 fullWidth
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Cognome"
                 value={data.cognomeCliente}
                 onChange={(e) => handleChange('cognomeCliente', e.target.value)}
                 inputRef={el => fieldRefs.current[1] = el}
                 fullWidth
+                variant="standard" 
               />
             </Box>
-            {/* Ragione Sociale */}
-            <TextField
-              className='input-tondi'
-              label="Ragione Sociale"
-              value={data.ragioneSociale}
-              onChange={(e) => handleChange('ragioneSociale', e.target.value)}
-              inputRef={el => fieldRefs.current[2] = el}
-              fullWidth
-            />
-            {/* Indirizzo: Via e Numero */}
+            <Typography sx={{marginTop: '3em !important'}}>Indirizzo</Typography>
             <Box display="flex" gap={2}>
+              {/* Indirizzo: Via e Numero */}
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Via"
                 value={data.via}
                 onChange={e => handleChange('via', e.target.value)}
                 inputRef={el => fieldRefs.current[3] = el}
                 fullWidth
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Numero civico"
                 value={data.numeroCivico}
                 onChange={e => handleChange('numeroCivico', e.target.value)}
                 inputRef={el => fieldRefs.current[4] = el}
                 fullWidth
+                variant="standard" 
               />
             </Box>
             {/* Indirizzo: CAP, Paese e Provincia */}
             <Box display="flex" gap={2}>
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="CAP"
                 value={data.cap}
                 onChange={e => handleChange('cap', e.target.value)}
                 inputRef={el => fieldRefs.current[5] = el}
                 fullWidth
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Paese"
                 value={data.paese}
                 onChange={e => handleChange('paese', e.target.value)}
                 inputRef={el => fieldRefs.current[6] = el}
                 fullWidth
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Provincia"
                 value={data.provincia}
                 onChange={e => handleChange('provincia', e.target.value)}
                 inputRef={el => fieldRefs.current[7] = el}
                 fullWidth
+                variant="standard" 
               />          
             </Box>    
-            {/* P.iva e SDI */}
+            <Typography sx={{marginTop: '3em !important'}}>Dati Aziendali</Typography>
             <Box display="flex" gap={2}>
+              {/* Ragione Sociale */}
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
+                label="Ragione Sociale"
+                value={data.ragioneSociale}
+                onChange={(e) => handleChange('ragioneSociale', e.target.value)}
+                inputRef={el => fieldRefs.current[2] = el}
+                fullWidth
+                variant="standard" 
+              />
+              {/* P.iva e SDI */}
+              <TextField
+                // className='input-tondi'
                 label="Partita IVA"
                 value={data.partitaIva}
                 onChange={(e) => handleChange('partitaIva', e.target.value)}
                 inputRef={el => fieldRefs.current[8] = el}
                 fullWidth
+                variant="standard"
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Codice SDI"
                 value={data.codiceSDI}
                 onChange={e => handleChange('codiceSDI', e.target.value)}
                 inputRef={el => fieldRefs.current[9] = el}
                 fullWidth
+                variant="standard" 
               />
             </Box>
             {/* Recapiti telefonici */}
+            <Typography sx={{marginTop: '3em !important'}}>Recapiti</Typography>
             <Box display="flex" gap={2}>
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Telefono fisso"
                 value={data.telefonoFisso}
                 onChange={e => handleChange('telefonoFisso', e.target.value)}
                 inputRef={el => fieldRefs.current[10] = el}
                 fullWidth
+                variant="standard" 
               />
               <TextField
-                className='input-tondi'
+                // className='input-tondi'
                 label="Cellulare"
                 value={data.telefonoCell}
                 onChange={e => handleChange('telefonoCell', e.target.value)}
                 inputRef={el => fieldRefs.current[11] = el}
                 fullWidth
+                variant="standard" 
               />
             </Box>    
             {/* Email */}
             <TextField
-              className='input-tondi'
+              // className='input-tondi'
               label="Email"
               value={data.email}
               onChange={(e) => handleChange('email', e.target.value)}
               inputRef={el => fieldRefs.current[12] = el}
               fullWidth
+              variant="standard" 
             />
           </Stack>
         </form>
