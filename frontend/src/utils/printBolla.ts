@@ -123,7 +123,7 @@ export async function handlePrint(bolla: Bolla) {
 
   // IMBALLAGGI A RENDERE
   const trasportoArr = JSON.parse(bolla.daTrasportare) as Array<any>;
-  const rendArr = JSON.parse(bolla.daRendere) as Array<any>;
+  //const rendArr = JSON.parse(bolla.daRendere) as Array<any>;
   const imballaggiData = trasportoArr.map((d) => ({
     nomeImballaggio: d.nomeImballaggio,
     numeroColli: d.numeroColli,
@@ -134,11 +134,11 @@ export async function handlePrint(bolla: Bolla) {
     margin: { left: M, right: M },
     tableWidth: pageWidth - 2 * M,
     head: [['Tipologia','Valore','Da trasporto attuale','Totali a rendere']],
-    body: imballaggiData.map((r, i) => [
+    body: imballaggiData.map((r) => [
       r.nomeImballaggio,
       r.prezzo?.toString() ?? '',
       r.numeroColli.toString(),
-      rendArr[i]?.numeroColli.toString() ?? ''
+      r.numeroColli.toString()
     ]),
     styles: { fontSize: 8, cellPadding: 2 },
     headStyles: { textColor: [255,255,255] }
