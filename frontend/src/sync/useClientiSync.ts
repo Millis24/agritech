@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { getAllClienti, deleteCliente, saveCliente, getClientiEliminati, clearClientiEliminati } from '../storage/clientiDB';
-import { API_BASE } from '../api/user';
 
 export default function useClientiSync() {
   useEffect(() => {
@@ -14,7 +13,7 @@ export default function useClientiSync() {
       for (const cliente of daSincronizzare) {
         try {
           const { id, synced, ...data } = cliente;
-          const res = await fetch(`${API_BASE}/api/clienti`, {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/clienti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -32,7 +31,7 @@ export default function useClientiSync() {
       const eliminati = await getClientiEliminati();
       for (const { id } of eliminati) {
         try {
-          const res = await fetch(`${API_BASE}/api/clienti/${id}`, {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/clienti/${id}`, {
             method: 'DELETE'
           });
           if (res.ok) {
@@ -50,7 +49,7 @@ export default function useClientiSync() {
 
     const fetchBackendClienti = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/clienti`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/clienti`);
         if (!res.ok) return;
         const backendClienti = await res.json();
         for (const cliente of backendClienti) {

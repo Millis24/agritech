@@ -14,7 +14,7 @@ export const API_BASE = 'https://agritech-crm.it';
  */
 export async function getUserProfile(): Promise<UserProfile> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/api/user/profile`, {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ export async function getUserProfile(): Promise<UserProfile> {
  */
 export async function updateUserProfile(data: Partial<UserProfile>): Promise<void> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/api/user/profile`, {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export async function updateUserProfile(data: Partial<UserProfile>): Promise<voi
  */
 export async function changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/api/user/change-password`, {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

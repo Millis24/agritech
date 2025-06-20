@@ -6,7 +6,6 @@ import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel }
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { API_BASE } from '../../api/user';
 
 import AddProdottoDialog from '../../components/addProdottoDialog';
 import type { Prodotto } from '../../components/addProdottoDialog';
@@ -31,7 +30,7 @@ export default function Prodotti() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch(`${API_BASE}/api/prodotti`);
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setProdotti(datiOnline);
@@ -60,7 +59,7 @@ export default function Prodotti() {
   const handleDelete = async (id: number) => {
   if (navigator.onLine) {
     try {
-      const response = await fetch(`${API_BASE}/api/prodotti/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -102,7 +101,7 @@ export default function Prodotti() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`h${API_BASE}/api/prodotti/${id}`, {
+          const res = await fetch(`h${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
@@ -119,7 +118,7 @@ export default function Prodotti() {
             alert('❌ Errore aggiornamento');
           }
         } else {
-          const res = await fetch(`${API_BASE}/api/prodotti`, {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)

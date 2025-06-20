@@ -13,7 +13,6 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { API_BASE } from '../../api/user';
 
 const MONTH_LABELS = [
   'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
@@ -56,7 +55,7 @@ export default function Home() {
     // load user profile
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/user/profile`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         if (res.ok) {

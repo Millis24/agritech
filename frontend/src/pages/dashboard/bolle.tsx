@@ -6,7 +6,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import PrintIcon from '@mui/icons-material/Print';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { handlePrint } from '../../utils/printBolla';
-import { API_BASE } from '../../api/user';
 
 import AddBollaDialog from '../../components/addBollaDialog';
 import useBolleSync from '../../sync/useBolleSync';
@@ -72,7 +71,7 @@ export default function Bolle() {
   const handleDelete = async (id: number) => {
     if (navigator.onLine) {
       try {
-        const response = await fetch(`${API_BASE}/api/bolle/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle/${id}`, { method: 'DELETE' });
         if (response.ok) {
           await deleteLocalBolla(id); // elimina le bolle online
         } else {
@@ -349,12 +348,12 @@ export default function Bolle() {
           if (navigator.onLine) {
             try {
               const res = bolla.id
-                ? await fetch(`${API_BASE}/api/bolle/${bolla.id}`, {
+                ? await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle/${bolla.id}`, {
                     method: 'PUT',
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(bolla)
                   })
-                : await fetch(`${API_BASE}/api/bolle`, {
+                : await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle`, {
                     method: 'POST',
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(bolla)
