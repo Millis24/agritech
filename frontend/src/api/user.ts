@@ -7,14 +7,14 @@ export interface UserProfile {
   defaultReportRange: '7d' | 'month' | 'quarter' | 'year';
 }
 
-const API_BASE = 'http://localhost:4000';
+export const API_BASE = 'https://agritech-crm.it';
 
 /**
  * Recupera il profilo utente corrente
  */
 export async function getUserProfile(): Promise<UserProfile> {
   const token = localStorage.getItem('token');
-  const res = await fetch('http://localhost:4000/api/user/profile', {
+  const res = await fetch(`${API_BASE}/api/user/profile`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

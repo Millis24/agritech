@@ -9,6 +9,7 @@ import {
 } from '../storage/bolleEliminateDB';
 
 import { getDB } from '../storage/indexedDb';
+import { API_BASE } from '../api/user';
 
 const STORE_NAME = 'bolle';
 
@@ -48,7 +49,7 @@ export default function useBolleSync() {
       for (const { id } of eliminati) {
         if (id !== undefined) {
           try {
-            const res = await fetch(`http://localhost:4000/api/bolle/${id}`, {
+            const res = await fetch(`${API_BASE}/api/bolle/${id}`, {
               method: 'DELETE'
             });
             if (res.ok) {
@@ -72,7 +73,7 @@ export default function useBolleSync() {
 
           if (id !== undefined && modifiedOffline) {
             // ✏️ MODIFICA
-            res = await fetch(`http://localhost:4000/api/bolle/${id}`, {
+            res = await fetch(`${API_BASE}/api/bolle/${id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data),
@@ -80,7 +81,7 @@ export default function useBolleSync() {
             } else {
               // ➕ NUOVA
               const tempId = id!; // l’id assegnato offline
-              const res = await fetch('http://localhost:4000/api/bolle', {
+              const res = await fetch(`${API_BASE}/api/bolle`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -131,7 +132,7 @@ export default function useBolleSync() {
     // 🔁 Carica tutte le bolle online e salva localmente
     const fetchBackendBolle = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/bolle');
+        const res = await fetch(`${API_BASE}/api/bolle`);
         if (!res.ok) return;
 
         const backendBolle = await res.json();

@@ -8,6 +8,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import Swal from 'sweetalert2';
 import SchedaClienteDialog from '../../components/schedaClienteDialog.tsx';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { API_BASE } from '../../api/user';
 
 import AddClienteDialog from '../../components/addClienteDialog';
 import type { Cliente } from '../../components/addClienteDialog';
@@ -37,7 +38,7 @@ export default function Clienti() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch('http://localhost:4000/api/clienti');
+        const res = await fetch(`${API_BASE}/api/clienti`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setClienti(datiOnline);
@@ -67,7 +68,7 @@ export default function Clienti() {
   const handleDelete = async (id: number) => {
   if (navigator.onLine) {
       try {
-        const response = await fetch(`http://localhost:4000/api/clienti/${id}`, {
+        const response = await fetch(`${API_BASE}/api/clienti/${id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -109,7 +110,7 @@ export default function Clienti() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`http://localhost:4000/api/clienti/${id}`, {
+          const res = await fetch(`${API_BASE}/api/clienti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
@@ -126,7 +127,7 @@ export default function Clienti() {
             });
           }
         } else {
-          const res = await fetch(`http://localhost:4000/api/clienti`, {
+          const res = await fetch(`${API_BASE}/api/clienti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)

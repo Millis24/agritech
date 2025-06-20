@@ -4,6 +4,7 @@ import { DataGrid, type GridColDef, type GridRowId, type GridRowSelectionModel }
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { API_BASE } from '../../api/user';
 
 import AddImballaggioDialog from '../../components/addImballaggioDialog';
 
@@ -41,7 +42,7 @@ export default function Imballaggi() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch('http://localhost:4000/api/imballaggi');
+        const res = await fetch(`${API_BASE}/api/imballaggi`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setImballaggi(datiOnline);
@@ -70,7 +71,7 @@ export default function Imballaggi() {
   const handleDelete = async (id: number) => {
     if (navigator.onLine) {
       try {
-        const response = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
+        const response = await fetch(`${API_BASE}/api/imballaggi/${id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -112,7 +113,7 @@ export default function Imballaggi() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`http://localhost:4000/api/imballaggi/${id}`, {
+          const res = await fetch(`${API_BASE}/api/imballaggi/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...dataToSend, prezzo: parseFloat(String(dataToSend.prezzo)) })
@@ -124,7 +125,7 @@ export default function Imballaggi() {
             alert('❌ Errore aggiornamento');
           }
         } else {
-          const res = await fetch(`http://localhost:4000/api/imballaggi`, {
+          const res = await fetch(`${API_BASE}/api/imballaggi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...dataToSend, prezzo: parseFloat(String(dataToSend.prezzo)) })
