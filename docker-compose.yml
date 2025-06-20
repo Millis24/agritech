@@ -1,16 +1,16 @@
 version: '3.8'
 
 services:
-  frontend:
-    build: ./frontend
-    restart: always
-    command: npm run build && cp -r dist/* /app/dist/
-    volumes:
-      - frontend-build:/app/dist
-    depends_on:
-      - backend
-    networks:
-      - crm-network
+  # frontend:
+  #   build: ./frontend
+  #   restart: always
+  #   command: npm run build && cp -r dist/* /app/dist/
+  #   volumes:
+  #     - frontend-build:/app/dist
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - crm-network
 
   backend:
     build: ./backend
@@ -50,7 +50,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - frontend-build:/usr/share/nginx/html:ro
     depends_on:
-      - frontend
+      # - frontend
       - backend
     networks:
       - crm-network
