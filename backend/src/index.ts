@@ -117,13 +117,13 @@ app.post('/api/clienti', async (req, res) => {
   const { id, synced, ...data } = req.body;
   try {
     // verifica duplicati
-    const esiste = await prisma.cliente.findFirst({ 
-      where: { 
-        partitaIva: data.partitaIva 
-      } });
-    if (esiste) {
-      return res.status(409).json({ error: 'Cliente già esistente con questa Partita IVA' });
-    }
+    // const esiste = await prisma.cliente.findFirst({ 
+    //   where: { 
+    //     partitaIva: data.partitaIva 
+    //   } });
+    // if (esiste) {
+    //   return res.status(409).json({ error: 'Cliente già esistente con questa Partita IVA' });
+    // }
   
     const nuovo = await prisma.cliente.create({ 
       data: {
