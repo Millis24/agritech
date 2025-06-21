@@ -103,7 +103,7 @@ export default function Prodotti() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`h${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
