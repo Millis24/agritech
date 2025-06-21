@@ -20,6 +20,7 @@ async function main() {
   console.log('Super Admin creato o già esistente.')
 }
 
+
 main()
   .then(async () => {
     await prisma.$disconnect()
