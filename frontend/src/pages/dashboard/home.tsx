@@ -14,6 +14,8 @@ import {
   Legend,
 } from 'recharts';
 
+import { getBaseUrl } from '../../lib/getBaseUrl';
+
 const MONTH_LABELS = [
   'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
   'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'
@@ -55,7 +57,7 @@ export default function Home() {
     // load user profile
     (async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
+        const res = await fetch(`${getBaseUrl()}/api/user/profile`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         if (res.ok) {

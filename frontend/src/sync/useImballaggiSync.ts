@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { getAllImballaggi, deleteImballaggio, saveImballaggio, getImballaggiEliminati } from '../storage/imballaggiDB';
 
+import { getBaseUrl } from '../lib/getBaseUrl';
+
 export default function useImballaggiSync() {
   useEffect(() => {
     const sync = async () => {
@@ -13,7 +15,7 @@ export default function useImballaggiSync() {
       for (const imballaggio of daSincronizzare) {
         try {
           const { id, synced, ...data } = imballaggio;
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi`, {
+          const res = await fetch(`${getBaseUrl()}/api/imballaggi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -31,7 +33,7 @@ export default function useImballaggiSync() {
       const eliminati = await getImballaggiEliminati();
       for (const { id } of eliminati) {
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/api/imballaggi/${id}`, {
             method: 'DELETE'
           });
           if (res.ok) {
@@ -49,7 +51,7 @@ export default function useImballaggiSync() {
 
     const fetchFromBackendImballaggi = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi`);
+        const res = await fetch(`${getBaseUrl()}/api/imballaggi`);
         if (!res.ok) return;
         const backendImballaggi = await res.json();
         for (const imballaggio of backendImballaggi) {

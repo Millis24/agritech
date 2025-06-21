@@ -10,6 +10,8 @@ import {
 
 import { getDB } from '../storage/indexedDb';
 
+import { getBaseUrl } from '../lib/getBaseUrl';
+
 const STORE_NAME = 'bolle';
 
 // ✅ Elimina localmente una bolla da IndexedDB
@@ -48,7 +50,7 @@ export default function useBolleSync() {
       for (const { id } of eliminati) {
         if (id !== undefined) {
           try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle/${id}`, {
+            const res = await fetch(`${getBaseUrl()}/api/bolle/${id}`, {
               method: 'DELETE'
             });
             if (res.ok) {
@@ -72,7 +74,7 @@ export default function useBolleSync() {
 
           if (id !== undefined && modifiedOffline) {
             // ✏️ MODIFICA
-            res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle/${id}`, {
+            res = await fetch(`${getBaseUrl()}/api/bolle/${id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data),
@@ -80,7 +82,7 @@ export default function useBolleSync() {
             } else {
               // ➕ NUOVA
               const tempId = id!; // l’id assegnato offline
-              const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle`, {
+              const res = await fetch(`${getBaseUrl()}/api/bolle`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -131,7 +133,7 @@ export default function useBolleSync() {
     // 🔁 Carica tutte le bolle online e salva localmente
     const fetchBackendBolle = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle`);
+        const res = await fetch(`${getBaseUrl()}/api/bolle`);
         if (!res.ok) return;
 
         const backendBolle = await res.json();

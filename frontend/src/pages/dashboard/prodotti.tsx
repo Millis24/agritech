@@ -14,6 +14,8 @@ import useProdottiSync from '../../sync/useProdottiSync';
 import { saveProdotto, deleteProdotto as deleteLocalProdotto, getAllProdotti, markProdottoAsDeleted } from '../../storage/prodottiDB';
 import Swal from 'sweetalert2';
 
+import { getBaseUrl } from '../../lib/getBaseUrl';
+
 export default function Prodotti() {
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
@@ -30,7 +32,7 @@ export default function Prodotti() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti`);
+        const res = await fetch(`${getBaseUrl()}/api/prodotti`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setProdotti(datiOnline);
@@ -59,7 +61,7 @@ export default function Prodotti() {
   const handleDelete = async (id: number) => {
   if (navigator.onLine) {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
+      const response = await fetch(`${getBaseUrl()}/api/prodotti/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -118,7 +120,7 @@ export default function Prodotti() {
             alert('❌ Errore aggiornamento');
           }
         } else {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti`, {
+          const res = await fetch(`${getBaseUrl()}/api/prodotti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)

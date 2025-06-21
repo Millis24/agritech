@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { getAllProdotti, deleteProdotto, saveProdotto, getProdottiEliminati, clearProdottiEliminati } from '../storage/prodottiDB';
 
+import { getBaseUrl } from '../lib/getBaseUrl';
+
 export default function useProdottiSync() {
   useEffect(() => {
     const sync = async () => {
@@ -13,7 +15,7 @@ export default function useProdottiSync() {
       for (const prodotto of daSincronizzare) {
         try {
           const { id, synced, ...data } = prodotto;
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti`, {
+          const res = await fetch(`${getBaseUrl()}/api/prodotti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -31,7 +33,7 @@ export default function useProdottiSync() {
       const eliminati = await getProdottiEliminati();
       for (const { id } of eliminati) {
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/api/prodotti/${id}`, {
             method: 'DELETE'
           });
           if (res.ok) {
@@ -49,7 +51,7 @@ export default function useProdottiSync() {
 
     const fetchBackendProdotti = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti`);
+        const res = await fetch(`${getBaseUrl()}/api/prodotti`);
         if (!res.ok) return;
         const backendProdotti = await res.json();
         for (const prodotto of backendProdotti) {

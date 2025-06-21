@@ -21,6 +21,8 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import Swal from 'sweetalert2';
 
+import { getBaseUrl } from '../../lib/getBaseUrl';
+
 
 export default function Bolle() {
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
@@ -71,7 +73,7 @@ export default function Bolle() {
   const handleDelete = async (id: number) => {
     if (navigator.onLine) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${getBaseUrl()}/api/bolle/${id}`, { method: 'DELETE' });
         if (response.ok) {
           await deleteLocalBolla(id); // elimina le bolle online
         } else {
@@ -348,12 +350,12 @@ export default function Bolle() {
           if (navigator.onLine) {
             try {
               const res = bolla.id
-                ? await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle/${bolla.id}`, {
+                ? await fetch(`${getBaseUrl()}/api/bolle/${bolla.id}`, {
                     method: 'PUT',
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(bolla)
                   })
-                : await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bolle`, {
+                : await fetch(`${getBaseUrl()}/api/bolle`, {
                     method: 'POST',
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(bolla)

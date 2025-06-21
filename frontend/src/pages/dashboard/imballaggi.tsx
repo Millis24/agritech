@@ -14,6 +14,8 @@ import Swal from 'sweetalert2';
 import Autocomplete from '@mui/material/Autocomplete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
+import { getBaseUrl } from '../../lib/getBaseUrl';
+
 interface Imballaggio {
   id: number;
   tipo: string;
@@ -41,7 +43,7 @@ export default function Imballaggi() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi`);
+        const res = await fetch(`${getBaseUrl()}/api/imballaggi`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setImballaggi(datiOnline);
@@ -70,7 +72,7 @@ export default function Imballaggi() {
   const handleDelete = async (id: number) => {
     if (navigator.onLine) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi/${id}`, {
+        const response = await fetch(`${getBaseUrl()}/api/imballaggi/${id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -112,7 +114,7 @@ export default function Imballaggi() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/api/imballaggi/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...dataToSend, prezzo: parseFloat(String(dataToSend.prezzo)) })
@@ -124,7 +126,7 @@ export default function Imballaggi() {
             alert('❌ Errore aggiornamento');
           }
         } else {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/imballaggi`, {
+          const res = await fetch(`${getBaseUrl()}/api/imballaggi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...dataToSend, prezzo: parseFloat(String(dataToSend.prezzo)) })

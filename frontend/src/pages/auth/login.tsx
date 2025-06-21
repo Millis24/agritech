@@ -8,6 +8,8 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Swal from 'sweetalert2';
 import logoAgritech from '../../assets/logo-agritech-nero.png';
 
+import { getBaseUrl } from '../../lib/getBaseUrl'; 
+
 
 export default function Login() {
   const [nomeUtente, setNomeUtente] = useState('');
@@ -19,7 +21,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch('/api/login', {
+    const res = await fetch(`${getBaseUrl()}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nomeUtente, password }),
@@ -115,7 +117,7 @@ export default function Login() {
                 </Stack>
               </Box>
 
-              <Link href='#' underline="hover" variant="body2" align="center">
+              <Link href='emailto:info@camillacinodesigndev.it' underline="hover" variant="body2" align="center">
                 Hai dimenticato la password? Contatta l'amministratore.
               </Link>
             </Stack>
