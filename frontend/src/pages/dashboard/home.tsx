@@ -57,7 +57,7 @@ export default function Home() {
     // load user profile
     (async () => {
       try {
-        const res = await fetch(`${getBaseUrl()}/api/user/profile`, {
+        const res = await fetch(`${getBaseUrl()}/user/profile`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         if (res.ok) {

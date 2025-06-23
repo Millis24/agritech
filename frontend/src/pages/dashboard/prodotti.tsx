@@ -32,7 +32,7 @@ export default function Prodotti() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch(`${getBaseUrl()}/api/prodotti`);
+        const res = await fetch(`${getBaseUrl()}/prodotti`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setProdotti(datiOnline);
@@ -61,7 +61,7 @@ export default function Prodotti() {
   const handleDelete = async (id: number) => {
   if (navigator.onLine) {
     try {
-      const response = await fetch(`${getBaseUrl()}/api/prodotti/${id}`, {
+      const response = await fetch(`${getBaseUrl()}/prodotti/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -103,7 +103,7 @@ export default function Prodotti() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/prodotti/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/prodotti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
@@ -120,7 +120,7 @@ export default function Prodotti() {
             alert('❌ Errore aggiornamento');
           }
         } else {
-          const res = await fetch(`${getBaseUrl()}/api/prodotti`, {
+          const res = await fetch(`${getBaseUrl()}/prodotti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)

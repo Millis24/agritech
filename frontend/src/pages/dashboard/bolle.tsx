@@ -73,7 +73,7 @@ export default function Bolle() {
   const handleDelete = async (id: number) => {
     if (navigator.onLine) {
       try {
-        const response = await fetch(`${getBaseUrl()}/api/bolle/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${getBaseUrl()}/bolle/${id}`, { method: 'DELETE' });
         if (response.ok) {
           await deleteLocalBolla(id); // elimina le bolle online
         } else {
@@ -350,12 +350,12 @@ export default function Bolle() {
           if (navigator.onLine) {
             try {
               const res = bolla.id
-                ? await fetch(`${getBaseUrl()}/api/bolle/${bolla.id}`, {
+                ? await fetch(`${getBaseUrl()}/bolle/${bolla.id}`, {
                     method: 'PUT',
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(bolla)
                   })
-                : await fetch(`${getBaseUrl()}/api/bolle`, {
+                : await fetch(`${getBaseUrl()}/bolle`, {
                     method: 'POST',
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(bolla)

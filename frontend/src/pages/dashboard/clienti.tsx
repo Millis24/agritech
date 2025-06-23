@@ -40,7 +40,7 @@ export default function Clienti() {
   const ricaricaDati = async () => {
     if (navigator.onLine) {
       try {
-        const res = await fetch(`${getBaseUrl()}/api/clienti`);
+        const res = await fetch(`${getBaseUrl()}/clienti`);
         if (!res.ok) throw new Error(`Server risponde con ${res.status}`);
         const datiOnline = await res.json();
         setClienti(datiOnline);
@@ -70,7 +70,7 @@ export default function Clienti() {
   const handleDelete = async (id: number) => {
   if (navigator.onLine) {
       try {
-        const response = await fetch(`${getBaseUrl()}/api/clienti/${id}`, {
+        const response = await fetch(`${getBaseUrl()}/clienti/${id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -112,7 +112,7 @@ export default function Clienti() {
     if (navigator.onLine) {
       try {
         if (isModifica && id !== undefined) {
-          const res = await fetch(`${getBaseUrl()}/api/clienti/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/clienti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
@@ -129,7 +129,7 @@ export default function Clienti() {
             });
           }
         } else {
-          const res = await fetch(`${getBaseUrl()}/api/clienti`, {
+          const res = await fetch(`${getBaseUrl()}/clienti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)

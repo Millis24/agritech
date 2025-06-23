@@ -15,7 +15,7 @@ export default function useProdottiSync() {
       for (const prodotto of daSincronizzare) {
         try {
           const { id, synced, ...data } = prodotto;
-          const res = await fetch(`${getBaseUrl()}/api/prodotti`, {
+          const res = await fetch(`${getBaseUrl()}/prodotti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -33,7 +33,7 @@ export default function useProdottiSync() {
       const eliminati = await getProdottiEliminati();
       for (const { id } of eliminati) {
         try {
-          const res = await fetch(`${getBaseUrl()}/api/prodotti/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/prodotti/${id}`, {
             method: 'DELETE'
           });
           if (res.ok) {
@@ -51,7 +51,7 @@ export default function useProdottiSync() {
 
     const fetchBackendProdotti = async () => {
       try {
-        const res = await fetch(`${getBaseUrl()}/api/prodotti`);
+        const res = await fetch(`${getBaseUrl()}/prodotti`);
         if (!res.ok) return;
         const backendProdotti = await res.json();
         for (const prodotto of backendProdotti) {

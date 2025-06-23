@@ -15,7 +15,7 @@ import { getBaseUrl } from '../lib/getBaseUrl';
  */
 export async function getUserProfile(): Promise<UserProfile> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${getBaseUrl()}/api/user/profile`, {
+  const res = await fetch(`${getBaseUrl()}/user/profile`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export async function getUserProfile(): Promise<UserProfile> {
  */
 export async function updateUserProfile(data: Partial<UserProfile>): Promise<void> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${getBaseUrl()}/api/user/profile`, {
+  const res = await fetch(`${getBaseUrl()}/user/profile`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ export async function updateUserProfile(data: Partial<UserProfile>): Promise<voi
  */
 export async function changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${getBaseUrl()}/api/user/change-password`, {
+  const res = await fetch(`${getBaseUrl()}/user/change-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

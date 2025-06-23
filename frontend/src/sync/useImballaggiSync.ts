@@ -15,7 +15,7 @@ export default function useImballaggiSync() {
       for (const imballaggio of daSincronizzare) {
         try {
           const { id, synced, ...data } = imballaggio;
-          const res = await fetch(`${getBaseUrl()}/api/imballaggi`, {
+          const res = await fetch(`${getBaseUrl()}/imballaggi`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -33,7 +33,7 @@ export default function useImballaggiSync() {
       const eliminati = await getImballaggiEliminati();
       for (const { id } of eliminati) {
         try {
-          const res = await fetch(`${getBaseUrl()}/api/imballaggi/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/imballaggi/${id}`, {
             method: 'DELETE'
           });
           if (res.ok) {
@@ -51,7 +51,7 @@ export default function useImballaggiSync() {
 
     const fetchFromBackendImballaggi = async () => {
       try {
-        const res = await fetch(`${getBaseUrl()}/api/imballaggi`);
+        const res = await fetch(`${getBaseUrl()}/imballaggi`);
         if (!res.ok) return;
         const backendImballaggi = await res.json();
         for (const imballaggio of backendImballaggi) {

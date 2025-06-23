@@ -15,7 +15,7 @@ export default function useClientiSync() {
       for (const cliente of daSincronizzare) {
         try {
           const { id, synced, ...data } = cliente;
-          const res = await fetch(`${getBaseUrl()}/api/clienti`, {
+          const res = await fetch(`${getBaseUrl()}/clienti`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -33,7 +33,7 @@ export default function useClientiSync() {
       const eliminati = await getClientiEliminati();
       for (const { id } of eliminati) {
         try {
-          const res = await fetch(`${getBaseUrl()}/api/clienti/${id}`, {
+          const res = await fetch(`${getBaseUrl()}/clienti/${id}`, {
             method: 'DELETE'
           });
           if (res.ok) {
@@ -51,7 +51,7 @@ export default function useClientiSync() {
 
     const fetchBackendClienti = async () => {
       try {
-        const res = await fetch(`${getBaseUrl()}/api/clienti`);
+        const res = await fetch(`${getBaseUrl()}/clienti`);
         if (!res.ok) return;
         const backendClienti = await res.json();
         for (const cliente of backendClienti) {
