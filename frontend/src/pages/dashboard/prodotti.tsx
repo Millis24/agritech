@@ -117,7 +117,12 @@ export default function Prodotti() {
             const aggiornato = JSON.parse(body);
             await saveProdotto({ ...aggiornato, synced: true });
           } else {
-            alert('❌ Errore aggiornamento');
+            const testoErr = await res.text();
+            await Swal.fire({
+              icon: 'error',
+              title: 'Errore aggiornamento',
+              text: testoErr || 'Impossibile aggiornare il cliente.'
+            });
           }
         } else {
           const res = await fetch(`${getBaseUrl()}/prodotti`, {
@@ -159,14 +164,14 @@ export default function Prodotti() {
 
       await saveProdotto(offline);
       await Swal.fire({
-                icon: 'warning',
-                title: isModifica
-                  ? 'Modifica salvata offline'
-                  : 'Prodotto salvato offline',
-                text: 'Le modifiche verranno sincronizzate quando torni online.',
-                timer: 1400,
-                showConfirmButton: false,
-              });
+        icon: 'warning',
+        title: isModifica
+          ? 'Modifica salvata offline'
+          : 'Prodotto salvato offline',
+        text: 'Le modifiche verranno sincronizzate quando torni online.',
+        timer: 1400,
+        showConfirmButton: false,
+      });
     }
 
     const locali = await getAllProdotti();

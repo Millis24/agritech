@@ -91,8 +91,10 @@ export default function AddClienteDialog({ open, onClose, onSave, cliente }: Pro
     });
     if (!result.isConfirmed) return;
 
-    await onSave(data);
-
+    await onSave({
+      ...data,
+      ...(cliente?.id !== undefined ? { id: cliente.id } : {})
+    });
     setData({ ...data });
 
     await Swal.fire({

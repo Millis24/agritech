@@ -106,7 +106,7 @@ export default function Clienti() {
   };
 
   const handleSave = async (cliente: Partial<Cliente>): Promise<Cliente> => {
-    const isModifica = !!editing;
+    const isModifica = cliente.id !== undefined && cliente.id !== null;
     const { id, createdAt, synced, ...dataToSend } = cliente;
 
     if (navigator.onLine) {
@@ -117,8 +117,9 @@ export default function Clienti() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
           });
+          const body = await res.text();
           if (res.ok) {
-            const aggiornato = await res.json();
+            const aggiornato = JSON.parse(body);
             await saveCliente({ ...aggiornato, synced: true });
           } else {
             const testoErr = await res.text();
@@ -134,8 +135,11 @@ export default function Clienti() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
           });
+
+          const body = await res.text();
+
           if (res.ok) {
-            const nuovo = await res.json();
+            const nuovo = JSON.parse(body);
             await saveCliente({ ...nuovo, synced: true });
           } else {
             const testoErr = await res.text();
@@ -162,15 +166,15 @@ export default function Clienti() {
       } as Cliente;
 
       await saveCliente(offline);
-        await Swal.fire({
-          icon: 'warning',
-          title: isModifica
-            ? 'Modifica salvata offline'
-            : 'Cliente salvato offline',
-          text: 'Le modifiche verranno sincronizzate quando torni online.',
-          timer: 1400,
-          showConfirmButton: false,
-        });
+      await Swal.fire({
+        icon: 'warning',
+        title: isModifica
+          ? 'Modifica salvata offline'
+          : 'Cliente salvato offline',
+        text: 'Le modifiche verranno sincronizzate quando torni online.',
+        timer: 1400,
+        showConfirmButton: false,
+      });
     }
 
     const locali = await getAllClienti();
