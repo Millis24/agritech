@@ -71,8 +71,9 @@ export default function Layout() {
         {navItems.map(({ text, icon, path }) => (
           <ListItemButton
             key={text}
+            component="a"
+            href={path}
             selected={location.pathname.startsWith(path)}
-            onClick={() => navigate(path)}
           >
             <ListItemIcon sx={{ color: 'inherit', backgroundColor: '#8a92ff', display: 'flex', justifyContent: 'center', padding: '.5em', borderRadius: '11px', minWidth: 'auto', marginRight: '1em', boxShadow: '0px 4px 10px 0px #00000045' }}>
               {icon}

@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
-import { AppBar, Box, Toolbar, Typography, Button, Stack } from '@mui/material';
-import InstallPWAButton from '../components/installPWAButton.tsx';
+import { AppBar, Box, Toolbar, Typography, Stack } from '@mui/material';
+//import InstallPWAButton from '../components/installPWAButton.tsx';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -31,16 +31,16 @@ export default function DashboardLayout() {
             <AgricultureIcon sx={{ fontSize: 40 }}/>
           </Typography>
           <Stack direction="row" spacing={2}>
-            <Button color="inherit" component={Link} to={`/dashboard/clienti`}>Clienti</Button>
-            <Button color="inherit" component={Link} to={`/dashboard/prodotti`}>Prodotti</Button>
-            <Button color="inherit" component={Link} to={`/dashboard/imballaggi`}>Imballaggi</Button>
-            <Button color="inherit" component={Link} to={`/dashboard/bolle`}>Bolle</Button>
-            <Button color="inherit" component={Link} to={`/dashboard/report`}>Report</Button>
-            <Button color="inherit" component={Link} to={`/dashboard/impostazioni`}>Impostazioni</Button>
-            <InstallPWAButton />
-            <Button variant="outlined" onClick={() => alert('Qui ci sarà il prompt di installazione')} sx={{color: '#fff'}}>
+            <a href="/dashboard/clienti" style={{ color: 'inherit', textDecoration: 'none' }}>Clienti</a>
+            <a href="/dashboard/prodotti" style={{ color: 'inherit', textDecoration: 'none' }}>Prodotti</a>
+            <a href="/dashboard/imballaggi" style={{ color: 'inherit', textDecoration: 'none' }}>Imballaggi</a>
+            <a href="/dashboard/bolle" style={{ color: 'inherit', textDecoration: 'none' }}>Bolle</a>
+            <a href="/dashboard/report" style={{ color: 'inherit', textDecoration: 'none' }}>Report</a>
+            <a href="/dashboard/impostazioni" style={{ color: 'inherit', textDecoration: 'none' }}>Impostazioni</a>
+            {/* <InstallPWAButton /> */}
+            {/* <Button variant="outlined" onClick={() => alert('Qui ci sarà il prompt di installazione')} sx={{color: '#fff'}}>
               Installa App (debug)
-            </Button>
+            </Button> */}
             <ExitToAppIcon onClick={logout} sx={{ fontSize: 30 }}/>
           </Stack>
         </Toolbar>
