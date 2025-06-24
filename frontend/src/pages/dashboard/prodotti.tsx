@@ -181,15 +181,15 @@ export default function Prodotti() {
   };
 
     // funzione per cancellare in massa
-  const handleBulkDeleteProdotti = async () => {
-    for (const id of rowSelectionModel.ids) {
-      await handleDelete(Number(id));
-    }
-    // poi ricarichi i dati
-    await ricaricaDati();
-    // pulisci la selezione
-    setRowSelectionModel({ type: 'include', ids: new Set() });
-  };
+  // const handleBulkDeleteProdotti = async () => {
+  //   for (const id of rowSelectionModel.ids) {
+  //     await handleDelete(Number(id));
+  //   }
+  //   // poi ricarichi i dati
+  //   await ricaricaDati();
+  //   // pulisci la selezione
+  //   setRowSelectionModel({ type: 'include', ids: new Set() });
+  // };
 
   // filtri
   // const prodottiFiltrati = prodotti.filter(p =>
@@ -302,7 +302,7 @@ export default function Prodotti() {
       {/* Tabella Prodotti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
         <Stack direction="row" spacing={1} mb={1}>
-          <Button
+          {/* <Button
             className='btn-elimina-selezionati'
             variant="outlined"
             color="error"
@@ -324,7 +324,7 @@ export default function Prodotti() {
           }}
           >
             Elimina selezionati ({rowSelectionModel.ids.size})
-          </Button>
+          </Button> */}
         </Stack>
         <DataGrid
           rows={prodottiFiltrati}

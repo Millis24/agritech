@@ -18,10 +18,10 @@ import '../App.scss';
 const drawerWidth = 240;
 
 const navItems = [
+  { text: 'Bolle', icon: <Description />, path: '/dashboard/bolle' },
   { text: 'Clienti', icon: <PeopleIcon />, path: '/dashboard/clienti' },
   { text: 'Prodotti', icon: <InventoryIcon />, path: '/dashboard/prodotti' },
   { text: 'Imballaggi', icon: <LocalShippingIcon />, path: '/dashboard/imballaggi' },
-  { text: 'Bolle', icon: <Description />, path: '/dashboard/bolle' },
   { text: 'Report', icon: <AssessmentIcon />, path: '/dashboard/report' },
   { text: 'Impostazioni', icon: <SettingsIcon />, path: '/dashboard/impostazioni' },
 ];

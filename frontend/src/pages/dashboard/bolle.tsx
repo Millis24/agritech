@@ -40,6 +40,10 @@ export default function Bolle() {
   const [imballaggi, setImballaggi] = useState<Imballaggio[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Stati per modalità speciali bolla
+  const [isBollaBis, setIsBollaBis] = useState(false);
+  const [isBollaGenerica, setIsBollaGenerica] = useState(false);
+
   // ricarica dati bolla -> dovrebbe anche sistemare il problema dell'eliminazione offline/online
   const ricaricaDati = async () => {
     const [bolleData, clientiData, prodottiData, imballaggiData] = await Promise.all([
@@ -108,15 +112,15 @@ export default function Bolle() {
   };
 
   // funzione per cancellare in massa
-  const handleBulkDeleteBolle = async () => {
-    for (const id of rowSelectionModel.ids) {
-      await handleDelete(Number(id));
-    }
-    // poi ricarichi i dati
-    await ricaricaDati();
-    // pulisci la selezione
-    setRowSelectionModel({ type: 'include', ids: new Set() });
-  };
+  // const handleBulkDeleteBolle = async () => {
+  //   for (const id of rowSelectionModel.ids) {
+  //     await handleDelete(Number(id));
+  //   }
+  //   // poi ricarichi i dati
+  //   await ricaricaDati();
+  //   // pulisci la selezione
+  //   setRowSelectionModel({ type: 'include', ids: new Set() });
+  // };
 
   // filtri per tabella bolle
   const [filterNumero, setFilterNumero] = useState<string>('');
@@ -125,34 +129,49 @@ export default function Bolle() {
   const [dateFrom, setDateFrom] = useState<string>(''); // ISO yyyy-MM-dd
   const [dateTo, setDateTo]   = useState<string>('');
   
+  // funzione per formattare le date delle bolle
+  const formattaData = (data: string) => {
+    const d = new Date(data);
+    if (isNaN(d.getTime())) return '';
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
   // funzione per i filtri da mettere in <DataGrid>
-  // filtraggio combinato
-  const filteredBolle = bolle.filter((b) => {
-    // filtro per numero bolla
-    const matchNumero = filterNumero
-      ? b.numeroBolla.toString().includes(filterNumero)
-      : true;
-    // filtro per cliente, se vuoto passa tutto
-    const byCliente = filterCliente
-      ? b.destinatarioNome.toLowerCase().includes(filterCliente.toLowerCase())
-      : true;
+  // filtraggio combinato e aggiunta campo dataOraFormatted
+  const filteredBolle = bolle
+    .filter((b) => {
+      const matchNumero = filterNumero
+        ? b.numeroBolla.toString().includes(filterNumero)
+        : true;
+      const byCliente = filterCliente
+        ? b.destinatarioNome.toLowerCase().includes(filterCliente.toLowerCase())
+        : true;
+      const dataBolla = new Date(b.dataOra);
+      const fromOK = dateFrom
+        ? dataBolla >= new Date(dateFrom)
+        : true;
+      const toOK = dateTo
+        ? dataBolla <= new Date(new Date(dateTo).setHours(23, 59, 59, 999))
+        : true;
 
-    // filtro per date
-    const dataBolla = new Date(b.dataOra);
-    const fromOK = dateFrom
-      ? dataBolla >= new Date(dateFrom)
-      : true;
-    const toOK = dateTo
-      ? dataBolla <= new Date(new Date(dateTo).setHours(23, 59, 59, 999))
-      : true;
-
-    return matchNumero && byCliente && fromOK && toOK;
-  });
+      return matchNumero && byCliente && fromOK && toOK;
+    })
+    .map(b => ({
+      ...b,
+      dataOraFormatted: formattaData(b.dataOra)
+    }));
 
   // tabella bolle
   const columns: GridColDef[] = [
     { field: 'numeroBolla', headerName: 'Numero', width: 100 },
-    { field: 'dataOra', headerName: 'Data', width: 150 },
+    {
+      field: 'dataOraFormatted',
+      headerName: 'Data',
+      width: 150
+    },
     { field: 'destinatarioNome', headerName: 'Destinatario', width: 200 },
     { field: 'indirizzoDestinazione', headerName: 'Indirizzo di Destinazione', width: 250 },
     { field: 'causale', headerName: 'Causale', width: 150 },
@@ -163,6 +182,10 @@ export default function Bolle() {
       renderCell: params => (
         <>
           <IconButton onClick={() => { setEditing(params.row); setOpen(true); }}><EditIcon/></IconButton>
+          {/* Bolla Bis accanto alla matita */}
+          <IconButton onClick={() => { setEditing(params.row); setIsBollaBis(true); setOpen(true); }}>
+            <Typography variant="caption" fontWeight="bold">Bis</Typography>
+          </IconButton>
           <IconButton onClick={() => {
             Swal.fire({
                 title: `Eliminare la bolla n. ${params.row.numeroBolla}?`,
@@ -238,15 +261,20 @@ export default function Bolle() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" sx={{fontWeight: 'bold'}}>Gestione Bolle</Typography>
-        <Button variant="contained" className='btn'
-          onClick={() => {
-            if (clienti.length && prodotti.length && imballaggi.length) {
-              setEditing(null); setOpen(true);
-            } else {
-              alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
-            }
-          }}
-        > Aggiungi Bolla</Button>
+        <Box display="flex" gap={2}>
+          <Button variant="contained" className='btn'
+            onClick={() => {
+              if (clienti.length && prodotti.length && imballaggi.length) {
+                setEditing(null); setOpen(true);
+              } else {
+                alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
+              }
+            }}
+          > Aggiungi Bolla</Button>
+          <Button variant="outlined" className='btn' onClick={() => { setIsBollaGenerica(true); setEditing(null); setOpen(true); }}>
+            Bolla Generica
+          </Button>
+        </Box>
       </Box>
 
       {/* Filtri  */}
@@ -260,9 +288,9 @@ export default function Bolle() {
           onOpen={() => setOpenFilterCliente(true)}
           onClose={() => setOpenFilterCliente(false)}
           options={clienti}
-          getOptionLabel={c => `${c.id} - ${c.nomeCliente}`}
-          value={clienti.find(c => c.nomeCliente === filterCliente) || null}
-          onChange={(_, newValue) => setFilterCliente(newValue ? newValue.nomeCliente : '')}
+          getOptionLabel={c => `${c.id} - ${c.nomeCliente} ${c.cognomeCliente} `}
+          value={clienti.find(c => `${c.nomeCliente} ${c.cognomeCliente}` === filterCliente) || null}
+          onChange={(_, newValue) => setFilterCliente(newValue ? `${newValue.nomeCliente} ${newValue.cognomeCliente}` : '')}
           autoHighlight
           blurOnSelect
           renderInput={params => (
@@ -288,7 +316,7 @@ export default function Bolle() {
 
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
         <Stack direction="row" display='flex' justifyContent='space-between' spacing={1} mb={1}>
-          <Button
+          {/* <Button
             className='btn-elimina-selezionati'
             variant="outlined"
             color="error"
@@ -310,7 +338,7 @@ export default function Bolle() {
           }}
           >
             Elimina selezionati ({rowSelectionModel.ids.size})
-          </Button>
+          </Button> */}
 
           <Button onClick={exportSelectedCSV} disabled={rowSelectionModel.ids.size === 0}>
             <FileDownloadIcon color="success"/>
@@ -344,7 +372,7 @@ export default function Bolle() {
 
       <AddBollaDialog
         open={open}
-        onClose={() => { setOpen(false); setEditing(null); }}
+        onClose={() => { setOpen(false); setEditing(null); setIsBollaBis(false); setIsBollaGenerica(false); }}
         bolla={editing}
         onSave={async bolla => {
           if (navigator.onLine) {
@@ -381,7 +409,16 @@ export default function Bolle() {
         clienti={clienti}
         prodotti={prodotti}
         imballaggi={imballaggi}
-        numeroBolla={bolle.length > 0 ? Math.max(...bolle.map(b=>b.numeroBolla))+1 : 1}
+                numeroBolla={
+          (() => {
+            const numeriBolle = bolle
+              .map(b => b.numeroBolla)
+              .filter(nb => typeof nb === 'number') as number[];
+            return numeriBolle.length > 0 ? Math.max(...numeriBolle) + 1 : 1;
+          })()
+        }
+        isBollaBis={isBollaBis}
+        isBollaGenerica={isBollaGenerica}
       />
     </Box>
   );

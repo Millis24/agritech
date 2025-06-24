@@ -21,10 +21,12 @@ interface BollaDialogProps {
   prodotti: Prodotto[];
   imballaggi: Imballaggio[];
   numeroBolla: number;
+  isBollaBis: boolean;
+  isBollaGenerica: boolean;
 }
 
 export default function AddBollaDialog({
-  open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla 
+  open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla, isBollaBis, isBollaGenerica
 }: BollaDialogProps) {
   const [destinatario, setDestinatario] = useState({
     nome: '', cognome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: ''
@@ -204,22 +206,23 @@ useEffect(() => {
   };
 
   async function handleSubmit(){
-    const destinatarioInd = destTipo==='sede'
-      ? `${destinatario.via} ${destinatario.numeroCivico}`
-      : indirizzoDestinazione;
+    const numeroFinale = isBollaBis && bolla
+    ? `${bolla.numeroBolla}/bis`
+    : (bolla?.numeroBolla ?? numeroBolla);
+    
     const baseBolla = {
-      numeroBolla: bolla?.numeroBolla ?? numeroBolla,
+      numeroBolla: numeroFinale,
       dataOra: new Date(dataOra).toISOString(),
-      destinatarioNome: destinatario.nome,
+      destinatarioNome: isBollaGenerica ? destinatario.nome : selectedClienteObj?.ragioneSociale || destinatario.nome,
       destinatarioCognome: destinatario.cognome,
-      destinatarioVia:destinatario.via,
-      destinatarioNumeroCivico:destinatario.numeroCivico,
+      destinatarioVia: destinatario.via,
+      destinatarioNumeroCivico: destinatario.numeroCivico,
       destinatarioEmail: destinatario.email,
       destinatarioTelefonoFisso: destinatario.telefonoFisso,
       destinatarioTelefonoCell: destinatario.telefonoCell,
       destinatarioPartitaIva: destinatario.partitaIva,
       destinatarioCodiceSDI: destinatario.codiceSDI,
-      indirizzoDestinazione: destinatarioInd,
+      indirizzoDestinazione: destTipo === 'sede' ? `${destinatario.via} ${destinatario.numeroCivico}` : indirizzoDestinazione,
       causale,
       prodotti: JSON.stringify(prodottiBolla),
       daTrasportare: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: p.numeroColli }))),
@@ -230,10 +233,10 @@ useEffect(() => {
       synced: false
     };
 
-    // solo se c’è un ID valido
-    const nuovaBolla = (bolla && bolla.id !== undefined)
+    const nuovaBolla = (!isBollaBis && bolla && bolla.id !== undefined)
       ? { ...baseBolla, id: bolla.id }
       : baseBolla;
+
     console.log('🚀 submit bolla', nuovaBolla);
 
     // chiede conferma all’utente
@@ -275,7 +278,13 @@ useEffect(() => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth disableEnforceFocus disableAutoFocus className="custom-dialog">
-      <DialogTitle>{bolla ? 'Modifica Bolla' : 'Nuova Bolla'}</DialogTitle>
+      <DialogTitle>
+        {isBollaGenerica
+          ? 'Nuova Bolla Generica'
+          : isBollaBis
+            ? 'Bolla Bis'
+            : bolla ? 'Modifica Bolla' : 'Nuova Bolla'}
+      </DialogTitle>
       <DialogContent>
         <form onKeyDown={handleEnterKeyDown} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <Grid container spacing={4}>
@@ -315,7 +324,13 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="N. DDT"
-                  value={bolla ? bolla.numeroBolla : numeroBolla}
+                  value={
+                      isBollaBis && bolla
+                        ? `${bolla.numeroBolla}/bis`
+                        : bolla
+                          ? bolla.numeroBolla
+                          : numeroBolla
+                    }
                   InputProps={{ readOnly: true }}
                 />
               </Grid>
@@ -413,9 +428,10 @@ useEffect(() => {
                   fullWidth
                   label="Nome"
                   value={destinatario.nome}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  onChange={(e) => setDestinatario({ ...destinatario, nome: e.target.value })}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
               </Grid>
               {/* Cognome */}
@@ -425,9 +441,10 @@ useEffect(() => {
                   fullWidth
                   label="Cognome"
                   value={destinatario.cognome}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  onChange={(e) => setDestinatario({ ...destinatario, cognome: e.target.value })}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
               </Grid>
               {/* Ragione Sociale */}
@@ -436,10 +453,13 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Ragione Sociale"
-                  value={selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || ''}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  value={isBollaGenerica
+                    ? (selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || '')
+                    : (selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || '')}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
+                  onChange={undefined}
                 />
               </Grid>
               {/* Via */}
@@ -449,9 +469,10 @@ useEffect(() => {
                   fullWidth
                   label="Via"
                   value={destinatario.via}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  onChange={(e) => setDestinatario({ ...destinatario, via: e.target.value })}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
               </Grid>
               {/* Numero civico */}
@@ -461,9 +482,10 @@ useEffect(() => {
                   fullWidth
                   label="Numero"
                   value={destinatario.numeroCivico}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  onChange={(e) => setDestinatario({ ...destinatario, numeroCivico: e.target.value })}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
               </Grid>
               {/* CAP */}
@@ -472,10 +494,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="CAP"
-                  value={selectedClienteObj?.cap || ''}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  value={isBollaGenerica ? (selectedClienteObj?.cap || '') : (selectedClienteObj?.cap || '')}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
+                  onChange={undefined}
                 />
               </Grid>
               {/* Paese */}
@@ -484,10 +507,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Paese"
-                  value={selectedClienteObj?.paese || ''}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  value={isBollaGenerica ? (selectedClienteObj?.paese || '') : (selectedClienteObj?.paese || '')}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
+                  onChange={undefined}
                 />
               </Grid>
               {/* Provincia */}
@@ -496,10 +520,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Provincia"
-                  value={selectedClienteObj?.provincia || ''}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  value={isBollaGenerica ? (selectedClienteObj?.provincia || '') : (selectedClienteObj?.provincia || '')}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
+                  onChange={undefined}
                 />
               </Grid>
               {/* Partita IVA */}
@@ -508,10 +533,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Partita IVA"
-                  value={selectedClienteObj?.partitaIva || ''}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  value={destinatario.partitaIva}
+                  onChange={(e) => setDestinatario({ ...destinatario, partitaIva: e.target.value })}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
               </Grid>
               {/* Telefono */}
@@ -520,14 +546,14 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Telefono"
-                  value={selectedClienteObj?.telefonoCell || selectedClienteObj?.telefonoFisso || ''}
-                  variant="filled"
-                  InputProps={{ readOnly: true, disableUnderline: true }}
-                  inputProps={{ tabIndex: -1 }}
+                  value={destinatario.telefonoCell || destinatario.telefonoFisso}
+                  onChange={(e) => setDestinatario({ ...destinatario, telefonoCell: e.target.value })}
+                  variant={isBollaGenerica ? "standard" : "filled"}
+                  InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
+                  inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
               </Grid>
-               
-              </Grid>
+            </Grid>
               
           </Grid>
         </Grid>

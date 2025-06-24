@@ -186,15 +186,15 @@ export default function Clienti() {
   };
 
   // funzione per cancellare in massa
-  const handleBulkDeleteClienti = async () => {
-    for (const id of Array.from(rowSelectionModel.ids) as GridRowId[]) {
-      await handleDelete(Number(id));
-    }
-    // poi ricarichi i dati
-    await ricaricaDati();
-    // pulisci la selezione
-    setRowSelectionModel({ type: 'include', ids: new Set() });
-  };
+  // const handleBulkDeleteClienti = async () => {
+  //   for (const id of Array.from(rowSelectionModel.ids) as GridRowId[]) {
+  //     await handleDelete(Number(id));
+  //   }
+  //   // poi ricarichi i dati
+  //   await ricaricaDati();
+  //   // pulisci la selezione
+  //   setRowSelectionModel({ type: 'include', ids: new Set() });
+  // };
 
   const exportSelectedClientsCSV = async () => {
     // prendi solo gli ID selezionati
@@ -247,17 +247,17 @@ export default function Clienti() {
 
   // colonne tabella
   const columns: GridColDef[] = [
-    { field: 'nomeCliente', headerName: 'Nome', width: 150 },
-    { field: 'cognomeCliente', headerName: 'Cognome', width: 150 },
+    { field: 'nomeCliente', headerName: 'Nome', width: 100 },
+    { field: 'cognomeCliente', headerName: 'Cognome', width: 100 },
     { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
-    { field: 'via', headerName: 'Via', width: 150 },
-    { field: 'numeroCivico', headerName: 'Civico', width: 100 },
-    { field: 'paese', headerName: 'Paese', width: 150 },
-    { field: 'provincia', headerName: 'Provincia', width: 100 },
-    { field: 'cap', headerName: 'CAP', width: 100 },
+    // { field: 'via', headerName: 'Via', width: 150 },
+    // { field: 'numeroCivico', headerName: 'Civico', width: 100 },
+    // { field: 'paese', headerName: 'Paese', width: 150 },
+    // { field: 'provincia', headerName: 'Provincia', width: 100 },
+    // { field: 'cap', headerName: 'CAP', width: 100 },
     // { field: 'partitaIva', headerName: 'P.IVA', width: 150 },
     { field: 'telefonoCell', headerName: 'Telefono', width: 150 },
-    { field: 'email', headerName: 'Email', width: 200 },
+    { field: 'email', headerName: 'Email', width: 150 },
     {
       field: 'actions',
       headerName: 'Azioni',
@@ -323,7 +323,7 @@ export default function Clienti() {
           open={openFilterCliente}
           onOpen={() => setOpenFilterCliente(true)}
           onClose={() => setOpenFilterCliente(false)}
-          options={clienti.map(c => `${c.id} - ${c.nomeCliente}`)}
+          options={clienti.map(c => `${c.id} - ${c.nomeCliente} ${c.cognomeCliente}`)}
           inputValue={query}
           value={query}
           onInputChange={(_, newInput) => setQuery(newInput)}
@@ -370,7 +370,7 @@ export default function Clienti() {
       {/* Tabella Clienti */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
         <Stack direction="row" display='flex' justifyContent='space-between'  spacing={1} mb={1}>
-          <Button
+          {/* <Button
             className='btn-elimina-selezionati'
             variant="outlined"
             color="error"
@@ -392,7 +392,7 @@ export default function Clienti() {
           }}
           >
             Elimina selezionati ({rowSelectionModel.ids.size})
-          </Button>
+          </Button> */}
 
           <Button onClick={exportSelectedClientsCSV} disabled={rowSelectionModel.ids.size === 0}>
             <FileDownloadIcon color="success"/>

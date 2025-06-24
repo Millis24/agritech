@@ -164,15 +164,15 @@ export default function Imballaggi() {
   };
 
     // funzione per cancellare in massa
-  const handleBulkDeleteImballaggi = async () => {
-    for (const id of rowSelectionModel.ids) {
-      await handleDelete(Number(id));
-    }
-    // poi ricarichi i dati
-    await ricaricaDati();
-    // pulisci la selezione
-    setRowSelectionModel({ type: 'include', ids: new Set() });
-  };
+  // const handleBulkDeleteImballaggi = async () => {
+  //   for (const id of rowSelectionModel.ids) {
+  //     await handleDelete(Number(id));
+  //   }
+  //   // poi ricarichi i dati
+  //   await ricaricaDati();
+  //   // pulisci la selezione
+  //   setRowSelectionModel({ type: 'include', ids: new Set() });
+  // };
   
 
   // filtri
@@ -206,7 +206,7 @@ export default function Imballaggi() {
     { field: 'prezzo', headerName: 'Prezzo', width: 150 },
     { field: 'dimensioni', headerName: 'Dimensioni', width: 150 },
     { field: 'capacitaKg', headerName: 'Capacità (Kg)', width: 130 },
-    { field: 'note', headerName: 'Note', flex: 1 },
+    // { field: 'note', headerName: 'Note', flex: 1 },
     {
       field: 'actions',
       headerName: 'Azioni',
@@ -283,7 +283,7 @@ export default function Imballaggi() {
       {/* Tabella Imballaggi */}
       <div style={{ minHeight: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))' }}>
          <Stack direction="row" spacing={1} mb={1}>
-            <Button
+            {/* <Button
               className='btn-elimina-selezionati'
               variant="outlined"
               color="error"
@@ -305,7 +305,7 @@ export default function Imballaggi() {
             }}
             >
               Elimina selezionati ({rowSelectionModel.ids.size})
-            </Button>
+            </Button> */}
           </Stack>
         <DataGrid
           rows={imballaggiFiltrati}

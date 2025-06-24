@@ -53,11 +53,12 @@ export async function clearBolleEliminate() {
 export interface Bolla {
 
   id?: number;
-  numeroBolla: number;
+  numeroBolla: number | string;
   dataOra: string;
 
   destinatarioNome: string;
   destinatarioCognome: string;
+  // destinatarioRagioneSociale: string;
   destinatarioVia?: string;
   destinatarioNumeroCivico?: string;
   destinatarioEmail: string;
