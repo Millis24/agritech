@@ -513,7 +513,7 @@ useEffect(() => {
               {/* Nome */}
               <Grid size={6}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Nome"
                   value={destinatario.nome}
@@ -526,7 +526,7 @@ useEffect(() => {
               {/* Cognome */}
               <Grid size={6}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Cognome"
                   value={destinatario.cognome}
@@ -539,7 +539,7 @@ useEffect(() => {
               {/* Ragione Sociale */}
               <Grid size={12}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Ragione Sociale"
                   value={destinatario.ragioneSociale || ''}
@@ -552,7 +552,7 @@ useEffect(() => {
               {/* Via */}
               <Grid size={6}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Via"
                   value={destinatario.via}
@@ -565,7 +565,7 @@ useEffect(() => {
               {/* Numero civico */}
               <Grid size={6}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Numero"
                   value={destinatario.numeroCivico}
@@ -578,7 +578,7 @@ useEffect(() => {
               {/* CAP */}
               <Grid size={4}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="CAP"
                   value={destinatario.cap || ''}
@@ -591,7 +591,7 @@ useEffect(() => {
               {/* Paese */}
               <Grid size={4}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Paese"
                   value={destinatario.paese || ''}
@@ -604,7 +604,7 @@ useEffect(() => {
               {/* Provincia */}
               <Grid size={4}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Provincia"
                   value={destinatario.provincia || ''}
@@ -617,7 +617,7 @@ useEffect(() => {
               {/* Partita IVA */}
               <Grid size={6}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Partita IVA"
                   value={destinatario.partitaIva}
@@ -630,7 +630,7 @@ useEffect(() => {
               {/* Telefono */}
               <Grid size={6}>
                 <TextField
-                  className='input-tondi'
+                  className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Telefono"
                   value={destinatario.telefonoCell || destinatario.telefonoFisso}
