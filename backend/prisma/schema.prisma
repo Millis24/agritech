@@ -54,7 +54,7 @@ model Prodotto {
 
 model Bolla {
   id                     Int      @id @default(autoincrement())
-  numeroBolla            Int      @unique
+  numeroBolla            String   @unique   
   dataOra                DateTime
   destinatarioNome       String
   destinatarioCognome    String

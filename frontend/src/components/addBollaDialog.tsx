@@ -78,28 +78,49 @@ export default function AddBollaDialog({
     }
   };
 
-  useEffect(() => {
-    if (selectedClienteId !== '') {
-      const cliente = clienti.find(c => c.id === selectedClienteId);
-      if (cliente) {
-        setDestinatario({
-          nome: cliente.nomeCliente,
-          cognome: cliente.cognomeCliente,
-          via: cliente.via,
-          numeroCivico: cliente.numeroCivico,
-          email: cliente.email,
-          telefonoFisso: cliente.telefonoFisso,
-          telefonoCell: cliente.telefonoCell,
-          partitaIva: cliente.partitaIva,
-          codiceSDI: cliente.codiceSDI
-        });
-      }
-    }
-  }, [selectedClienteId, clienti]);
 
 useEffect(() => {
+  if (bolla && isBollaBis) {
+    const cli = clienti.find(
+      c =>
+        c.nomeCliente.toLowerCase().trim() ===
+        bolla.destinatarioNome.toLowerCase().trim()
+    );
+    if (cli) {
+      setSelectedClienteId(cli.id);
+      setDestinatario({
+        nome: cli.nomeCliente,
+        cognome: cli.cognomeCliente || '',
+        via: cli.via,
+        numeroCivico: cli.numeroCivico,
+        email: cli.email,
+        telefonoFisso: cli.telefonoFisso,
+        telefonoCell: cli.telefonoCell,
+        partitaIva: cli.partitaIva,
+        codiceSDI: cli.codiceSDI
+      });
+    }
+    setDataOra(new Date().toISOString().slice(0, 16));
+    setDestTipo('sede');
+    setIndirizzoDestinazione(bolla.indirizzoDestinazione);
+    setCausale(bolla.causale);
+    setConsegnaACarico(bolla.consegnaACarico);
+    setVettore(bolla.vettore);
+    setProdottiBolla([{
+      nomeProdotto: '',
+      qualita: '',
+      prezzo: 0,
+      nomeImballaggio: '',
+      prezzoImballaggio: '',
+      numeroColli: 0,
+      pesoLordo: 0,
+      pesoNetto: 0,
+      totKgSpediti: 0,
+    }]);
+    return; // impedisce il reset sotto
+  }
+
   if (bolla) {
-    // restore selected cliente by matching name
     if (bolla.destinatarioNome) {
       const cli = clienti.find(c => c.nomeCliente === bolla.destinatarioNome);
       if (cli) {
@@ -207,8 +228,8 @@ useEffect(() => {
 
   async function handleSubmit(){
     const numeroFinale = isBollaBis && bolla
-    ? `${bolla.numeroBolla}/bis`
-    : (bolla?.numeroBolla ?? numeroBolla);
+      ? `${bolla.numeroBolla}/bis`
+      : (bolla?.numeroBolla?.toString() ?? numeroBolla.toString());
     
     const baseBolla = {
       numeroBolla: numeroFinale,
@@ -351,7 +372,35 @@ useEffect(() => {
                   options={clienti}
                   getOptionLabel={(option) => `${option.id} - ${option.nomeCliente}`}
                   value={clienti.find(c => c.id === selectedClienteId) || null}
-                  onChange={(_, newValue) => setSelectedClienteId(newValue ? newValue.id : '')}
+                  onChange={(_, newValue) => {
+                    if (newValue) {
+                      setSelectedClienteId(newValue.id);
+                      setDestinatario({
+                        nome: newValue.nomeCliente,
+                        cognome: newValue.cognomeCliente,
+                        via: newValue.via,
+                        numeroCivico: newValue.numeroCivico,
+                        email: newValue.email,
+                        telefonoFisso: newValue.telefonoFisso,
+                        telefonoCell: newValue.telefonoCell,
+                        partitaIva: newValue.partitaIva,
+                        codiceSDI: newValue.codiceSDI
+                      });
+                    } else {
+                      setSelectedClienteId('');
+                      setDestinatario({
+                        nome: '',
+                        cognome: '',
+                        via: '',
+                        numeroCivico: '',
+                        email: '',
+                        telefonoFisso: '',
+                        telefonoCell: '',
+                        partitaIva: '',
+                        codiceSDI: ''
+                      });
+                    }
+                  }}
                   open={openCliente}
                   onOpen={() => setOpenCliente(true)}
                   onClose={() => setOpenCliente(false)}

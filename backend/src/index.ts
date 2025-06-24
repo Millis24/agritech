@@ -318,8 +318,8 @@ app.post('/api/bolle', async (req, res) => {
     } = req.body;
 
     // Controllo duplicati (numeroBolla è unique)
-    const esiste = await prisma.bolla.findUnique({
-      where: { numeroBolla: data.numeroBolla }
+    const esiste = await prisma.bolla.findFirst({
+      where: { numeroBolla: String(data.numeroBolla) }
     });
     if (esiste) {
       return res.status(409).json({ error: 'Bolla già esistente' });
