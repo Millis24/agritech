@@ -173,12 +173,12 @@ export default function Bolle() {
       width: 150
     },
     { field: 'destinatarioNome', headerName: 'Destinatario', width: 200 },
-    { field: 'indirizzoDestinazione', headerName: 'Indirizzo di Destinazione', width: 250 },
+    { field: 'indirizzoDestinazione', headerName: 'Indirizzo di Destinazione', width: 200 },
     { field: 'causale', headerName: 'Causale', width: 150 },
     {
       field: 'actions',
       headerName: 'Azioni',
-      width: 150,
+      width: 200,
       renderCell: params => (
         <>
           <IconButton onClick={() => { setEditing(params.row); setOpen(true); }}><EditIcon/></IconButton>
@@ -412,8 +412,11 @@ export default function Bolle() {
                 numeroBolla={
           (() => {
             const numeriBolle = bolle
-              .map(b => b.numeroBolla)
-              .filter(nb => typeof nb === 'number') as number[];
+              .map(b => {
+                const numero = b.numeroBolla.toString().split('/')[0];
+                return parseInt(numero, 10) || 0;
+              })
+              .filter(nb => !isNaN(nb));
             return numeriBolle.length > 0 ? Math.max(...numeriBolle) + 1 : 1;
           })()
         }

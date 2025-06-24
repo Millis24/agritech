@@ -29,7 +29,19 @@ export default function AddBollaDialog({
   open, onClose, onSave, clienti, prodotti, imballaggi, numeroBolla, bolla, isBollaBis, isBollaGenerica
 }: BollaDialogProps) {
   const [destinatario, setDestinatario] = useState({
-    nome: '', cognome: '', via: '', numeroCivico: '', email: '', telefonoFisso: '', telefonoCell: '', partitaIva: '', codiceSDI: ''
+    nome: '',
+    cognome: '',
+    ragioneSociale: '',
+    via: '',
+    numeroCivico: '',
+    cap: '',
+    paese: '',
+    provincia: '',
+    email: '',
+    telefonoFisso: '',
+    telefonoCell: '',
+    partitaIva: '',
+    codiceSDI: ''
   });
   const [selectedClienteId, setSelectedClienteId] = useState<number | ''>('');
   const [indirizzoDestinazione, setIndirizzoDestinazione] = useState('');
@@ -60,7 +72,6 @@ export default function AddBollaDialog({
   // autocompletamenti causale open/close
   const [openCausale, setOpenCausale] = useState(false);
   const [openCliente, setOpenCliente] = useState(false);
-  const [openImballaggioIndex, setOpenImballaggioIndex] = useState<number | null>(null);
 
   // Move focus to next input on Enter, including combobox elements (for Autocomplete)
   const handleEnterKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -91,8 +102,12 @@ useEffect(() => {
       setDestinatario({
         nome: cli.nomeCliente,
         cognome: cli.cognomeCliente || '',
+        ragioneSociale: cli.ragioneSociale || '',
         via: cli.via,
         numeroCivico: cli.numeroCivico,
+        cap: cli.cap || '',
+        paese: cli.paese || '',
+        provincia: cli.provincia || '',
         email: cli.email,
         telefonoFisso: cli.telefonoFisso,
         telefonoCell: cli.telefonoCell,
@@ -121,15 +136,23 @@ useEffect(() => {
   }
 
   if (bolla) {
-    if (bolla.destinatarioNome) {
-      const cli = clienti.find(c => c.nomeCliente === bolla.destinatarioNome);
+    if (!isBollaGenerica && bolla.destinatarioNome) {
+      const cli = clienti.find(
+        c =>
+          c.nomeCliente === bolla.destinatarioNome ||
+          c.ragioneSociale === bolla.destinatarioNome
+      );
       if (cli) {
         setSelectedClienteId(cli.id);
         setDestinatario({
           nome: cli.nomeCliente,
           cognome: cli.cognomeCliente || '',
+          ragioneSociale: cli.ragioneSociale || '',
           via: cli.via,
           numeroCivico: cli.numeroCivico,
+          cap: cli.cap || '',
+          paese: cli.paese || '',
+          provincia: cli.provincia || '',
           email: cli.email,
           telefonoFisso: cli.telefonoFisso,
           telefonoCell: cli.telefonoCell,
@@ -154,8 +177,12 @@ useEffect(() => {
     setDestinatario({
       nome: '',
       cognome: '',
+      ragioneSociale: '',
       via: '',
       numeroCivico: '',
+      cap: '',
+      paese: '',
+      provincia: '',
       email: '',
       telefonoFisso: '',
       telefonoCell: '',
@@ -227,10 +254,13 @@ useEffect(() => {
   };
 
   async function handleSubmit(){
-    const numeroFinale = isBollaBis && bolla
-      ? `${bolla.numeroBolla}/bis`
-      : (bolla?.numeroBolla?.toString() ?? numeroBolla.toString());
-    
+    let numeroFinale = bolla?.numeroBolla?.toString() ?? numeroBolla.toString();
+
+    if (isBollaBis && bolla) {
+      numeroFinale = `${bolla.numeroBolla}/bis`;
+    } else if (isBollaGenerica) {
+      numeroFinale = `${numeroBolla}/generica`;
+    }
     const baseBolla = {
       numeroBolla: numeroFinale,
       dataOra: new Date(dataOra).toISOString(),
@@ -368,53 +398,63 @@ useEffect(() => {
               </Grid>
               {/* Cliente */}
               <Grid size={12}>
-                <Autocomplete
-                  options={clienti}
-                  getOptionLabel={(option) => `${option.id} - ${option.nomeCliente}`}
-                  value={clienti.find(c => c.id === selectedClienteId) || null}
-                  onChange={(_, newValue) => {
-                    if (newValue) {
-                      setSelectedClienteId(newValue.id);
-                      setDestinatario({
-                        nome: newValue.nomeCliente,
-                        cognome: newValue.cognomeCliente,
-                        via: newValue.via,
-                        numeroCivico: newValue.numeroCivico,
-                        email: newValue.email,
-                        telefonoFisso: newValue.telefonoFisso,
-                        telefonoCell: newValue.telefonoCell,
-                        partitaIva: newValue.partitaIva,
-                        codiceSDI: newValue.codiceSDI
-                      });
-                    } else {
-                      setSelectedClienteId('');
-                      setDestinatario({
-                        nome: '',
-                        cognome: '',
-                        via: '',
-                        numeroCivico: '',
-                        email: '',
-                        telefonoFisso: '',
-                        telefonoCell: '',
-                        partitaIva: '',
-                        codiceSDI: ''
-                      });
-                    }
-                  }}
-                  open={openCliente}
-                  onOpen={() => setOpenCliente(true)}
-                  onClose={() => setOpenCliente(false)}
-                  autoHighlight
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !openCliente) {
-                      e.preventDefault();
-                      handleEnterKeyDown(e);
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} fullWidth variant="standard" label="Cliente" />
-                  )}
-                />
+                {!isBollaGenerica && (
+                  <Autocomplete
+                    options={clienti}
+                    getOptionLabel={(option) => `${option.id} - ${option.nomeCliente}`}
+                    value={clienti.find(c => c.id === selectedClienteId) || null}
+                    onChange={(_, newValue) => {
+                      if (newValue) {
+                        setSelectedClienteId(newValue.id);
+                        setDestinatario({
+                          nome: newValue.nomeCliente,
+                          cognome: newValue.cognomeCliente,
+                          ragioneSociale: newValue.ragioneSociale || '',
+                          via: newValue.via,
+                          numeroCivico: newValue.numeroCivico,
+                          cap: newValue.cap || '',
+                          paese: newValue.paese || '',
+                          provincia: newValue.provincia || '',
+                          email: newValue.email,
+                          telefonoFisso: newValue.telefonoFisso,
+                          telefonoCell: newValue.telefonoCell,
+                          partitaIva: newValue.partitaIva,
+                          codiceSDI: newValue.codiceSDI
+                        });
+                      } else {
+                        setSelectedClienteId('');
+                        setDestinatario({
+                          nome: '',
+                          cognome: '',
+                          ragioneSociale: '',
+                          via: '',
+                          numeroCivico: '',
+                          cap: '',
+                          paese: '',
+                          provincia: '',
+                          email: '',
+                          telefonoFisso: '',
+                          telefonoCell: '',
+                          partitaIva: '',
+                          codiceSDI: ''
+                        });
+                      }
+                    }}
+                    open={openCliente}
+                    onOpen={() => setOpenCliente(true)}
+                    onClose={() => setOpenCliente(false)}
+                    autoHighlight
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !openCliente) {
+                        e.preventDefault();
+                        handleEnterKeyDown(e);
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth variant="standard" label="Cliente" />
+                    )}
+                  />
+                )}
               </Grid>
               {/* Consegna a carico */}
               <Grid size={12}>
@@ -502,13 +542,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Ragione Sociale"
-                  value={isBollaGenerica
-                    ? (selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || '')
-                    : (selectedClienteObj?.ragioneSociale || selectedClienteObj?.nomeCliente || '')}
+                  value={destinatario.ragioneSociale || ''}
+                  onChange={(e) => setDestinatario({ ...destinatario, ragioneSociale: e.target.value })}
                   variant={isBollaGenerica ? "standard" : "filled"}
                   InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
                   inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
-                  onChange={undefined}
                 />
               </Grid>
               {/* Via */}
@@ -543,11 +581,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="CAP"
-                  value={isBollaGenerica ? (selectedClienteObj?.cap || '') : (selectedClienteObj?.cap || '')}
+                  value={destinatario.cap || ''}
+                  onChange={(e) => setDestinatario({ ...destinatario, cap: e.target.value })}
                   variant={isBollaGenerica ? "standard" : "filled"}
                   InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
                   inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
-                  onChange={undefined}
                 />
               </Grid>
               {/* Paese */}
@@ -556,11 +594,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Paese"
-                  value={isBollaGenerica ? (selectedClienteObj?.paese || '') : (selectedClienteObj?.paese || '')}
+                  value={destinatario.paese || ''}
+                  onChange={(e) => setDestinatario({ ...destinatario, paese: e.target.value })}
                   variant={isBollaGenerica ? "standard" : "filled"}
                   InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
                   inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
-                  onChange={undefined}
                 />
               </Grid>
               {/* Provincia */}
@@ -569,11 +607,11 @@ useEffect(() => {
                   className='input-tondi'
                   fullWidth
                   label="Provincia"
-                  value={isBollaGenerica ? (selectedClienteObj?.provincia || '') : (selectedClienteObj?.provincia || '')}
+                  value={destinatario.provincia || ''}
+                  onChange={(e) => setDestinatario({ ...destinatario, provincia: e.target.value })}
                   variant={isBollaGenerica ? "standard" : "filled"}
                   InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
                   inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
-                  onChange={undefined}
                 />
               </Grid>
               {/* Partita IVA */}
@@ -610,7 +648,7 @@ useEffect(() => {
         <Grid container spacing={4} sx={{ mt: 2 }}>
           <Grid size={12}>
               <TableContainer sx={{ mt: 2, width: '100%', overflowX: 'auto' }}>
-                <Table sx={{ minWidth: 900, whiteSpace: 'nowrap' }}>
+                <Table sx={{ minWidth: 1100, whiteSpace: 'nowrap' }}>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 'bold'}} >Prodotto</TableCell>
@@ -629,29 +667,40 @@ useEffect(() => {
                     {prodottiBolla.map((r, i) => (
                       <TableRow key={i}>
                         <TableCell>
-                          <Autocomplete
-                            sx={{ width: 175 }}
-                            options={prodotti}
-                            getOptionLabel={(p) => `${p.id} - ${p.nome}`}
-                            value={prodotti.find(p => p.nome === r.nomeProdotto) || null}
-                            onChange={(_, newValue) => handleProdottoChange(i, 'nomeProdotto', newValue ? newValue.nome : '')}
-                            blurOnSelect
-                            onClose={(_, reason) => {
-                              if (reason === 'selectOption') {
-                                // dopo chiusura dropdown per selezione, focus sul campo Prezzo
-                                prezzoRefs.current[i]?.focus();
-                              }
-                            }}
-                            autoHighlight
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                fullWidth
-                                variant="standard"
-                                label="Prodotto"
-                              />
-                            )}
-                          />
+                          {!isBollaGenerica ? (
+                            <Autocomplete
+                              sx={{ width: 175 }}
+                              options={prodotti}
+                              getOptionLabel={(p) => `${p.id} - ${p.nome}`}
+                              value={prodotti.find(p => p.nome === r.nomeProdotto) || null}
+                              onChange={(_, newValue) => handleProdottoChange(i, 'nomeProdotto', newValue ? newValue.nome : '')}
+                              blurOnSelect
+                              onClose={(_, reason) => {
+                                if (reason === 'selectOption') {
+                                  // dopo chiusura dropdown per selezione, focus sul campo Prezzo
+                                  prezzoRefs.current[i]?.focus();
+                                }
+                              }}
+                              autoHighlight
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  fullWidth
+                                  variant="standard"
+                                  label="Prodotto"
+                                />
+                              )}
+                            />
+                          ) : (
+                            <TextField
+                              sx={{ width: 175 }}
+                              fullWidth
+                              variant="standard"
+                              label="Prodotto"
+                              value={r.nomeProdotto}
+                              onChange={e => handleProdottoChange(i, 'nomeProdotto', e.target.value)}
+                            />
+                          )}
                         </TableCell>
                         <TableCell>
                           <TextField
@@ -659,53 +708,34 @@ useEffect(() => {
                             label="Qualità"
                             fullWidth variant="standard" value={r.qualita} onChange={e => handleProdottoChange(i, 'qualita', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }} />
                         </TableCell>
-                        {/* Imballaggio Autocomplete */}
+                        {/* Imballaggio manuale */}
                         <TableCell>
-                          <Autocomplete
+                          <TextField
                             sx={{ width: 175 }}
-                            size="small"
-                            open={openImballaggioIndex === i}
-                            onOpen={() => setOpenImballaggioIndex(i)}
-                            onClose={() => setOpenImballaggioIndex(null)}
-                            autoHighlight
-                            options={imballaggi}
-                            getOptionLabel={im => `${im.id} - ${im.tipo}`}
-                            value={imballaggi.find(im => im.tipo === r.nomeImballaggio) || null}
-                            onChange={(_, newValue) => handleProdottoChange(i, 'nomeImballaggio', newValue ? newValue.tipo : '')}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && openImballaggioIndex !== i) {
-                                e.preventDefault();
-                                handleEnterKeyDown(e);
-                              }
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                size="small"
-                                margin="dense"
-                                fullWidth
-                                variant="standard"
-                                label="Imballaggio"
-                              />
-                            )}
+                            fullWidth
+                            variant="standard"
+                            label="Imballaggio"
+                            value={r.nomeImballaggio}
+                            onChange={e => handleProdottoChange(i, 'nomeImballaggio', e.target.value)}
                           />
                         </TableCell>
                         {/* Prezzo Imballaggio */}
                         <TableCell>
                           <TextField
-                            sx={{ width: 75, marginTop: '16px' }}
+                            sx={{ width: 100, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
-                            type="text"
+                            type="number"
                             value={r.prezzoImballaggio}
-                            InputProps={{ readOnly: true, startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
+                            onChange={e => handleProdottoChange(i, 'prezzoImballaggio', +e.target.value)}
+                            InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
                           />
                         </TableCell>
                         {/* Colli */}
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75, marginTop: '16px' }}
+                            sx={{ width: 100, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -719,7 +749,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75, marginTop: '16px' }}
+                            sx={{ width: 100, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -734,7 +764,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75, marginTop: '16px' }}
+                            sx={{ width: 100, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -748,7 +778,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75, marginTop: '16px' }}
+                            sx={{ width: 100, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
@@ -762,7 +792,7 @@ useEffect(() => {
                         <TableCell>
                           <TextField
                             size="small"
-                            sx={{ width: 75, marginTop: '16px' }}
+                            sx={{ width: 125, marginTop: '16px' }}
                             fullWidth
                             variant="standard"
                             type="number"
