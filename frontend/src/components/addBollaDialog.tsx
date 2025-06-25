@@ -708,16 +708,35 @@ useEffect(() => {
                             label="Qualità"
                             fullWidth variant="standard" value={r.qualita} onChange={e => handleProdottoChange(i, 'qualita', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }} />
                         </TableCell>
-                        {/* Imballaggio manuale */}
+                        {/* Imballaggio: Autocomplete per bolla normale, TextField per generica */}
                         <TableCell>
-                          <TextField
-                            sx={{ width: 175 }}
-                            fullWidth
-                            variant="standard"
-                            label="Imballaggio"
-                            value={r.nomeImballaggio}
-                            onChange={e => handleProdottoChange(i, 'nomeImballaggio', e.target.value)}
-                          />
+                          {!isBollaGenerica ? (
+                            <Autocomplete
+                              sx={{ width: 175 }}
+                              options={imballaggi}
+                              getOptionLabel={(i) => i.tipo}
+                              value={imballaggi.find(im => im.tipo === r.nomeImballaggio) || null}
+                              onChange={(_, newValue) => handleProdottoChange(i, 'nomeImballaggio', newValue ? newValue.tipo : '')}
+                              autoHighlight
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  fullWidth
+                                  variant="standard"
+                                  label="Imballaggio"
+                                />
+                              )}
+                            />
+                          ) : (
+                            <TextField
+                              sx={{ width: 175 }}
+                              fullWidth
+                              variant="standard"
+                              label="Imballaggio"
+                              value={r.nomeImballaggio}
+                              onChange={e => handleProdottoChange(i, 'nomeImballaggio', e.target.value)}
+                            />
+                          )}
                         </TableCell>
                         {/* Prezzo Imballaggio */}
                         <TableCell>

@@ -109,7 +109,7 @@ export default function Layout() {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { sm: 'none' }, color: '#4C57E5' }}
           >
             <MenuIcon />
           </IconButton>
