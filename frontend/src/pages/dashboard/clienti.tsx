@@ -247,9 +247,9 @@ export default function Clienti() {
 
   // colonne tabella
   const columns: GridColDef[] = [
-    { field: 'nomeCliente', headerName: 'Nome', width: 100 },
-    { field: 'cognomeCliente', headerName: 'Cognome', width: 100 },
-    { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
+    { field: 'nomeCliente', headerName: 'Ragione Sociale', width: 400 },
+    // { field: 'cognomeCliente', headerName: 'Cognome', width: 100 },
+    // { field: 'ragioneSociale', headerName: 'Ragione Sociale', width: 200 },
     // { field: 'via', headerName: 'Via', width: 150 },
     // { field: 'numeroCivico', headerName: 'Civico', width: 100 },
     // { field: 'paese', headerName: 'Paese', width: 150 },

@@ -220,7 +220,7 @@ useEffect(() => {
   const handleAddProdotto = () => {
     setProdottiBolla([...prodottiBolla, {
       nomeProdotto: '', qualita: '', prezzo: 0, nomeImballaggio: '', prezzoImballaggio: '',
-      numeroColli: 0, pesoLordo: 0, pesoNetto: 0, totKgSpediti: 0
+      numeroColli: 0, pesoLordo: 0, pesoNetto: 0
     }]);
   };
 
@@ -349,7 +349,7 @@ useEffect(() => {
                   onOpen={() => setOpenCausale(true)}
                   onClose={() => setOpenCausale(false)}
                   autoHighlight
-                  options={['Vendita', 'Conto visione', 'Reso']}
+                  options={['Vendita', 'Prezzo da determinare', 'Reso']}
                   value={causale}
                   onChange={(_, v) => setCausale(v || '')}
                   onKeyDown={(e) => {
@@ -460,7 +460,7 @@ useEffect(() => {
               <Grid size={12}>
                 <Autocomplete
                   size="small"
-                  options={[ 'Destinatario', 'Mittente' ]}
+                  options={[ 'Destinatario', 'Mittente', 'Vettore' ]}
                   getOptionLabel={opt => opt}
                   value={consegnaACarico}
                   onChange={(_, v) => setConsegnaACarico(v || '')}
@@ -488,7 +488,7 @@ useEffect(() => {
                 <Autocomplete
                   freeSolo
                   size="small"
-                  options={[ 'Corriere 1', 'Corriere 2', 'Altro' ]}
+                  options={[ 'S.C. Americana s.r.l.', 'Mittente', 'Destinatario' ]}
                   value={vettore}
                   onChange={(_, newValue) => setVettore(newValue || '')}
                   onInputChange={(_, newInput) => setVettore(newInput)}
@@ -515,7 +515,7 @@ useEffect(() => {
                 <TextField
                   className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
-                  label="Nome"
+                  label="Ragione Sociale"
                   value={destinatario.nome}
                   onChange={(e) => setDestinatario({ ...destinatario, nome: e.target.value })}
                   variant={isBollaGenerica ? "standard" : "filled"}
@@ -524,7 +524,7 @@ useEffect(() => {
                 />
               </Grid>
               {/* Cognome */}
-              <Grid size={6}>
+              {/* <Grid size={6}>
                 <TextField
                   className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
@@ -535,9 +535,9 @@ useEffect(() => {
                   InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
                   inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
-              </Grid>
+              </Grid> */}
               {/* Ragione Sociale */}
-              <Grid size={12}>
+              {/* <Grid size={12}>
                 <TextField
                   className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
@@ -548,7 +548,7 @@ useEffect(() => {
                   InputProps={{ readOnly: !isBollaGenerica, disableUnderline: !isBollaGenerica }}
                   inputProps={!isBollaGenerica ? { tabIndex: -1 } : undefined}
                 />
-              </Grid>
+              </Grid> */}
               {/* Via */}
               <Grid size={6}>
                 <TextField
@@ -659,7 +659,7 @@ useEffect(() => {
                       <TableCell sx={{ fontWeight: 'bold'}} >Prezzo Prodotto</TableCell>
                       <TableCell sx={{ fontWeight: 'bold'}} >Peso lordo</TableCell>
                       <TableCell sx={{ fontWeight: 'bold'}} >Peso netto</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold'}} >Tot Kg</TableCell>
+                      {/* <TableCell sx={{ fontWeight: 'bold'}} >Tot Kg</TableCell> */}
                       <TableCell sx={{ fontWeight: 'bold'}} ></TableCell>
                     </TableRow>
                   </TableHead>
@@ -804,11 +804,11 @@ useEffect(() => {
                             value={r.pesoNetto}
                             onChange={e => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
                             inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
-                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddProdotto(); } }}
                           />
                         </TableCell>
                         {/* Tot Kg */}
-                        <TableCell>
+                        {/* <TableCell>
                           <TextField
                             size="small"
                             sx={{ width: 125, marginTop: '16px' }}
@@ -820,7 +820,7 @@ useEffect(() => {
                             inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddProdotto(); } }}
                           />
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell>
                           <IconButton onClick={() => handleRemoveProdotto(i)} size="small">
                             <DeleteIcon fontSize="small" />
