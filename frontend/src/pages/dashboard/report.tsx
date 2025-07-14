@@ -47,10 +47,10 @@ export default function ReportPage() {
   const dataProd = useMemo(() => {
     const map: Record<string, { kg: number; count: number }> = {};
     filteredProd.forEach(b => {
-      const list = JSON.parse(b.prodotti) as Array<{ nomeProdotto: string; totKgSpediti: number }>;
+      const list = JSON.parse(b.prodotti) as Array<{ nomeProdotto: string; totKgSpediti: number; numeroColli: number }>;
       list.forEach(p => {
         if (!map[p.nomeProdotto]) map[p.nomeProdotto] = { kg: 0, count: 0 };
-        map[p.nomeProdotto].kg += p.totKgSpediti;
+        map[p.nomeProdotto].kg += p.numeroColli;
         map[p.nomeProdotto].count += 1;
       });
     });
@@ -77,7 +77,7 @@ export default function ReportPage() {
           `"${p.nomeImballaggio}"`,
           p.prezzoImballaggio
         ].join(',') + '\n';
-        totalKg += p.totKgSpediti;
+        totalKg += p.numeroColli;
       });
     });
     // Append total line
@@ -114,8 +114,8 @@ export default function ReportPage() {
     if (!selCliente) return [];
     const map: Record<string, number> = {};
     filteredClient.forEach(b => {
-      (JSON.parse(b.prodotti) as Array<{ nomeProdotto: string; totKgSpediti: number }> ).forEach(p => {
-        map[p.nomeProdotto] = (map[p.nomeProdotto] || 0) + p.totKgSpediti;
+      (JSON.parse(b.prodotti) as Array<{ nomeProdotto: string; totKgSpediti: number; numeroColli: number }> ).forEach(p => {
+        map[p.nomeProdotto] = (map[p.nomeProdotto] || 0) + p.numeroColli;
       });
     });
     return Object.entries(map)
@@ -189,13 +189,13 @@ export default function ReportPage() {
       </Box>
 
       {/* Tabella Kg per Prodotto */}
-      <Typography variant="h6" gutterBottom mt={4}>Kg Prodotti - spediti</Typography>
+      <Typography variant="h6" gutterBottom mt={4}>Colli Prodotti - spediti</Typography>
       <Paper sx={{ width: '100%', overflowX: 'auto', mb: 4, filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', padding: '1em', borderRadius: '32px' }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell><strong>Prodotto</strong></TableCell>
-              <TableCell align="right"><strong>Kg Spediti</strong></TableCell>
+              <TableCell align="right"><strong>Colli</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -656,9 +656,9 @@ useEffect(() => {
                       <TableCell sx={{ fontWeight: 'bold'}} >Imballaggio</TableCell>
                       <TableCell sx={{ fontWeight: 'bold'}} >Prezzo Imballaggio</TableCell>
                       <TableCell sx={{ fontWeight: 'bold'}} >Colli</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold'}} >Prezzo Prodotto</TableCell>
                       <TableCell sx={{ fontWeight: 'bold'}} >Peso lordo</TableCell>
                       <TableCell sx={{ fontWeight: 'bold'}} >Peso netto</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold'}} >Prezzo Prodotto</TableCell>
                       {/* <TableCell sx={{ fontWeight: 'bold'}} >Tot Kg</TableCell> */}
                       <TableCell sx={{ fontWeight: 'bold'}} ></TableCell>
                     </TableRow>
@@ -758,25 +758,10 @@ useEffect(() => {
                             fullWidth
                             variant="standard"
                             type="number"
-                            value={r.numeroColli}
+                            value={r.numeroColli === 0 ? '' : r.numeroColli}
                             onChange={e => handleProdottoChange(i, 'numeroColli', +e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                             inputProps={{ inputMode: 'numeric', step: '1', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
-                          />
-                        </TableCell>
-                        {/* Prezzo prodotto */}
-                        <TableCell>
-                          <TextField
-                            size="small"
-                            sx={{ width: 100, marginTop: '16px' }}
-                            fullWidth
-                            variant="standard"
-                            type="number"
-                            value={r.prezzo}
-                            onChange={e => handleProdottoChange(i, 'prezzo', +e.target.value)}
-                            InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
-                            inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
-                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
                           />
                         </TableCell>
                         {/* Peso lordo */}
@@ -787,7 +772,7 @@ useEffect(() => {
                             fullWidth
                             variant="standard"
                             type="number"
-                            value={r.pesoLordo}
+                            value={r.pesoLordo === 0 ? '' : r.pesoLordo}
                             onChange={e => handleProdottoChange(i, 'pesoLordo', +e.target.value)}
                             inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
@@ -801,8 +786,23 @@ useEffect(() => {
                             fullWidth
                             variant="standard"
                             type="number"
-                            value={r.pesoNetto}
+                            value={r.pesoNetto === 0 ? '' : r.pesoNetto}
                             onChange={e => handleProdottoChange(i, 'pesoNetto', +e.target.value)}
+                            inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEnterKeyDown(e); } }}
+                          />
+                        </TableCell>
+                        {/* Prezzo prodotto */}
+                        <TableCell>
+                          <TextField
+                            size="small"
+                            sx={{ width: 100, marginTop: '16px' }}
+                            fullWidth
+                            variant="standard"
+                            type="number"
+                            value={r.prezzo === 0 ? '' : r.prezzo}
+                            onChange={e => handleProdottoChange(i, 'prezzo', +e.target.value)}
+                            InputProps={{ startAdornment: (<InputAdornment position="start">€</InputAdornment>) }}
                             inputProps={{ inputMode: 'decimal', step: 'any', onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() }}
                             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddProdotto(); } }}
                           />

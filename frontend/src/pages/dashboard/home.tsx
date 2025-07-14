@@ -46,8 +46,13 @@ export default function Home() {
     bolle.forEach(b => {
       const monthIdx = new Date(b.dataOra).getMonth();
       const row = data[monthIdx];
-      JSON.parse(b.prodotti).forEach((p: any) => {
-        row[p.nomeProdotto] += p.totKgSpediti;
+      const prodotti = JSON.parse(b.prodotti);
+      prodotti.forEach((p: any) => {
+        const nome = p.nomeProdotto;
+        const numeroColli = Number(p.numeroColli);
+        if (!isNaN(numeroColli) && nome in row) {
+          row[nome] += numeroColli;
+        }
       });
     });
     setChartData(data);
