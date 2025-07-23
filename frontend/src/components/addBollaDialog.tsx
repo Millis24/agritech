@@ -20,7 +20,7 @@ interface BollaDialogProps {
   clienti: Cliente[];
   prodotti: Prodotto[];
   imballaggi: Imballaggio[];
-  numeroBolla: number;
+  numeroBolla: number | string;
   isBollaBis: boolean;
   isBollaGenerica: boolean;
 }
@@ -488,7 +488,7 @@ useEffect(() => {
                 <Autocomplete
                   freeSolo
                   size="small"
-                  options={[ 'S.C. Americana s.r.l.', 'Mittente', 'Destinatario' ]}
+                  options={[ 'Azienda Morselli', 'S.C. Americana s.r.l.', 'Mittente', 'Destinatario', 'Comuniello Trasporti Srl', 'Reggiani Autotrasporti', 'Autostrada Russo', 'Padana Trasporti', 'Domizio Trasporti', 'DV Trasporti Srl', 'Vetrans Trasporti', 'G.R. Autotrasporti', 'L.L.A. di Garuti e Morselli' ]}
                   value={vettore}
                   onChange={(_, newValue) => setVettore(newValue || '')}
                   onInputChange={(_, newInput) => setVettore(newInput)}

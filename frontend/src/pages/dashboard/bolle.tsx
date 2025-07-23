@@ -147,7 +147,7 @@ export default function Bolle() {
         ? b.numeroBolla.toString().includes(filterNumero)
         : true;
       const byCliente = filterCliente
-        ? b.destinatarioNome.toLowerCase().includes(filterCliente.toLowerCase())
+        ? (`${b.destinatarioNome || ''}`.toLowerCase().includes(filterCliente.toLowerCase()))
         : true;
       const dataBolla = new Date(b.dataOra);
       const fromOK = dateFrom
@@ -409,7 +409,7 @@ export default function Bolle() {
         clienti={clienti}
         prodotti={prodotti}
         imballaggi={imballaggi}
-                numeroBolla={
+        numeroBolla={
           (() => {
             const numeriBolle = bolle
               .map(b => {
@@ -417,7 +417,8 @@ export default function Bolle() {
                 return parseInt(numero, 10) || 0;
               })
               .filter(nb => !isNaN(nb));
-            return numeriBolle.length > 0 ? Math.max(...numeriBolle) + 1 : 1;
+            const maxNumero = numeriBolle.length > 0 ? Math.max(...numeriBolle) : 255;
+            return Math.max(maxNumero, 255) + 1;
           })()
         }
         isBollaBis={isBollaBis}
