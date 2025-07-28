@@ -488,7 +488,7 @@ useEffect(() => {
                 <Autocomplete
                   freeSolo
                   size="small"
-                  options={[ 'Azienda Morselli', 'S.C. Americana s.r.l.', 'Mittente', 'Destinatario', 'Comuniello Trasporti Srl', 'Reggiani Autotrasporti', 'Autostrada Russo', 'Padana Trasporti', 'Domizio Trasporti', 'DV Trasporti Srl', 'Vetrans Trasporti', 'G.R. Autotrasporti', 'L.L.A. di Garuti e Morselli' ]}
+                  options={[ 'Azienda Morselli', 'S.C. Ameritalia s.r.l.', 'Mittente', 'Destinatario', 'Comuniello Trasporti Srl', 'Reggiani Autotrasporti', 'Autostrada Russo', 'Padana Trasporti', 'Domizio Trasporti', 'DV Trasporti Srl', 'Vetrans Trasporti', 'G.R. Autotrasporti', 'L.L.A. di Garuti e Morselli' ]}
                   value={vettore}
                   onChange={(_, newValue) => setVettore(newValue || '')}
                   onInputChange={(_, newInput) => setVettore(newInput)}
