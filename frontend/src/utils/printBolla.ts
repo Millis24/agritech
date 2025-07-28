@@ -71,10 +71,9 @@ export async function handlePrint(bolla: Bolla) {
   // DOCUMENTO DI TRASPORTO + NUMERO
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text(`DOCUMENTO DI TRASPORTO (D.P.R. 472 del 14/08/96):`, mittX, boxBottom + 12);
-  doc.text(`${bolla.numeroBolla}`, mittX, boxBottom + 18);
+  doc.text(`DOCUMENTO DI TRASPORTO (D.P.R. 472 del 14/08/96): ${bolla.numeroBolla}`, mittX, boxBottom + 12);
   doc.setFont('helvetica', 'regular');
-  doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, destX, boxBottom + 12);
+  doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, mittX, boxBottom + 18);
 
   // Spazio tra sezioni
   cursorY = boxBottom + 25;
@@ -116,7 +115,7 @@ export async function handlePrint(bolla: Bolla) {
   const afterTableY = (doc as any).lastAutoTable.finalY || cursorY;
 
   // TOTALI KG
-  const totKg = prodotti.reduce((s, p) => s + p.totKgSpediti, 0);
+  const totKg = prodotti.reduce((s, p) => s + (Number(p.pesoNetto) || 0), 0);
   doc.setFontSize(9);
   doc.text(`Totale kg spediti in questa consegna: ${totKg}`, M, afterTableY + 6);
   doc.text(`Totale KG angurie spediti in questa stagione:`, M + 110, afterTableY + 6);
