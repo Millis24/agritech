@@ -71,7 +71,12 @@ export async function handlePrint(bolla: Bolla) {
   // DOCUMENTO DI TRASPORTO + NUMERO
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text(`DOCUMENTO DI TRASPORTO (D.P.R. 472 del 14/08/96): ${bolla.numeroBolla}`, mittX, boxBottom + 12);
+  doc.text('DOCUMENTO DI TRASPORTO (D.P.R. 472 del 14/08/96):', mittX, boxBottom + 12);
+
+  doc.setFontSize(18); // font grande per il numero
+  doc.text(`N. ${bolla.numeroBolla}`, pageWidth - M, boxBottom + 12, { align: 'right' });
+
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'regular');
   doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, mittX, boxBottom + 18);
 
