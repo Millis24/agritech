@@ -55,8 +55,11 @@ export default function Archivio() {
       setAnniDisponibili(anni);
       setClienti(clientiData);
 
-      if (anni.length > 0) {
-        setAnnoSelezionato(anni[anni.length - 1]); // Seleziona l'anno più recente
+      // Seleziona l'anno corrente se disponibile, altrimenti l'ultimo disponibile
+      if (anni.includes(annoCorrente)) {
+        setAnnoSelezionato(annoCorrente);
+      } else if (anni.length > 0) {
+        setAnnoSelezionato(anni[anni.length - 1]);
       }
 
       setLoading(false);
