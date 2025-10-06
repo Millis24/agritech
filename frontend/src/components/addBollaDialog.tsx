@@ -43,7 +43,7 @@ export default function AddBollaDialog({
     partitaIva: '',
     codiceSDI: ''
   });
-  const [selectedClienteId, setSelectedClienteId] = useState<number | ''>('');
+  const [selectedClienteId, setSelectedClienteId] = useState<number | undefined>(undefined);  
   const [indirizzoDestinazione, setIndirizzoDestinazione] = useState('');
   const [causale, setCausale] = useState('');
   const [dataOra, setDataOra] = useState(() => new Date().toISOString().slice(0, 16));
@@ -159,6 +159,7 @@ useEffect(() => {
           partitaIva: cli.partitaIva,
           codiceSDI: cli.codiceSDI
         });
+        //setSelectedClienteId(cli.id); // <--- fix: assicura selectedClienteId anche in modifica
       }
     }
     setDataOra(bolla.dataOra.slice(0, 16));
@@ -189,7 +190,7 @@ useEffect(() => {
       partitaIva: '',
       codiceSDI: ''
     });
-    setSelectedClienteId('');
+    setSelectedClienteId(undefined);
     setDataOra(new Date().toISOString().slice(0, 16));
     setDestTipo('sede');
     setIndirizzoDestinazione('');
@@ -261,7 +262,8 @@ useEffect(() => {
     } else if (isBollaGenerica) {
       numeroFinale = `${numeroBolla}/generica`;
     }
-    const baseBolla = {
+    // Costruzione oggetto bolla con clienteId valorizzato secondo il tipo Prisma (number | undefined)
+    const baseBolla: any = {
       numeroBolla: numeroFinale,
       dataOra: new Date(dataOra).toISOString(),
       destinatarioNome: isBollaGenerica ? destinatario.nome : selectedClienteObj?.ragioneSociale || destinatario.nome,
@@ -281,7 +283,11 @@ useEffect(() => {
       consegnaACarico,
       vettore,
       createdAt: new Date().toISOString(),
-      synced: false
+      synced: false,
+      clienteId: selectedClienteId !== undefined ? selectedClienteId : undefined,
+      cap: selectedClienteObj?.cap ?? '',
+      provincia: selectedClienteObj?.provincia ?? '',
+      paese: selectedClienteObj?.paese ?? '',
     };
 
     const nuovaBolla = (!isBollaBis && bolla && bolla.id !== undefined)
@@ -311,6 +317,25 @@ useEffect(() => {
       // l'utente ha scelto Annulla
       return;
     }
+
+    // Esempio di fetch: salva la bolla nel DB (aggiungi qui il controllo fetch)
+    // Sostituisci getBaseUrl() con la tua funzione se necessario, oppure lascia commentato se non usato
+    // try {
+    //   const res = await fetch(`${getBaseUrl()}/api/bolle`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(baseBolla)
+    //   });
+    //   if (res.ok) {
+    //     const nuova = await res.json();
+    //     console.log('✅ Bolla salvata nel DB:', nuova);
+    //   } else {
+    //     const errore = await res.json();
+    //     console.error('❌ Errore salvataggio bolla:', errore);
+    //   }
+    // } catch (err) {
+    //   console.error('❌ Errore di rete:', err);
+    // }
 
     onSave(nuovaBolla);
     onClose();
@@ -422,7 +447,7 @@ useEffect(() => {
                           codiceSDI: newValue.codiceSDI
                         });
                       } else {
-                        setSelectedClienteId('');
+                        setSelectedClienteId(undefined);
                         setDestinatario({
                           nome: '',
                           cognome: '',

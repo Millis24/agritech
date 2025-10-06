@@ -3,6 +3,7 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -308,35 +309,57 @@ app.get('/api/bolle', async (req, res) => {
 });
 
 app.post('/api/bolle', async (req, res) => {
-  console.log('📦 POST /bolle body:', req.body);
+  console.log('✅ BODY RICEVUTO:', JSON.stringify(req.body, null, 2)); // log formattato leggibile
+
   try {
     const {
       id,
       synced,
       modifiedOffline,
-      ...data
+      clienteId,
+      cap,
+      paese,
+      provincia,
+      ...resto
     } = req.body;
 
-    // Controllo duplicati (numeroBolla è unique)
+    let valoriAggiuntivi: any = {};
+    if ((!cap || !paese || !provincia) && clienteId) {
+      const cliente = await prisma.cliente.findUnique({ where: { id: clienteId } });
+      if (cliente) {
+        valoriAggiuntivi.cap = cap || cliente.cap;
+        valoriAggiuntivi.paese = paese || cliente.paese;
+        valoriAggiuntivi.provincia = provincia || cliente.provincia;
+      }
+    }
+
     const esiste = await prisma.bolla.findFirst({
-      where: { numeroBolla: String(data.numeroBolla) }
+      where: { numeroBolla: String(resto.numeroBolla) }
     });
     if (esiste) {
       return res.status(409).json({ error: 'Bolla già esistente' });
     }
 
-    // Conversioni campi Date
     const nuova = await prisma.bolla.create({
       data: {
-        ...data,
-        dataOra: new Date(data.dataOra),
-        createdAt: new Date(data.createdAt)
+        ...resto,
+        dataOra: new Date(resto.dataOra),
+        createdAt: new Date(resto.createdAt),
+        cliente: {
+          connect: { id: clienteId }
+        },
+        cap,
+        paese,
+        provincia
       }
     });
 
     res.status(201).json(nuova);
   } catch (error) {
-    console.error('❌ Errore POST bolle:', error);
+    console.error('❌ Errore POST bolle:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error('💥 Prisma error:', error.code, error.meta);
+    }
     res.status(500).json({ error: 'Errore nel salvataggio della bolla' });
   }
 });
@@ -364,7 +387,11 @@ app.put('/api/bolle/:id', async (req, res) => {
       consegnaACarico,
       vettore,
       synced,
-      createdAt
+      createdAt,
+      cap,
+      paese,
+      provincia,
+      clienteId
     } = req.body;
 
     const updated = await prisma.bolla.update({
@@ -387,7 +414,11 @@ app.put('/api/bolle/:id', async (req, res) => {
         consegnaACarico,
         vettore,
         synced: synced ?? true,
-        createdAt: createdAt ? new Date(createdAt) : new Date()
+        createdAt: createdAt ? new Date(createdAt) : new Date(),
+        cap,
+        paese,
+        provincia,
+        cliente: clienteId ? { connect: { id: clienteId } } : undefined
       }
     });
     res.json(updated);

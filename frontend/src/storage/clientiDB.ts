@@ -65,3 +65,7 @@ export async function clearClientiEliminati() {
   const db = await getDB();
     await db.clear(DELETED_STORE_NAME);
 }
+export async function getClienteById(id: number): Promise<Cliente | undefined> {
+  const db = await getDB();
+  return await db.get(STORE_NAME, id);
+}

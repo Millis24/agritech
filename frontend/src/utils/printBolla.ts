@@ -5,11 +5,22 @@ import logoDataUrl from '../assets/logo_bolle.png';
 import type { Bolla } from '../storage/bolleDB';
 import { getAllImballaggi } from '../storage/imballaggiDB';
 import type { Imballaggio } from '../storage/imballaggiDB';
+import * as clientiDB from '../storage/clientiDB';
 
 /**
  * Stampa una bolla in PDF, con layout completo.
  */
-export async function handlePrint(bolla: Bolla) {
+export async function handlePrint(bolla: Bolla, cliente?: any) {
+  if (!cliente && (bolla as any).clienteId) {
+    cliente = await clientiDB.getClienteById((bolla as any).clienteId);
+    if (!cliente) {
+      console.warn(`Cliente con ID ${bolla.clienteId} non trovato.`);
+    }
+  }
+  // LOG: Controllo cliente recuperato e clienteId
+  console.log('clienteId nella bolla:', (bolla as any).clienteId);
+  console.log('bolla completa:', bolla);
+  console.log('cliente recuperato:', cliente);
   const imballaggi: Imballaggio[] = await getAllImballaggi();
   const doc = new jsPDF('p', 'mm', 'a4');
   const M = 10;             // margine
@@ -56,7 +67,13 @@ export async function handlePrint(bolla: Bolla) {
   doc.setFontSize(12);
   doc.text(`${bolla.destinatarioNome} ${bolla.destinatarioCognome}`, destX + 4, cursorY + 16);
   doc.setFontSize(9);
-  const indirizzo = `via ${bolla.destinatarioVia ?? ''}, n. ${bolla.destinatarioNumeroCivico ?? ''}`.trim();
+  const indirizzo = cliente
+    ? [
+        cliente.via,
+        cliente.paese && cliente.provincia ? `${cliente.paese} (${cliente.provincia})` : cliente.paese || cliente.provincia,
+        cliente.cap
+      ].filter(Boolean).join(', ')
+    : bolla.destinatarioVia ?? '';
   doc.text(indirizzo, destX + 4, cursorY + 22);
   doc.text(`Mail: ${bolla.destinatarioEmail}`, destX + 4, cursorY + 28);
   doc.text(`Tel.: ${bolla.destinatarioTelefonoCell}`, destX + 4, cursorY + 33);
@@ -86,12 +103,13 @@ export async function handlePrint(bolla: Bolla) {
 
   // INDIRIZZO DESTINAZIONE & SEDE
   doc.setFontSize(10);
-  doc.rect(M, cursorY, 95, 8);
-  doc.rect(M + 95, cursorY, 95, 8);
+  doc.rect(M, cursorY, 95, 16);
+  doc.rect(M + 95, cursorY, 95, 16);
   doc.setFont('helvetica', 'bold');
   doc.text('Indirizzo di destinazione:', M + 2, cursorY + 6);
   doc.setFont('helvetica', 'regular');
-  doc.text(bolla.indirizzoDestinazione, M + 97, cursorY + 6);
+  const indirizzoCompleto = `via: ${cliente?.via || bolla.destinatarioVia || '-'} | paese: ${cliente?.paese || '-'} | provincia: ${cliente?.provincia || '-'} | cap: ${cliente?.cap || '-'}`;
+  doc.text(indirizzoCompleto, M + 97, cursorY + 6, { maxWidth: 90 });
 
   // CAUSALE
   cursorY += 16;
