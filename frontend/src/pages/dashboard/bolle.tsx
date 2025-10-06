@@ -367,8 +367,18 @@ export default function Bolle() {
             sorting: {
               sortModel: [{ field: 'id', sort: 'asc' }],
             },
+            pagination: { paginationModel: { pageSize: 100, page: 0 } }
           }}
-          hideFooterPagination
+          pageSizeOptions={[100, 200, 250]}
+          localeText={{
+            footerRowSelected: (count) => `${count} riga/e selezionata/e`,
+          }}
+          slotProps={{
+            pagination: {
+              labelRowsPerPage: 'Righe per tabella:',
+              labelDisplayedRows: ({ from, to, count }: { from: number; to: number; count: number }) => `${from}–${to} di ${count !== -1 ? count : `più di ${to}`}`
+            }
+          }}
           sx={{
             borderRadius: '32px',
             padding: '1em',
