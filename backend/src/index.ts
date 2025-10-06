@@ -388,7 +388,13 @@ app.get('/api/bolle/next-number/:anno', async (req, res) => {
 app.get('/api/bolle', async (req, res) => {
   try {
     const anno = req.query.anno ? parseInt(req.query.anno as string) : undefined;
-    const where = anno ? { anno } : {};
+
+    const where = anno ? {
+      dataOra: {
+        gte: new Date(`${anno}-01-01T00:00:00.000Z`),
+        lt: new Date(`${anno + 1}-01-01T00:00:00.000Z`)
+      }
+    } : {};
 
     const bolle = await prisma.bolla.findMany({
       where,
