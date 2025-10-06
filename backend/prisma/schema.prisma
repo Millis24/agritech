@@ -113,7 +113,7 @@ model ImballaggioReso {
 
 model Corriere {
   id        Int      @id @default(autoincrement())
-  nome      String   @unique
+  nome      String   @default("")
   email     String?
   createdAt DateTime @default(now())
 }

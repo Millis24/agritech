@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 
 export interface Corriere {
   id: number;
-  nome: string;
+  nome?: string;
   email?: string | null;
   createdAt?: string;
 }
@@ -90,8 +90,26 @@ export default function AddCorriereDialog({ open, onClose, onSave, corriere }: P
     onClose();
   };
 
+  const handleCancel = async () => {
+    const result = await Swal.fire({
+      title: 'Annullare?',
+      text: 'Le modifiche non salvate andranno perse.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sì, annulla',
+      cancelButtonText: 'No, continua',
+      reverseButtons: true,
+      focusConfirm: false,
+      focusCancel: true,
+      allowEnterKey: true,
+    });
+    if (result.isConfirmed) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ fontWeight: 'bold' }}>
         {corriere ? 'Modifica Corriere' : 'Nuovo Corriere'}
       </DialogTitle>
@@ -104,7 +122,6 @@ export default function AddCorriereDialog({ open, onClose, onSave, corriere }: P
               margin="dense"
               label="Nome Corriere"
               fullWidth
-              required
               value={data.nome}
               onChange={(e) => handleChange('nome', e.target.value)}
               onKeyDown={handleEnterKeyDown}
@@ -124,7 +141,7 @@ export default function AddCorriereDialog({ open, onClose, onSave, corriere }: P
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} className='btn-neg'>
+        <Button onClick={handleCancel} className='btn-neg'>
           Annulla
         </Button>
         <Button onClick={handleSubmit} variant="contained" className='btn'>

@@ -318,7 +318,10 @@ app.post('/api/corrieri', async (req, res) => {
     }
 
     const nuovo = await prisma.corriere.create({
-      data: { nome, email }
+      data: {
+        nome,
+        ...(email && { email })
+      }
     });
     res.status(201).json(nuovo);
   } catch (error) {
@@ -333,7 +336,10 @@ app.put('/api/corrieri/:id', async (req, res) => {
     const { nome, email } = req.body;
     const corriereAggiornato = await prisma.corriere.update({
       where: { id },
-      data: { nome, email }
+      data: {
+        nome,
+        ...(email !== undefined && { email })
+      }
     });
     res.json(corriereAggiornato);
   } catch (error) {
