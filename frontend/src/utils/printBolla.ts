@@ -429,3 +429,19 @@ export async function generatePDFBlob(bolla: Bolla, cliente?: any): Promise<Blob
   // Restituisce il blob invece di salvare
   return doc.output('blob');
 }
+
+/**
+ * Genera il PDF come stringa base64 per l'invio via email
+ */
+export async function generatePDFBase64(bolla: Bolla, cliente?: any): Promise<string> {
+  const blob = await generatePDFBlob(bolla, cliente);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}

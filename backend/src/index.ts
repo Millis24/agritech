@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import * as dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 dotenv.config();
 
 
@@ -14,7 +15,7 @@ const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'segreto_super_sicuro';
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Aumenta il limite per i PDF base64
 
 // middleware per autenticazione
 function verificaToken(req: Request, res: Response, next: NextFunction) {
@@ -516,6 +517,84 @@ app.delete('/api/bolle/:id', async (req, res) => {
 
     console.error('❌ Errore DELETE bolla:', err);
     res.status(500).json({ error: 'Errore durante l\'eliminazione' });
+  }
+});
+
+// -------------------- EMAIL --------------------
+
+// Configurazione transporter email
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'camillacino96@gmail.com',
+    pass: process.env.EMAIL_PASSWORD || '' // Password app Gmail
+  }
+});
+
+// Invia bolla via email
+app.post('/api/bolle/:id/send-email', async (req: Request, res: Response) => {
+  try {
+    const bollaId = parseInt(req.params.id);
+    const { pdfBase64 } = req.body;
+
+    // Recupera la bolla con cliente
+    const bolla = await prisma.bolla.findUnique({
+      where: { id: bollaId },
+      include: { cliente: true }
+    });
+
+    if (!bolla) {
+      return res.status(404).json({ error: 'Bolla non trovata' });
+    }
+
+    // Per ora usa email di test
+    const emailCliente = 'camillacino96@gmail.com';
+    const emailCorriere = 'camillacino96@gmail.com';
+
+    // Decodifica il PDF da base64
+    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+
+    // Invia email al cliente
+    await transporter.sendMail({
+      from: 'anguriadimodena@gmail.com',
+      to: emailCliente,
+      subject: `Bolla di Consegna n. ${bolla.numeroBolla}`,
+      text: `In allegato la bolla di consegna n. ${bolla.numeroBolla} del ${new Date(bolla.dataOra).toLocaleDateString('it-IT')}.`,
+      html: `
+        <p>Gentile Cliente,</p>
+        <p>In allegato la bolla di consegna n. <strong>${bolla.numeroBolla}</strong> del ${new Date(bolla.dataOra).toLocaleDateString('it-IT')}.</p>
+        <p>Cordiali saluti,<br/>Anguria di Modena</p>
+      `,
+      attachments: [
+        {
+          filename: `bolla_${bolla.numeroBolla}.pdf`,
+          content: pdfBuffer
+        }
+      ]
+    });
+
+    // Invia email al corriere
+    await transporter.sendMail({
+      from: 'anguriadimodena@gmail.com',
+      to: emailCorriere,
+      subject: `Bolla di Consegna n. ${bolla.numeroBolla}`,
+      text: `In allegato la bolla di consegna n. ${bolla.numeroBolla} del ${new Date(bolla.dataOra).toLocaleDateString('it-IT')}.`,
+      html: `
+        <p>In allegato la bolla di consegna n. <strong>${bolla.numeroBolla}</strong> del ${new Date(bolla.dataOra).toLocaleDateString('it-IT')}.</p>
+        <p>Cordiali saluti,<br/>Anguria di Modena</p>
+      `,
+      attachments: [
+        {
+          filename: `bolla_${bolla.numeroBolla}.pdf`,
+          content: pdfBuffer
+        }
+      ]
+    });
+
+    res.json({ success: true, message: 'Email inviate con successo' });
+  } catch (error) {
+    console.error('❌ Errore invio email:', error);
+    res.status(500).json({ error: 'Errore durante l\'invio delle email' });
   }
 });
 

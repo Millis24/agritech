@@ -5,7 +5,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import PrintIcon from '@mui/icons-material/Print';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import { handlePrint } from '../../utils/printBolla';
+import EmailIcon from '@mui/icons-material/Email';
+import { handlePrint, generatePDFBase64 } from '../../utils/printBolla';
 
 import AddBollaDialog from '../../components/addBollaDialog';
 import useBolleSync from '../../sync/useBolleSync';
@@ -111,6 +112,42 @@ export default function Bolle() {
     await ricaricaDati();
   };
 
+  // Funzione per inviare email
+  const handleSendEmail = async (bolla: Bolla) => {
+    try {
+      // Genera PDF come base64
+      const pdfBase64 = await generatePDFBase64(bolla);
+
+      // Invia richiesta al backend
+      const response = await fetch(`${getBaseUrl()}/bolle/${bolla.id}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pdfBase64 }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Errore durante l\'invio dell\'email');
+      }
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Email inviate!',
+        text: 'Le email sono state inviate al cliente e al corriere.',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      console.error('Errore invio email:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Errore',
+        text: error.message || 'Impossibile inviare le email.',
+      });
+    }
+  };
+
   // funzione per cancellare in massa
   // const handleBulkDeleteBolle = async () => {
   //   for (const id of rowSelectionModel.ids) {
@@ -178,7 +215,7 @@ export default function Bolle() {
     {
       field: 'actions',
       headerName: 'Azioni',
-      width: 200,
+      width: 250,
       renderCell: params => (
         <>
           <IconButton onClick={() => {
@@ -228,6 +265,14 @@ export default function Bolle() {
             }}
           >
             <PrintIcon />
+          </IconButton>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSendEmail(params.row);
+            }}
+          >
+            <EmailIcon />
           </IconButton>
         </>
       )
