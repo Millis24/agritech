@@ -15,11 +15,15 @@ import { getBaseUrl } from '../lib/getBaseUrl';
  */
 export async function getUserProfile(): Promise<UserProfile> {
   const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('Token mancante');
+  }
+
   const res = await fetch(`${getBaseUrl()}/user/profile`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      Authorization: `Bearer ${token}`
     }
   });
   if (!res.ok) {

@@ -11,6 +11,7 @@ import type { Imballaggio } from './addImballaggioDialog';
 import type { Bolla } from '../storage/bolleDB';
 import Swal from 'sweetalert2';
 import { Autocomplete, Table, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { getBaseUrl } from '../lib/getBaseUrl';
 
 interface BollaDialogProps {
   open: boolean;
@@ -61,6 +62,8 @@ export default function AddBollaDialog({
   const [consegnaACarico, setConsegnaACarico] = useState('');
   const [vettore, setVettore] = useState('');
   const [destTipo, setDestTipo] = useState<'sede'|'altra'>('sede');
+  const [corrieri, setCorrieri] = useState<string[]>([]);
+  const [descrizioneGenerica, setDescrizioneGenerica] = useState('');
 
   const selectedClienteObj = clienti.find(c => c.id === selectedClienteId);
 
@@ -121,22 +124,29 @@ useEffect(() => {
     setCausale(bolla.causale);
     setConsegnaACarico(bolla.consegnaACarico);
     setVettore(bolla.vettore);
-    setProdottiBolla([{
-      nomeProdotto: '',
-      qualita: '',
-      prezzo: 0,
-      nomeImballaggio: '',
-      prezzoImballaggio: '',
-      numeroColli: 0,
-      pesoLordo: 0,
-      pesoNetto: 0,
-      totKgSpediti: 0,
-    }]);
+    if (isBollaGenerica) {
+      setDescrizioneGenerica(bolla.prodotti || '');
+    } else {
+      setProdottiBolla([{
+        nomeProdotto: '',
+        qualita: '',
+        prezzo: 0,
+        nomeImballaggio: '',
+        prezzoImballaggio: '',
+        numeroColli: 0,
+        pesoLordo: 0,
+        pesoNetto: 0,
+        totKgSpediti: 0,
+      }]);
+    }
     return; // impedisce il reset sotto
   }
 
   if (bolla) {
-    if (!isBollaGenerica && bolla.destinatarioNome) {
+    // Determina se è bolla generica dal numero bolla se il flag non è ancora settato
+    const isBollaGenericaCheck = isBollaGenerica || bolla.numeroBolla?.toString().includes('/generica');
+
+    if (!isBollaGenericaCheck && bolla.destinatarioNome) {
       const cli = clienti.find(
         c =>
           c.nomeCliente === bolla.destinatarioNome ||
@@ -159,7 +169,58 @@ useEffect(() => {
           partitaIva: cli.partitaIva,
           codiceSDI: cli.codiceSDI
         });
-        //setSelectedClienteId(cli.id); // <--- fix: assicura selectedClienteId anche in modifica
+      }
+    } else if (isBollaGenericaCheck) {
+      // Carica i dati del destinatario dalla bolla generica
+      const bollaWithExtra = bolla as any;
+      console.log('Caricamento bolla generica:', {
+        destinatarioNome: bolla.destinatarioNome,
+        destinatarioCognome: bolla.destinatarioCognome,
+        via: bolla.destinatarioVia,
+        email: bolla.destinatarioEmail,
+        clienteId: bollaWithExtra.clienteId
+      });
+
+      // Se la bolla ha un clienteId, ripristina il cliente nella select
+      if (bollaWithExtra.clienteId) {
+        const cli = clienti.find(c => c.id === bollaWithExtra.clienteId);
+        if (cli) {
+          setSelectedClienteId(cli.id);
+          setDestinatario({
+            nome: cli.nomeCliente,
+            cognome: cli.cognomeCliente || '',
+            ragioneSociale: cli.ragioneSociale || '',
+            via: cli.via,
+            numeroCivico: cli.numeroCivico,
+            cap: cli.cap || '',
+            paese: cli.paese || '',
+            provincia: cli.provincia || '',
+            email: cli.email,
+            telefonoFisso: cli.telefonoFisso,
+            telefonoCell: cli.telefonoCell,
+            partitaIva: cli.partitaIva,
+            codiceSDI: cli.codiceSDI
+          });
+        }
+      } else {
+        // Altrimenti carica i dati liberi dalla bolla
+        const newDestinatario = {
+          nome: bolla.destinatarioNome || '',
+          cognome: bolla.destinatarioCognome || '',
+          ragioneSociale: '',
+          via: bolla.destinatarioVia || '',
+          numeroCivico: bolla.destinatarioNumeroCivico || '',
+          cap: bollaWithExtra.cap || '',
+          paese: bollaWithExtra.paese || '',
+          provincia: bollaWithExtra.provincia || '',
+          email: bolla.destinatarioEmail || '',
+          telefonoFisso: bolla.destinatarioTelefonoFisso || '',
+          telefonoCell: bolla.destinatarioTelefonoCell || '',
+          partitaIva: bolla.destinatarioPartitaIva || '',
+          codiceSDI: bolla.destinatarioCodiceSDI || ''
+        };
+        console.log('Setting destinatario to:', newDestinatario);
+        setDestinatario(newDestinatario);
       }
     }
     setDataOra(bolla.dataOra.slice(0, 16));
@@ -168,10 +229,14 @@ useEffect(() => {
     setCausale(bolla.causale);
     setConsegnaACarico(bolla.consegnaACarico);
     setVettore(bolla.vettore);
-    try {
-      setProdottiBolla(JSON.parse(bolla.prodotti));
-    } catch {
-      setProdottiBolla([]);
+    if (isBollaGenerica) {
+      setDescrizioneGenerica(bolla.prodotti || '');
+    } else {
+      try {
+        setProdottiBolla(JSON.parse(bolla.prodotti));
+      } catch {
+        setProdottiBolla([]);
+      }
     }
   } else {
     // reset
@@ -208,15 +273,34 @@ useEffect(() => {
     }]);
     setConsegnaACarico('');
     setVettore('');
+    setDescrizioneGenerica('');
   }
-}, [open, bolla]);
+}, [open, bolla, isBollaGenerica]);
 
   useEffect(() => {
     if (open) {
       // focus on causale field when dialog opens
       setTimeout(() => { causaleRef.current?.focus(); }, 0);
+
+      // carica corrieri dal server
+      const loadCorrieri = async () => {
+        try {
+          const res = await fetch(`${getBaseUrl()}/corrieri`);
+          if (res.ok) {
+            const data = await res.json();
+            setCorrieri(data.map((c: { nome: string }) => c.nome));
+          }
+        } catch (error) {
+          console.error('Errore nel caricamento corrieri:', error);
+        }
+      };
+      loadCorrieri();
     }
   }, [open]);
+
+  useEffect(() => {
+    console.log('destinatario.nome changed to:', destinatario.nome);
+  }, [destinatario.nome]);
 
   const handleAddProdotto = () => {
     setProdottiBolla([...prodottiBolla, {
@@ -277,9 +361,9 @@ useEffect(() => {
       destinatarioCodiceSDI: destinatario.codiceSDI,
       indirizzoDestinazione: destTipo === 'sede' ? `${destinatario.via} ${destinatario.numeroCivico}` : indirizzoDestinazione,
       causale,
-      prodotti: JSON.stringify(prodottiBolla),
-      daTrasportare: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: p.numeroColli }))),
-      daRendere: JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: 0 }))),
+      prodotti: isBollaGenerica ? descrizioneGenerica : JSON.stringify(prodottiBolla),
+      daTrasportare: isBollaGenerica ? '' : JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: p.numeroColli }))),
+      daRendere: isBollaGenerica ? '' : JSON.stringify(prodottiBolla.map(p => ({ nomeImballaggio: p.nomeImballaggio, numeroColli: 0 }))),
       consegnaACarico,
       vettore,
       createdAt: new Date().toISOString(),
@@ -290,7 +374,9 @@ useEffect(() => {
       paese: selectedClienteObj?.paese ?? '',
     };
 
-    const nuovaBolla = (!isBollaBis && bolla && bolla.id !== undefined)
+    // Per bolla generica: include ID solo se la bolla esiste già nel DB (synced=true)
+    // Per bolle normali: include ID se stiamo modificando (non bis) e l'ID esiste
+    const nuovaBolla = (!isBollaBis && bolla && bolla.id !== undefined && (isBollaGenerica ? bolla.synced : true))
       ? { ...baseBolla, id: bolla.id }
       : baseBolla;
 
@@ -370,6 +456,8 @@ useEffect(() => {
               {/* Causale */}
               <Grid size={8}>
                 <Autocomplete
+                  freeSolo
+                  forcePopupIcon
                   open={openCausale}
                   onOpen={() => setOpenCausale(true)}
                   onClose={() => setOpenCausale(false)}
@@ -377,6 +465,7 @@ useEffect(() => {
                   options={['Vendita', 'Prezzo da determinare', 'Reso']}
                   value={causale}
                   onChange={(_, v) => setCausale(v || '')}
+                  onInputChange={(_, newInput) => setCausale(newInput)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !openCausale) {
                       e.preventDefault();
@@ -423,72 +512,65 @@ useEffect(() => {
               </Grid>
               {/* Cliente */}
               <Grid size={12}>
-                {!isBollaGenerica && (
-                  <Autocomplete
-                    options={clienti}
-                    getOptionLabel={(option) => `${option.id} - ${option.nomeCliente}`}
-                    value={clienti.find(c => c.id === selectedClienteId) || null}
-                    onChange={(_, newValue) => {
-                      if (newValue) {
-                        setSelectedClienteId(newValue.id);
-                        setDestinatario({
-                          nome: newValue.nomeCliente,
-                          cognome: newValue.cognomeCliente,
-                          ragioneSociale: newValue.ragioneSociale || '',
-                          via: newValue.via,
-                          numeroCivico: newValue.numeroCivico,
-                          cap: newValue.cap || '',
-                          paese: newValue.paese || '',
-                          provincia: newValue.provincia || '',
-                          email: newValue.email,
-                          telefonoFisso: newValue.telefonoFisso,
-                          telefonoCell: newValue.telefonoCell,
-                          partitaIva: newValue.partitaIva,
-                          codiceSDI: newValue.codiceSDI
-                        });
-                      } else {
-                        setSelectedClienteId(undefined);
-                        setDestinatario({
-                          nome: '',
-                          cognome: '',
-                          ragioneSociale: '',
-                          via: '',
-                          numeroCivico: '',
-                          cap: '',
-                          paese: '',
-                          provincia: '',
-                          email: '',
-                          telefonoFisso: '',
-                          telefonoCell: '',
-                          partitaIva: '',
-                          codiceSDI: ''
-                        });
-                      }
-                    }}
-                    open={openCliente}
-                    onOpen={() => setOpenCliente(true)}
-                    onClose={() => setOpenCliente(false)}
-                    autoHighlight
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !openCliente) {
-                        e.preventDefault();
-                        handleEnterKeyDown(e);
-                      }
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth variant="standard" label="Cliente" />
-                    )}
-                  />
-                )}
+                <Autocomplete
+                  freeSolo
+                  forcePopupIcon
+                  options={clienti}
+                  getOptionLabel={(option) => typeof option === 'string' ? option : `${option.id} - ${option.nomeCliente}`}
+                  value={clienti.find(c => c.id === selectedClienteId) || destinatario.nome}
+                  onChange={(_, newValue) => {
+                    if (newValue && typeof newValue !== 'string') {
+                      setSelectedClienteId(newValue.id);
+                      setDestinatario({
+                        nome: newValue.nomeCliente,
+                        cognome: newValue.cognomeCliente,
+                        ragioneSociale: newValue.ragioneSociale || '',
+                        via: newValue.via,
+                        numeroCivico: newValue.numeroCivico,
+                        cap: newValue.cap || '',
+                        paese: newValue.paese || '',
+                        provincia: newValue.provincia || '',
+                        email: newValue.email,
+                        telefonoFisso: newValue.telefonoFisso,
+                        telefonoCell: newValue.telefonoCell,
+                        partitaIva: newValue.partitaIva,
+                        codiceSDI: newValue.codiceSDI
+                      });
+                    } else {
+                      setSelectedClienteId(undefined);
+                    }
+                  }}
+                  onInputChange={(_, newInput) => {
+                    if (newInput && !clienti.find(c => `${c.id} - ${c.nomeCliente}` === newInput)) {
+                      setDestinatario(prev => ({ ...prev, nome: newInput }));
+                    }
+                  }}
+                  open={openCliente}
+                  onOpen={() => setOpenCliente(true)}
+                  onClose={() => setOpenCliente(false)}
+                  autoHighlight
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !openCliente) {
+                      e.preventDefault();
+                      handleEnterKeyDown(e);
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} fullWidth variant="standard" label="Cliente" />
+                  )}
+                />
               </Grid>
               {/* Consegna a carico */}
               <Grid size={12}>
                 <Autocomplete
+                  freeSolo
+                  forcePopupIcon
                   size="small"
-                  options={[ 'Destinatario', 'Mittente', 'Vettore' ]}
+                  options={[ 'Destinatario', 'Mittente' ]}
                   getOptionLabel={opt => opt}
                   value={consegnaACarico}
                   onChange={(_, v) => setConsegnaACarico(v || '')}
+                  onInputChange={(_, newInput) => setConsegnaACarico(newInput)}
                   autoHighlight
                   renderInput={params => (
                     <TextField
@@ -512,8 +594,9 @@ useEffect(() => {
               <Grid size={12}>
                 <Autocomplete
                   freeSolo
+                  forcePopupIcon
                   size="small"
-                  options={[ 'Azienda Morselli', 'S.C. Ameritalia s.r.l.', 'Mittente', 'Destinatario', 'Comuniello Trasporti Srl', 'Reggiani Autotrasporti', 'Autostrada Russo', 'Padana Trasporti', 'Domizio Trasporti', 'DV Trasporti Srl', 'Vetrans Trasporti', 'G.R. Autotrasporti', 'L.L.A. di Garuti e Morselli' ]}
+                  options={corrieri}
                   value={vettore}
                   onChange={(_, newValue) => setVettore(newValue || '')}
                   onInputChange={(_, newInput) => setVettore(newInput)}
@@ -538,6 +621,7 @@ useEffect(() => {
               {/* Nome */}
               <Grid size={6}>
                 <TextField
+                  key={`nome-${isBollaGenerica}`}
                   className={!isBollaGenerica ? 'input-tondi' : ''}
                   fullWidth
                   label="Ragione Sociale"
@@ -672,6 +756,19 @@ useEffect(() => {
         {/* --- FINE BLOCCO DATI CLIENTE/DESTINATARIO --- */}
         <Grid container spacing={4} sx={{ mt: 2 }}>
           <Grid size={12}>
+            {isBollaGenerica ? (
+              <TextField
+                fullWidth
+                multiline
+                rows={6}
+                variant="standard"
+                label="Descrizione Prodotto"
+                placeholder="Inserisci qui la descrizione del prodotto..."
+                value={descrizioneGenerica}
+                onChange={(e) => setDescrizioneGenerica(e.target.value)}
+                sx={{ mt: 2 }}
+              />
+            ) : (
               <TableContainer sx={{ mt: 2, width: '100%', overflowX: 'auto' }}>
                 <Table sx={{ minWidth: 1100, whiteSpace: 'nowrap' }}>
                   <TableHead>
@@ -856,6 +953,7 @@ useEffect(() => {
                   </TableBody>
                 </Table>
               </TableContainer>
+            )}
           </Grid>
         </Grid>
         </form>

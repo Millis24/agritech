@@ -181,9 +181,19 @@ export default function Bolle() {
       width: 200,
       renderCell: params => (
         <>
-          <IconButton onClick={() => { setEditing(params.row); setOpen(true); }}><EditIcon/></IconButton>
+          <IconButton onClick={() => {
+            if (params.row.numeroBolla?.toString().includes('/generica')) {
+              setIsBollaGenerica(true);
+              setIsBollaBis(false);
+            } else {
+              setIsBollaGenerica(false);
+              setIsBollaBis(false);
+            }
+            setEditing(params.row);
+            setOpen(true);
+          }}><EditIcon/></IconButton>
           {/* Bolla Bis accanto alla matita */}
-          <IconButton onClick={() => { setEditing(params.row); setIsBollaBis(true); setOpen(true); }}>
+          <IconButton onClick={() => { setEditing(params.row); setIsBollaBis(true); setIsBollaGenerica(false); setOpen(true); }}>
             <Typography variant="caption" fontWeight="bold">Bis</Typography>
           </IconButton>
           <IconButton onClick={() => {
@@ -265,13 +275,13 @@ export default function Bolle() {
           <Button variant="contained" className='btn'
             onClick={() => {
               if (clienti.length && prodotti.length && imballaggi.length) {
-                setEditing(null); setOpen(true);
+                setEditing(null); setIsBollaBis(false); setIsBollaGenerica(false); setOpen(true);
               } else {
                 alert("⏳ Attendi il caricamento dei dati prima di aggiungere una bolla.");
               }
             }}
           > Aggiungi Bolla</Button>
-          <Button variant="outlined" className='btn' onClick={() => { setIsBollaGenerica(true); setEditing(null); setOpen(true); }}>
+          <Button variant="outlined" className='btn' onClick={() => { setIsBollaGenerica(true); setIsBollaBis(false); setEditing(null); setOpen(true); }}>
             Bolla Generica
           </Button>
         </Box>
@@ -344,10 +354,10 @@ export default function Bolle() {
             <FileDownloadIcon color="success"/>
           </Button>
         </Stack>
-        <DataGrid 
-          rows={filteredBolle} 
-          columns={columns} 
-          getRowId={row => row.id!} 
+        <DataGrid
+          rows={filteredBolle}
+          columns={columns}
+          getRowId={row => row.id!}
           checkboxSelection
           rowSelectionModel={rowSelectionModel}
           onRowSelectionModelChange={(model: GridRowSelectionModel) => {
@@ -357,9 +367,8 @@ export default function Bolle() {
             sorting: {
               sortModel: [{ field: 'id', sort: 'asc' }],
             },
-            pagination: { paginationModel: { pageSize: 10, page: 0 } }
           }}
-          pageSizeOptions={[10, 25, 100]}
+          hideFooterPagination
           sx={{
             borderRadius: '32px',
             padding: '1em',

@@ -21,8 +21,8 @@ const MONTH_LABELS = [
   'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'
 ];
 const COLORS = [
-  '#4C57E5', '#E54C57', '#57E54C', '#E5D34C', '#4CE5D3',
-  '#A14CE5', '#E54C4C', '#4CE58F', '#E58F4C', '#8FE54C'
+  '#FF1744', '#00E676', '#2979FF', '#FFD600', '#FF6D00', '#D500F9',
+  '#00E5FF', '#76FF03', '#FF3D00', '#18FFFF', '#EEFF41', '#FF4081'
 ];
 
 export default function Home() {
@@ -33,9 +33,10 @@ export default function Home() {
   const reloadData = async () => {
     const bolle = await getAllBolle();
     const products = new Set<string>();
-    bolle.forEach(b =>
-      JSON.parse(b.prodotti).forEach((p: any) => products.add(p.nomeProdotto))
-    );
+    bolle.forEach(b => {
+      if (b.numeroBolla?.toString().includes('/generica')) return;
+      JSON.parse(b.prodotti).forEach((p: any) => products.add(p.nomeProdotto));
+    });
     const prodArray = Array.from(products);
     setProductList(prodArray);
     const data = MONTH_LABELS.map(m => {
@@ -44,6 +45,7 @@ export default function Home() {
       return obj;
     });
     bolle.forEach(b => {
+      if (b.numeroBolla?.toString().includes('/generica')) return;
       const monthIdx = new Date(b.dataOra).getMonth();
       const row = data[monthIdx];
       const prodotti = JSON.parse(b.prodotti);
@@ -61,9 +63,15 @@ export default function Home() {
   useEffect(() => {
     // load user profile
     (async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setUsername('utente');
+        return;
+      }
+
       try {
         const res = await fetch(`${getBaseUrl()}/user/profile`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
           const profile = await res.json();

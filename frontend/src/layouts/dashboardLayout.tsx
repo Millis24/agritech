@@ -36,6 +36,7 @@ export default function DashboardLayout() {
             <a href="/dashboard/imballaggi" style={{ color: 'inherit', textDecoration: 'none' }}>Imballaggi</a>
             <a href="/dashboard/bolle" style={{ color: 'inherit', textDecoration: 'none' }}>Bolle</a>
             <a href="/dashboard/report" style={{ color: 'inherit', textDecoration: 'none' }}>Report</a>
+            <a href="/dashboard/logistica" style={{ color: 'inherit', textDecoration: 'none' }}>Logistica</a>
             <a href="/dashboard/impostazioni" style={{ color: 'inherit', textDecoration: 'none' }}>Impostazioni</a>
             {/* <InstallPWAButton /> */}
             {/* <Button variant="outlined" onClick={() => alert('Qui ci sarà il prompt di installazione')} sx={{color: '#fff'}}>

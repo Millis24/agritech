@@ -10,6 +10,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { logout } from '../hooks/useAuth';
 import logoAgritech from '../assets/logo-agritech-bianco.png';
 import '../App.scss';
@@ -20,8 +21,9 @@ const drawerWidth = 240;
 const navItems = [
   { text: 'Bolle', icon: <Description />, path: '/dashboard/bolle' },
   { text: 'Clienti', icon: <PeopleIcon />, path: '/dashboard/clienti' },
-  { text: 'Prodotti', icon: <InventoryIcon />, path: '/dashboard/prodotti' },
-  { text: 'Imballaggi', icon: <LocalShippingIcon />, path: '/dashboard/imballaggi' },
+  { text: 'Prodotti', icon: <ShoppingCartIcon />, path: '/dashboard/prodotti' },
+  { text: 'Imballaggi', icon: <InventoryIcon />, path: '/dashboard/imballaggi' },
+  { text: 'Logistica', icon: <LocalShippingIcon />, path: '/dashboard/logistica' },
   { text: 'Report', icon: <AssessmentIcon />, path: '/dashboard/report' },
   { text: 'Impostazioni', icon: <SettingsIcon />, path: '/dashboard/impostazioni' },
 ];

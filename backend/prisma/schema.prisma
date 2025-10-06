@@ -110,3 +110,10 @@ model ImballaggioReso {
   totaliARendere Int
   bolla          Bolla  @relation(fields: [bollaId], references: [id])
 }
+
+model Corriere {
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique
+  email     String?
+  createdAt DateTime @default(now())
+}

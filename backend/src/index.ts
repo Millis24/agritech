@@ -292,6 +292,67 @@ app.delete('/api/prodotti/:id', async (req, res) => {
   }
 });
 
+// -------------------- CORRIERI --------------------
+app.get('/api/corrieri', async (req, res) => {
+  try {
+    const corrieri = await prisma.corriere.findMany({
+      orderBy: { nome: 'asc' }
+    });
+    res.json(corrieri);
+  } catch (error) {
+    console.error('❌ Errore GET corrieri:', error);
+    res.status(500).json({ error: 'Errore nel caricamento dei corrieri' });
+  }
+});
+
+app.post('/api/corrieri', async (req, res) => {
+  console.log('📦 POST /corrieri body:', req.body);
+  const { nome, email } = req.body;
+  try {
+    // verifica duplicati
+    const esiste = await prisma.corriere.findFirst({
+      where: { nome }
+    });
+    if (esiste) {
+      return res.status(409).json({ error: 'Corriere già esistente' });
+    }
+
+    const nuovo = await prisma.corriere.create({
+      data: { nome, email }
+    });
+    res.status(201).json(nuovo);
+  } catch (error) {
+    console.error('❌ Errore POST corrieri:', error);
+    res.status(500).json({ error: 'Errore nel salvataggio del corriere' });
+  }
+});
+
+app.put('/api/corrieri/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { nome, email } = req.body;
+    const corriereAggiornato = await prisma.corriere.update({
+      where: { id },
+      data: { nome, email }
+    });
+    res.json(corriereAggiornato);
+  } catch (error) {
+    console.error('❌ Errore PUT corriere:', error);
+    res.status(500).json({ error: 'Errore nell\'aggiornamento del corriere' });
+  }
+});
+
+app.delete('/api/corrieri/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.corriere.delete({ where: { id } });
+    res.status(204).end();
+  } catch (error) {
+    console.error('❌ Errore DELETE corriere:', error);
+    res.status(500).json({ error: 'Errore nella cancellazione del corriere' });
+  }
+});
+
 // -------------------- BOLLE --------------------
 app.get('/api/bolle', async (req, res) => {
   try {

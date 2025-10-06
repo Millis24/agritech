@@ -8,6 +8,7 @@ import Prodotti from '../pages/dashboard/prodotti.tsx';
 import Bolle from '../pages/dashboard/bolle.tsx';
 import Report from '../pages/dashboard/report.tsx';
 import Impostazioni from '../pages/dashboard/impostazioni.tsx';
+import Logistica from '../pages/dashboard/logistica.tsx';
 
 export const routes: RouteObject[] = [
   {
@@ -24,6 +25,7 @@ export const routes: RouteObject[] = [
       { path: 'imballaggi', element: <Imballaggi /> },
       { path: 'bolle', element: <Bolle /> },
       { path: 'report', element: <Report/> },
+      { path: 'logistica', element: <Logistica/> },
       { path: 'impostazioni', element: <Impostazioni/> },
 
     ]

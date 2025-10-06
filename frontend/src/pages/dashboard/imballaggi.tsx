@@ -323,6 +323,15 @@ export default function Imballaggi() {
             pagination: { paginationModel: { pageSize: 10, page: 0 } }
           }}
           pageSizeOptions={[10, 25, 100]}
+          localeText={{
+            footerRowSelected: (count) => `${count} riga/e selezionata/e`,
+          }}
+          slotProps={{
+            pagination: {
+              labelRowsPerPage: 'Righe per tabella:',
+              labelDisplayedRows: ({ from, to, count }: { from: number; to: number; count: number }) => `${from}–${to} di ${count !== -1 ? count : `più di ${to}`}`
+            }
+          }}
           sx={{
             borderRadius: '32px',
             padding: '1em',

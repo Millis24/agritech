@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Tabs, Tab, Card, Accordion, AccordionSummary, AccordionDetails, Typography, Button, Box, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridRowSelectionModel, type GridRowId } from '@mui/x-data-grid';
 import PrintIcon from '@mui/icons-material/Print';
 import type { Cliente } from '../storage/clientiDB';
 import type { Bolla } from '../storage/bolleDB';
 import { getAllBolle } from '../storage/bolleDB';
-import { handlePrint } from '../utils/printBolla';
+import { handlePrint, generatePDFBlob } from '../utils/printBolla';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 interface SchedaClienteDialogProps {
   open: boolean;
@@ -22,15 +24,37 @@ export default function SchedaClienteDialog({
 }: SchedaClienteDialogProps) {
   const [tabIndex, setTabIndex] = useState(0);
   const [bolleCliente, setBolleCliente] = useState<Bolla[]>([]);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set<GridRowId>()
+  });
 
   useEffect(() => {
     if (!cliente) return;
     (async () => {
       const all = await getAllBolle();
-      const filtered = all.filter(b => b.destinatarioNome === cliente.nomeCliente);
+      const filtered = all.filter(b =>
+        b.destinatarioNome === cliente.ragioneSociale ||
+        b.destinatarioNome === cliente.nomeCliente
+      );
       setBolleCliente(filtered);
     })();
   }, [cliente]);
+
+  const handlePrintSelected = async () => {
+    const selectedIds = Array.from(rowSelectionModel.ids) as number[];
+    const selectedBolle = bolleCliente.filter(b => selectedIds.includes(b.id!));
+
+    const zip = new JSZip();
+
+    for (const bolla of selectedBolle) {
+      const pdfBlob = await generatePDFBlob(bolla);
+      zip.file(`bolla_${bolla.numeroBolla}.pdf`, pdfBlob);
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, `bolle_${cliente?.nomeCliente || 'cliente'}.zip`);
+  };
 
   const columns: GridColDef[] = [
     { field: 'numeroBolla', headerName: 'Numero', width: 100 },
@@ -140,14 +164,37 @@ export default function SchedaClienteDialog({
               <Typography><strong> Totale bolle: </strong> {bolleCliente.length} </Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ boxShadow: ' 0' }}>
+              <Box mb={2}>
+                <Button
+                  className='btn'
+                  variant="contained"
+                  disabled={rowSelectionModel.ids.size === 0}
+                  onClick={handlePrintSelected}
+                  startIcon={<PrintIcon />}
+                >
+                  Stampa selezionate ({rowSelectionModel.ids.size})
+                </Button>
+              </Box>
               <Box sx={{ height: 400, width: '100%', filter: 'drop-shadow(0px 5px 15px rgba(88, 102, 253, 0.25))', borderRadius: '32px' }}>
                 <DataGrid
                   rows={bolleCliente}
                   columns={columns}
                   getRowId={row => row.id!}
+                  checkboxSelection
+                  rowSelectionModel={rowSelectionModel}
+                  onRowSelectionModelChange={setRowSelectionModel}
                   pageSizeOptions={[5, 10]}
                   initialState={{
                     pagination: { paginationModel: { pageSize: 5 } }
+                  }}
+                  localeText={{
+                    footerRowSelected: (count) => `${count} riga/e selezionata/e`,
+                  }}
+                  slotProps={{
+                    pagination: {
+                      labelRowsPerPage: 'Righe per tabella:',
+                      labelDisplayedRows: ({ from, to, count }: { from: number; to: number; count: number }) => `${from}–${to} di ${count !== -1 ? count : `più di ${to}`}`
+                    }
                   }}
                   sx={{
                     borderRadius: '32px',

@@ -10,7 +10,14 @@ if (import.meta.env.VITE_API_BASE_URL?.includes('localhost')) {
   console.warn('⚠️ Stai usando localhost come base API URL in produzione!');
 }
 
-registerSW();
+registerSW({
+  onNeedRefresh() {
+    window.location.reload();
+  },
+  onOfflineReady() {
+    console.log('App pronta offline');
+  }
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
