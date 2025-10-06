@@ -361,9 +361,37 @@ app.delete('/api/corrieri/:id', async (req, res) => {
 });
 
 // -------------------- BOLLE --------------------
+// Ottieni il prossimo numero bolla per un anno specifico
+app.get('/api/bolle/next-number/:anno', async (req, res) => {
+  try {
+    const anno = parseInt(req.params.anno);
+    const bolle = await prisma.bolla.findMany({
+      where: { anno },
+      select: { numeroBolla: true }
+    });
+
+    const numeri = bolle
+      .map(b => {
+        const numero = b.numeroBolla.toString().split('/')[0];
+        return parseInt(numero, 10) || 0;
+      })
+      .filter(n => !isNaN(n));
+
+    const maxNumero = numeri.length > 0 ? Math.max(...numeri) : 0;
+    res.json({ nextNumber: maxNumero + 1 });
+  } catch (error) {
+    console.error('Errore nel calcolo next number:', error);
+    res.status(500).json({ error: 'Errore nel calcolo del prossimo numero' });
+  }
+});
+
 app.get('/api/bolle', async (req, res) => {
   try {
+    const anno = req.query.anno ? parseInt(req.query.anno as string) : undefined;
+    const where = anno ? { anno } : {};
+
     const bolle = await prisma.bolla.findMany({
+      where,
       include: {
         articoli: true,
         imballaggiResi: true
@@ -401,6 +429,10 @@ app.post('/api/bolle', async (req, res) => {
       }
     }
 
+    // Calcola l'anno dalla dataOra
+    const dataOra = new Date(resto.dataOra);
+    const anno = dataOra.getFullYear();
+
     const esiste = await prisma.bolla.findFirst({
       where: { numeroBolla: String(resto.numeroBolla) }
     });
@@ -411,7 +443,8 @@ app.post('/api/bolle', async (req, res) => {
     const nuova = await prisma.bolla.create({
       data: {
         ...resto,
-        dataOra: new Date(resto.dataOra),
+        dataOra,
+        anno,
         createdAt: new Date(resto.createdAt),
         cliente: {
           connect: { id: clienteId }

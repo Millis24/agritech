@@ -55,11 +55,19 @@ export default function Bolle() {
     ]);
     // id eliminati
     const eliminatiIds = (await getBolleEliminate()).map(b => b.id);
-    // filtra le bolle visibili dopo l'eliminazione
+
+    // Filtra solo bolle dell'anno corrente
+    const annoCorrente = new Date().getFullYear();
+
+    // filtra le bolle visibili dopo l'eliminazione e per anno corrente
     const bolleVisibili = bolleData
       .filter(b => b.id !== undefined)
-      .filter(b => !eliminatiIds.includes(b.id!));
-    
+      .filter(b => !eliminatiIds.includes(b.id!))
+      .filter(b => {
+        const dataOra = new Date(b.dataOra);
+        return dataOra.getFullYear() === annoCorrente;
+      });
+
     setBolle(bolleVisibili);
     setClienti(clientiData);
     setProdotti(prodottiData);
@@ -475,14 +483,22 @@ export default function Bolle() {
         imballaggi={imballaggi}
         numeroBolla={
           (() => {
-            const numeriBolle = bolle
+            // Filtra solo le bolle dell'anno corrente
+            const annoCorrente = new Date().getFullYear();
+            const bolleAnnoCorrente = bolle.filter(b => {
+              const dataOra = new Date(b.dataOra);
+              return dataOra.getFullYear() === annoCorrente;
+            });
+
+            const numeriBolle = bolleAnnoCorrente
               .map(b => {
                 const numero = b.numeroBolla.toString().split('/')[0];
                 return parseInt(numero, 10) || 0;
               })
               .filter(nb => !isNaN(nb));
-            const maxNumero = numeriBolle.length > 0 ? Math.max(...numeriBolle) : 255;
-            return Math.max(maxNumero, 255) + 1;
+
+            const maxNumero = numeriBolle.length > 0 ? Math.max(...numeriBolle) : 0;
+            return maxNumero + 1;
           })()
         }
         isBollaBis={isBollaBis}

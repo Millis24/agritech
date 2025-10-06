@@ -6,6 +6,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Description from '@mui/icons-material/Description';
+import ArchiveIcon from '@mui/icons-material/Archive';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -24,6 +25,7 @@ const navItems = [
   { text: 'Prodotti', icon: <ShoppingCartIcon />, path: '/dashboard/prodotti' },
   { text: 'Imballaggi', icon: <InventoryIcon />, path: '/dashboard/imballaggi' },
   { text: 'Logistica', icon: <LocalShippingIcon />, path: '/dashboard/logistica' },
+  { text: 'Archivio', icon: <ArchiveIcon />, path: '/dashboard/archivio' },
   { text: 'Report', icon: <AssessmentIcon />, path: '/dashboard/report' },
   { text: 'Impostazioni', icon: <SettingsIcon />, path: '/dashboard/impostazioni' },
 ];

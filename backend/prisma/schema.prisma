@@ -55,8 +55,9 @@ model Prodotto {
 
 model Bolla {
   id                     Int      @id @default(autoincrement())
-  numeroBolla            String   @unique   
+  numeroBolla            String   @unique
   dataOra                DateTime
+  anno                   Int
   destinatarioNome       String
   destinatarioCognome    String
   destinatarioVia         String?
@@ -79,7 +80,7 @@ model Bolla {
   cap        String?
   paese      String?
   provincia  String?
-  
+
   clienteId  Int
   cliente    Cliente @relation(fields: [clienteId], references: [id])
 
