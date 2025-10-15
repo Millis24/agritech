@@ -96,7 +96,7 @@ export default function ReportPage() {
           list.forEach(p => {
             detailed.push({
               name: p.nomeProdotto,
-              data: new Date(b.dataOra).toLocaleDateString('it-IT'),
+              data: new Date(b.dataOra).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome' }),
               kg: p.numeroColli
             });
           });
@@ -111,7 +111,7 @@ export default function ReportPage() {
             (JSON.parse(b.daTrasportare) as Array<{ nomeImballaggio: string; numeroColli: number }>).forEach(i => {
               detailed.push({
                 name: i.nomeImballaggio,
-                data: new Date(b.dataOra).toLocaleDateString('it-IT'),
+                data: new Date(b.dataOra).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome' }),
                 kg: i.numeroColli
               });
             });

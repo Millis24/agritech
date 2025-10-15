@@ -95,7 +95,7 @@ export async function handlePrint(bolla: Bolla, cliente?: any) {
 
   doc.setFontSize(14); // font medio per la data
   doc.setFont('helvetica', 'regular');
-  doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, pageWidth - M, boxBottom + 20, { align: 'right' });
+  doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString('it-IT', { timeZone: 'Europe/Rome' })}`, pageWidth - M, boxBottom + 20, { align: 'right' });
 
   // Spazio tra sezioni
   cursorY = boxBottom + 28;
@@ -306,7 +306,7 @@ export async function generatePDFBlob(bolla: Bolla, cliente?: any): Promise<Blob
 
   doc.setFontSize(14);
   doc.setFont('helvetica', 'regular');
-  doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString()}`, pageWidth - M, boxBottom + 20, { align: 'right' });
+  doc.text(`Data: ${new Date(bolla.dataOra).toLocaleString('it-IT', { timeZone: 'Europe/Rome' })}`, pageWidth - M, boxBottom + 20, { align: 'right' });
 
   cursorY = boxBottom + 28;
   doc.setFontSize(12);

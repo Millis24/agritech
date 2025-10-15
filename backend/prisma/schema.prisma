@@ -81,8 +81,8 @@ model Bolla {
   paese      String?
   provincia  String?
 
-  clienteId  Int
-  cliente    Cliente @relation(fields: [clienteId], references: [id])
+  clienteId  Int?
+  cliente    Cliente? @relation(fields: [clienteId], references: [id])
 
   // Relazioni
   articoli       Articolo[]

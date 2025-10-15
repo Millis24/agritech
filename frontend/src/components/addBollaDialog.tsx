@@ -47,7 +47,30 @@ export default function AddBollaDialog({
   const [selectedClienteId, setSelectedClienteId] = useState<number | undefined>(undefined);  
   const [indirizzoDestinazione, setIndirizzoDestinazione] = useState('');
   const [causale, setCausale] = useState('');
-  const [dataOra, setDataOra] = useState(() => new Date().toISOString().slice(0, 16));
+  // Funzione per ottenere la data/ora corrente nel fuso orario di Roma in formato per datetime-local
+  const getLocalDateTime = () => {
+    const now = new Date();
+    // Ottieni l'ora in formato Roma
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Funzione per convertire una data ISO dal backend al formato datetime-local
+  const isoToLocal = (isoString: string) => {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const [dataOra, setDataOra] = useState(() => getLocalDateTime());
   const [prodottiBolla, setProdottiBolla] = useState<any[]>([{
     nomeProdotto: '',
     qualita: '',
@@ -118,7 +141,7 @@ useEffect(() => {
         codiceSDI: cli.codiceSDI
       });
     }
-    setDataOra(new Date().toISOString().slice(0, 16));
+    setDataOra(getLocalDateTime());
     setDestTipo('sede');
     setIndirizzoDestinazione(bolla.indirizzoDestinazione);
     setCausale(bolla.causale);
@@ -223,7 +246,7 @@ useEffect(() => {
         setDestinatario(newDestinatario);
       }
     }
-    setDataOra(bolla.dataOra.slice(0, 16));
+    setDataOra(isoToLocal(bolla.dataOra));
     setDestTipo('sede');
     setIndirizzoDestinazione(bolla.indirizzoDestinazione);
     setCausale(bolla.causale);
@@ -256,7 +279,7 @@ useEffect(() => {
       codiceSDI: ''
     });
     setSelectedClienteId(undefined);
-    setDataOra(new Date().toISOString().slice(0, 16));
+    setDataOra(getLocalDateTime());
     setDestTipo('sede');
     setIndirizzoDestinazione('');
     setCausale('');
